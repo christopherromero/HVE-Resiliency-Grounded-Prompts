@@ -1,0 +1,92 @@
+---
+schema_version: "1.0.0"
+document_type: application_architecture_context
+lifecycle_status: approved
+---
+architecture_context:
+  context_id: "<application-name>-database-independent-kafka-architecture"
+  context_version: "1.0.0"
+  lifecycle_status: approved
+  context_owner: "<application-or-solution-architecture-team>"
+  approved_by: "<approver-name-or-group>"
+  approved_at: "<YYYY-MM-DD>"
+  application_name: "<application-name>"
+  repository_name: "<repository-name>"
+  deployment_model:
+    scenario: "<active_active|active_standby>"
+    region_a: "<region-a>"
+    region_b: "<region-b>"
+    same_application_artifact: true
+  ingress_path:
+    source: supplied_architecture_context
+    components: []
+  authoritative_state:
+    database_dependencies: []
+    application_database_used: false
+  kafka_operating_model:
+    scenario: database_independent_kafka
+    architecture_status: approved
+    scenario_policy_id: KAFKA-OPERATING-SCENARIO
+    expected_scenario_rule_id: KAFKA-SCENARIO-003
+    cluster_model:
+      type: "<independent_regional_clusters|primary_and_standby_clusters>"
+      stretched_cluster: false
+      cluster_per_region: true
+    processing_model:
+      type: "<stateless_producer|stateless_consumer|stream_transformer|topic_bridge|external_side_effect_processor|stateful_stream_processor|mixed>"
+      input_topics: []
+      output_topics: []
+      uses_kafka_streams: false
+      uses_compacted_topics_as_state: false
+      uses_local_state_store: false
+    regional_processing_model:
+      type: "<multi_active|single_active>"
+      rationale: "<approved rationale>"
+      ownership_epoch_required: "<true|false>"
+      stale_active_fencing_required: "<true|false>"
+    external_side_effects:
+      present: "<true|false>"
+      type: "<none|idempotent_external_service|non_idempotent_external_service>"
+      authoritative_system: "<none|external_service|kafka_compacted_topic|other>"
+      stable_operation_identity_required: true
+      reconciliation_required: "<true|false>"
+    client_behavior:
+      normal_cluster_affinity: "<local_region_only|active_cluster_only>"
+      cross_region_bootstrap_fallback: prohibited
+      synchronous_dual_cluster_publish: prohibited
+      endpoints_deployment_injected: true
+    state_and_recovery_contract:
+      pod_local_state_required_for_correctness: false
+      state_store_restore_required: "<true|false>"
+      changelog_or_replay_source: "<topic-or-not_applicable>"
+      replay_idempotency_required: true
+    required_validation:
+      - duplicate_input
+      - replay_after_failure
+      - rebalance
+      - broker_disconnect_and_recovery
+      - regional_role_behavior
+      - external_side_effect_failure_when_applicable
+      - state_restore_when_applicable
+  direct_dependency_expectations:
+    azure_sql:
+      expected: false
+      role: not_applicable
+    cosmos_db:
+      expected: false
+      role: not_applicable
+    other_application_database:
+      expected: false
+      role: not_applicable
+    confluent_kafka:
+      expected: true
+      role: "<event_transport|stream_processing|event_backbone>"
+  architecture_evidence:
+    - reference_id: ARCH-KAFKA-DI-001
+      description: Approved database-independent Kafka architecture
+      source: "<architecture-document-or-decision-record>"
+  validation_expectations:
+    repository_must_be_compatible_with_declared_scenario: true
+    scenario_policy_validation_required: true
+    repository_conflict_routes_to: architecture_governance_review
+    infrastructure_deployment_validation_in_code_assessment: false

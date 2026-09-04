@@ -1,0 +1,114 @@
+schema_version: 3.0.0
+policy_id: KAFKA-OPERATING-SCENARIO
+lifecycle_status: active
+purpose: Select and validate Confluent Kafka scenarios using approved context first,
+  with repository inference as fallback, including Kafka workloads with no database.
+scenario_resolution:
+  preferred_sources:
+  - approved_application_architecture_context
+  - approved_solution_architecture_context
+  fallback_sources:
+  - repository_observed_dependency_roles
+  validation_required: true
+  conflict_behavior:
+    selected_scenario: unresolved
+    common_controls_status: evaluate_when_evidence_available
+    scenario_controls_status: not_assessed
+    emit_code_finding: false
+    create_follow_up: architecture_governance_review
+source_requirements:
+  approved_context:
+    required_fields:
+    - context_id
+    - context_version
+    - lifecycle_status
+    - context_owner
+    - kafka_operating_model.scenario
+    - kafka_operating_model.cluster_model.type
+    - kafka_operating_model.cluster_model.stretched_cluster
+    - kafka_operating_model.processing_ownership.type
+    - kafka_operating_model.authoritative_state
+  repository_fallback:
+    required_evidence:
+    - effective production use, not dependency presence alone
+    - authoritative persistence role
+    - Cosmos DB API and throughput model when applicable
+    - Cosmos DB multi-region-write status when applicable
+    - whether any database is used by production code
+    - Kafka processing model and external side effects when no database is used
+    - regional processing ownership when no database is used
+consistency_rules:
+- rule_id: KAFKA-SCENARIO-001
+  description: Azure SQL authoritative state requires Kafka active-standby.
+  when_any:
+  - direct_authoritative_state_contains: azure_sql
+  - approved_processing_chain_authoritative_state_contains: azure_sql
+  expected_scenario: active_standby
+  precedence: 1
+- rule_id: KAFKA-SCENARIO-002
+  description: Cosmos DB MongoDB RU multi-region writes, with no authoritative Azure
+    SQL, permits independent regional active-active Kafka.
+  when_all:
+  - authoritative_state_contains: cosmos_db
+  - cosmos_db.api: mongodb
+  - cosmos_db.throughput_model: ru
+  - cosmos_db.multi_region_writes: true
+  - authoritative_azure_sql_present: false
+  expected_scenario: independent_regional_active_active
+  precedence: 2
+- rule_id: KAFKA-SCENARIO-003
+  description: Kafka used with no application database selects database-independent
+    Kafka; regional ownership is resolved separately from processing model and side
+    effects.
+  when_all:
+  - confluent_kafka_used_by_production_code: true
+  - application_database_used_by_production_code: false
+  - direct_authoritative_database_state_present: false
+  - approved_processing_chain_authoritative_database_state_present: false
+  expected_scenario: database_independent_kafka
+  precedence: 3
+  required_classification:
+    processing_model:
+    - stateless_producer
+    - stateless_consumer
+    - stream_transformer
+    - topic_bridge
+    - external_side_effect_processor
+    - stateful_stream_processor
+    - mixed
+    regional_processing_model:
+    - multi_active
+    - single_active
+    - unresolved
+    external_side_effects:
+    - none
+    - idempotent_external_service
+    - non_idempotent_external_service
+    - unknown
+- rule_id: KAFKA-SCENARIO-004
+  description: Missing, incomplete, unsupported, or conflicting evidence cannot select
+    a scenario.
+  otherwise:
+    expected_scenario: unresolved
+    assessment_status: not_assessed
+    architecture_confirmation_required: true
+quality_rules:
+- External architecture context declares intent; policy validates consistency.
+- Repository evidence evaluates application compatibility and must not invent external
+  topology.
+- Azure SQL authoritative-state presence takes precedence over Cosmos DB.
+- Cosmos DB used only as a failure queue, cache, or optional store does not select
+  active-active.
+- A Kafka producer with unknown downstream authoritative state remains unresolved
+  unless approved processing-chain context is supplied.
+- Context and repository conflict is a governance follow-up, not automatically a code
+  finding.
+- Stretched Kafka clusters are outside the supported scenarios.
+- Database-independent Kafka does not automatically mean multi-active or stateless.
+- No application database must be proven from direct production use and approved processing-chain
+  context, not dependency-file absence alone.
+- External side effects can require single-active ownership or durable idempotency/reconciliation
+  even when no database is used.
+- Kafka compacted topics, Kafka Streams state stores, local RocksDB, and external
+  services must be classified explicitly; they are not application databases but can
+  create durable-state and ownership requirements.

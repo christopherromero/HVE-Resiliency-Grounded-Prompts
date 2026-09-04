@@ -1,0 +1,159 @@
+# Dependency Standard Registry
+schema_version: "2.0"
+registry_type: dependency_standard_registry
+
+standards:
+  keyvault:
+    display_name: Azure Key Vault
+    grounding_file: grounding/dependencies/springboot-keyvault.md
+
+  cosmosdb:
+    display_name: Azure Cosmos DB
+    grounding_file: grounding/dependencies/springboot-cosmosdb.md
+
+  eventhubs:
+    display_name: Azure Event Hubs
+    grounding_file: grounding/dependencies/springboot-eventhubs.md
+
+  storage-blob:
+    display_name: Azure Blob Storage
+    grounding_file: grounding/dependencies/springboot-storage-blob.md
+
+  azure-sql:
+    display_name: Azure SQL
+    grounding_file: grounding/dependencies/springboot-azure-sql.md
+
+  postgresql:
+    display_name: PostgreSQL
+    grounding_file: grounding/dependencies/springboot-postgresql.md
+
+  confluent-kafka:
+    display_name: Confluent Kafka
+    grounding_file: grounding/dependencies/springboot-confluent-kafka.md
+    type: scenario_aware_dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - confluent-kafka
+        - spring-kafka
+      repository_patterns:
+        - KafkaTemplate
+        - KafkaListener
+        - spring.kafka.bootstrap-servers
+        - schema.registry.url
+    standard:
+      path: grounding/dependencies/springboot-confluent-kafka.md
+      version: "2.0.0"
+    scenario_policy:
+      path: grounding/governance/kafka-operating-scenario-policy.yml
+      version: "2.0.0"
+    context_sources:
+      preferred:
+        - application-context/application-architecture-context.yml
+        - application-context/solution-architecture-context.yml
+      fallback:
+        - repository_observed_dependency_roles
+
+  dse-cassandra:
+    display_name: DSE Cassandra
+    grounding_file: grounding/dependencies/springboot-dse-cassandra.md
+    type: scenario_aware_dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - confluent-kafka
+        - spring-kafka
+      repository_patterns:
+        - KafkaTemplate
+        - KafkaListener
+        - spring.kafka.bootstrap-servers
+        - schema.registry.url
+    standard:
+      path: grounding/dependencies/springboot-dse-cassandra.md
+      version: "2.0.0"
+    scenario_policy:
+      path: grounding/governance/kafka-operating-scenario-policy.yml
+      version: "2.0.0"
+
+  apim:
+    display_name: Azure API Management Client Behavior
+    grounding_file: grounding/dependencies/springboot-apim.md
+
+  appgateway-glb:
+    display_name: Application Gateway and Global Load Balancer Behavior
+    grounding_file: grounding/dependencies/springboot-appgateway-glb.md
+
+  http-client:
+    display_name: HTTP Client Behavior
+    grounding_file: grounding/dependencies/springboot-http-client.md
+
+  azure_managed_redis:
+    display_name: Azure Managed Redis
+    grounding_file: grounding/dependencies/springboot-azure-managed-redis.md
+    type: dependency_standard
+
+    activate_when_any:
+      inventory_dependencies:
+        - azure-managed-redis
+        - redis
+      repository_patterns:
+        - RedisTemplate
+        - ReactiveRedisTemplate
+        - RedisCacheManager
+        - LettuceConnectionFactory
+        - JedisPool
+        - RedissonClient
+        - spring.data.redis
+        - spring.session.store-type=redis
+
+    standard:
+      path: grounding/dependencies/azure-managed-redis.md
+      version: "2.0.0"
+
+
+  aks_istio:
+    display_name: Azure AKS with Istio
+    grounding_file: grounding/dependencies/springboot-aks-istio.md
+    type: dependency_standard
+
+    activate_when_any:
+
+      inventory_capabilities:
+        - runtime_platform: aks
+        - service_mesh: istio
+
+      repository_patterns:
+        - VirtualService
+        - DestinationRule
+        - ServiceEntry
+        - sidecar.istio.io
+        - proxy.istio.io
+        - istio-injection
+
+    standard:
+      path: grounding/dependencies/springboot-aks-istio.md
+      version: "2.0.0"
+
+  azure_functions:
+    display_name: Azure Function
+    grounding_file: grounding/dependencies/springboot-azure-function.md
+    type: dependency_standard
+
+    activate_when_any:
+
+      inventory_capabilities:
+        - runtime_platform: azure-function
+
+      repository_patterns:
+        - host.json
+        - function.json
+        - FunctionName
+        - HttpTrigger
+        - TimerTrigger
+        - QueueTrigger
+        - ServiceBusTrigger
+        - EventHubTrigger
+        - BlobTrigger
+        - DurableOrchestrationContext
+
+    standard:
+      path: grounding/dependencies/springboot-azure-function.md
+      version: "2.0.0"

@@ -1,0 +1,168 @@
+---
+schema_version: "1.0.0"
+document_type: application_architecture_context
+lifecycle_status: approved
+---
+
+# Update the <....> values to match your application and architecture context
+
+architecture_context:
+  context_id: "<application-name>-active-active-architecture"
+  context_version: "1.1.0"
+  lifecycle_status: approved
+  context_owner: "<application-or-solution-architecture-team>"
+  approved_by: "<approver-name-or-group>"
+  approved_at: "<YYYY-MM-DD>"
+  application_name: "<application-name>"
+  repository_name: "<repository-name>"
+
+  deployment_model:
+    scenario: active_active
+    region_a: "<region-a>"
+    region_b: "<region-b>"
+    both_regions_serve_traffic: true
+    same_application_artifact: true
+
+#Update the ingress_path components to match your application's ingress architecture. If you have a different architecture, you can modify the components accordingly.
+
+  ingress_path:
+    source: supplied_architecture_context
+    components:
+      - sequence: 1
+        role: external_or_internal_global_load_balancer
+        implementation: "Akamai|F5|other|not_provided"
+        required: false
+      - sequence: 2
+        role: regional_ingress
+        implementation: "Azure Application Gateway|other|not_provided"
+        required: true
+      - sequence: 3
+        role: api_gateway
+        implementation: "Azure API Management|other|not_provided"
+        required: false
+      - sequence: 4
+        role: application
+        implementation: "<application-name>"
+        required: true
+
+  authoritative_state:
+    - dependency: cosmos_db
+      service_model: azure_cosmos_db_for_mongodb
+      api: mongodb
+      throughput_model: ru
+      role: authoritative_business_state
+      operating_model: multi_region_write
+      multi_region_writes: true
+      local_region_affinity_required: true
+
+  supporting_state:
+    - dependency: azure_sql
+      used_by_production_code: false
+      role: not_applicable
+
+  kafka_operating_model:
+    scenario: independent_regional_active_active
+    architecture_status: approved
+    scenario_policy_id: KAFKA-OPERATING-SCENARIO
+    expected_scenario_rule_id: KAFKA-SCENARIO-002
+
+    cluster_model:
+      type: independent_regional_clusters
+      stretched_cluster: false
+      cluster_per_region: true
+
+    processing_ownership:
+      type: multi_active
+      aligned_dependency: cosmos_db_multi_write
+
+    regional_roles:
+      region_a: active
+      region_b: active
+
+    client_behavior:
+      normal_cluster_affinity: local_region_only
+      cross_region_bootstrap_fallback: prohibited
+      synchronous_dual_cluster_publish: prohibited
+      same_application_artifact: true
+      endpoints_deployment_injected: true
+
+    producer_behavior:
+      region_a_produces_to: local_region_cluster
+      region_b_produces_to: local_region_cluster
+      stable_event_identity_required: true
+      idempotent_business_processing_required: true
+
+    consumer_behavior:
+      region_a_consumes_from: local_region_cluster
+      region_b_consumes_from: local_region_cluster
+      cross_cluster_global_ordering_assumed: false
+      duplicate_delivery_across_clusters_possible: true
+      durable_deduplication_required_for_side_effects: true
+
+    ordering_contract:
+      ordering_scope:
+        - cluster
+        - topic_partition
+        - business_key
+      global_cross_cluster_ordering: not_supported
+
+    failure_contract:
+      remote_cluster_failure_affects_local_readiness: false
+      local_cluster_failure_may_affect_local_readiness: true
+      healthy_region_continues_local_processing: true
+      recovery_replay_must_be_idempotent: true
+
+    data_consistency_contract:
+      cosmos_conflict_handling_required: true
+      stable_document_identity_required: true
+      optimistic_or_conditional_write_required_when_applicable: true
+      reconciliation_required_for_ambiguous_or_conflicting_outcomes: true
+
+    required_validation:
+      - region_a_cluster_failure
+      - region_b_cluster_failure
+      - duplicate_event_in_both_clusters
+      - different_event_order_across_clusters
+      - cosmos_multi_write_conflict
+      - recovery_and_replay
+      - remote_cluster_failure_does_not_affect_local_readiness
+
+  related_processing_chains:
+    - chain_id: CHAIN-001
+      architecture_status: approved
+      description: "Regional request processing with local Kafka and Cosmos DB multi-write"
+      path:
+        - component: "<application-name>"
+          role: kafka_producer_or_consumer
+        - component: "<regional-kafka-topic>"
+          role: regional_event_stream
+        - component: "<application-or-downstream-processor>"
+          role: event_processor
+        - component: cosmos_db
+          role: authoritative_business_state
+
+  direct_dependency_expectations:
+    cosmos_db:
+      expected: true
+      role: authoritative_business_state
+    azure_sql:
+      expected: false
+      role: not_applicable
+    confluent_kafka:
+      expected: true
+      role: regional_event_transport
+
+#Update the eveidence references to match your architecture documentation or decision records.
+  architecture_evidence:
+    - reference_id: "ARCH-KAFKA-AA-001"
+      description: "Approved independent regional Kafka active-active architecture"
+      source: "<architecture-document-or-decision-record>"
+    - reference_id: "ARCH-COSMOS-AA-001"
+      description: "Approved Cosmos DB MongoDB RU multi-region-write architecture"
+      source: "<architecture-document-or-decision-record>"
+
+  validation_expectations:
+    repository_must_be_compatible_with_declared_scenario: true
+    scenario_policy_validation_required: true
+    repository_conflict_routes_to: architecture_governance_review
+    infrastructure_deployment_validation_in_code_assessment: false

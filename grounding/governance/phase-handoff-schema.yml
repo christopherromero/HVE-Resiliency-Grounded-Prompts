@@ -1,0 +1,162 @@
+schema_version: "1.0.0"
+document_type: phase_handoff_schema
+schema_id: ASSESSMENT-PHASE-HANDOFF
+lifecycle_status: active
+owner: Cloud Architecture Team
+purpose: >
+  Define compact, machine-readable summaries used to reconstruct assessment state
+  after a conversation clear or new chat. Handoffs accelerate phase startup but do
+  not replace authoritative phase artifacts.
+
+authority:
+  handoff_is_authoritative: false
+  authoritative_artifacts_remain_source_of_truth: true
+  conflict_behavior: use_authoritative_artifact_and_record_handoff_exception
+
+storage:
+
+  mode: colocated_with_authoritative_artifact
+
+  locations:
+
+    inventory:
+      path: .copilot-tracking/research/handoffs/
+
+    assessment:
+      path: .copilot-tracking/reviews/handoffs/
+
+    remediation_planning:
+      path: .copilot-tracking/plans/handoffs/
+
+    assessment_report:
+      path: .copilot-tracking/plans/handoffs/
+
+    implementation:
+      path: .copilot-tracking/changes/handoffs/
+
+    review:
+      path: .copilot-tracking/reviews/handoffs/
+      
+  file_name_pattern: "{phase_order}-{phase_name}-summary.yml"
+  overwrite_behavior: create_new_version_when_source_artifact_changes
+
+required_common_sections:
+  - phase_metadata
+  - authority
+  - input_artifacts
+  - output_artifacts
+  - key_decisions
+  - unresolved_items
+  - next_phase
+
+common_contract:
+  phase_metadata:
+    required:
+      - schema_id
+      - schema_version
+      - phase
+      - phase_order
+      - assessment_run_id
+      - generated_at
+      - generation_status
+  authority:
+    required:
+      - summary_role
+      - authoritative_source_artifacts
+      - source_of_truth
+      - conflict_behavior
+  input_artifacts:
+    required: true
+  output_artifacts:
+    required: true
+  key_decisions:
+    required: true
+  unresolved_items:
+    required: true
+  next_phase:
+    required:
+      - phase
+      - required_authoritative_inputs
+      - handoff_summary_path
+
+prohibited_behavior:
+  - create_new_finding
+  - remove_or_reclassify_finding
+  - recalculate_severity
+  - recalculate_priority
+  - change_operating_scenario
+  - replace_authoritative_artifact
+  - supply_missing_source_evidence
+  - invent_architecture_context
+  - authorize_implementation
+  - modify_application_source
+
+integrity:
+  source_artifact_paths_required: true
+  source_artifact_identifiers_required_when_available: true
+  stable_ids_must_be_preserved: true
+  counts_must_reconcile_to_authoritative_artifacts: true
+  missing_values: not_available
+  checksum_or_fingerprint_recommended: true
+
+phase_requirements:
+  inventory:
+    file_name: 01-inventory-summary.yml
+    required_sections:
+      - application_profile
+      - dependency_summary
+      - repository_observed_interactions
+      - scenario_summary
+      - inventory_exceptions
+  assessment:
+    file_name: 02-assessment-summary.yml
+    required_sections:
+      - standards_loaded
+      - control_result_summary
+      - finding_summary
+      - scenario_summary
+      - evidence_summary
+  remediation_planning:
+    file_name: 03A-planning-summary.yml
+    required_sections:
+      - change_summary
+      - priority_distribution
+      - wave_distribution
+      - illustrative_code_summary
+      - targeted_discovery_summary
+  assessment_report:
+    file_name: 03B-report-summary.yml
+    required_sections:
+      - report_summary
+      - finding_rendering_summary
+      - illustrative_code_summary
+      - schema_conformance_summary
+  implementation:
+    file_name: 04-implementation-summary.yml
+    required_sections:
+      - frozen_scope_summary
+      - implementation_result_summary
+      - file_change_summary
+      - validation_summary
+  post_implementation_review:
+    file_name: 05-review-summary.yml
+    required_sections:
+      - scope_validation_summary
+      - change_review_summary
+      - finding_disposition_summary
+      - follow_up_summary
+
+validation:
+  required_checks:
+    - handoff_file_exists
+    - schema_identity_matches
+    - source_artifacts_identified
+    - counts_reconcile
+    - stable_ids_preserved
+    - unresolved_items_preserved
+    - no_new_findings_or_decisions
+    - next_phase_inputs_identified
+  status_values:
+    - passed
+    - failed
+    - partial
