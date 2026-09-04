@@ -1,0 +1,65 @@
+---
+schema_version: "1.0.0"
+document_type: application_architecture_context
+lifecycle_status: template
+---
+
+architecture_context:
+  context_id: "<application-name>-active-active-architecture"
+  context_version: "1.0.0"
+  lifecycle_status: "<draft|approved>"
+  context_owner: "<architecture-owner-or-team>"
+  approved_by: "<approver-or-not_applicable>"
+  approved_at: "<YYYY-MM-DD-or-not_applicable>"
+  application_name: "<application-name>"
+  repository_name: "<repository-name>"
+
+  deployment_model:
+    scenario: active_active
+    regions:
+      - "<region-a>"
+      - "<region-b>"
+    both_regions_serve_traffic: true
+    same_application_artifact: true
+
+  authoritative_state:
+    dependency: cosmos_db
+    api: mongodb
+    throughput_model: ru
+    role: authoritative_business_state
+    operating_model: multi_region_write
+    multi_region_writes: true
+
+  kafka_operating_model:
+    scenario: independent_regional_active_active
+    architecture_status: approved
+    scenario_policy_id: KAFKA-OPERATING-SCENARIO
+    expected_scenario_rule_id: KAFKA-SCENARIO-002
+    cluster_model: independent_regional_clusters
+    stretched_cluster: false
+    regional_processing_model: multi_active
+    normal_cluster_affinity: local_region_only
+
+  external_side_effects:
+    present: "<true|false>"
+    type: "<none|idempotent_external_service|non_idempotent_external_service>"
+
+  direct_dependency_expectations:
+    confluent_kafka: true
+    cosmos_db: true
+    azure_sql: false
+    other_application_database: false
+
+  architecture_evidence:
+    - reference_id: "ARCH-KAFKA-AA-001"
+      description: "Approved independent regional Kafka active-active architecture"
+      source: "<architecture-document-or-decision-record>"
+    - reference_id: "ARCH-COSMOS-AA-001"
+      description: "Approved Cosmos DB MongoDB RU multi-region-write architecture"
+      source: "<architecture-document-or-decision-record>"
+
+  validation_expectations:
+    repository_must_be_compatible_with_declared_scenario: true
+    scenario_policy_validation_required: true
+    repository_conflict_routes_to: architecture_governance_review
+    infrastructure_deployment_validation_in_code_assessment: false

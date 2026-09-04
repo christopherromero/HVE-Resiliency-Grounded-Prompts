@@ -1,0 +1,452 @@
+---
+schema_version: "1.0.0"
+document_type: solution_architecture_context
+lifecycle_status: template
+---
+
+solution_architecture_context:
+  metadata:
+    context_id: "<solution-name>-solution-architecture"
+    context_version: "1.0.0"
+    lifecycle_status: "<draft|review|approved|retired>"
+    solution_name: "<solution-name>"
+    solution_description: "<concise-business-and-technical-description>"
+    context_owner: "<architecture-owner-or-team>"
+    approved_by: "<architecture-review-board-or-approver>"
+    approved_at: "<YYYY-MM-DD-or-not_applicable>"
+    effective_from: "<YYYY-MM-DD>"
+    review_by: "<YYYY-MM-DD>"
+    last_updated_at: "<YYYY-MM-DD>"
+    repository_scope:
+      included_repositories: []
+      excluded_repositories: []
+    evidence_scope: supplied_solution_architecture_context
+    source_of_truth: "<architecture-document-set-or-governance-system>"
+    architecture_references:
+      - reference_id: "ARCH-SOLUTION-001"
+        title: "<architecture-reference-title>"
+        location: "<document-path-url-or-record-id>"
+        status: "<approved|draft|superseded>"
+
+  authority_and_evidence_boundary:
+    context_is_authoritative_for:
+      - approved_solution_processing_chains
+      - cross_repository_dependencies
+      - authoritative_state_ownership
+      - approved_regional_operating_models
+      - approved_kafka_scenario_declarations
+      - workload_ownership_expectations
+      - shared_service_roles
+    context_is_not_evidence_of:
+      - deployed_infrastructure_state
+      - runtime_health
+      - current_capacity
+      - current_replication_status
+      - current_failover_readiness
+      - repository_code_compliance
+      - successful_operational_testing
+    repository_evidence_remains_authoritative_for:
+      - direct_code_interactions
+      - source_configuration
+      - implemented_resiliency_behavior
+      - code_findings
+      - source_evidence
+    conflict_behavior:
+      context_repository_conflict: architecture_governance_review
+      selected_scenario_on_conflict: unresolved
+      scenario_specific_controls_on_conflict: not_assessed
+      create_code_finding_for_context_conflict: false
+      silently_override_context: false
+
+  business_context:
+    business_capabilities:
+      - capability_id: "CAP-001"
+        name: "<business-capability>"
+        description: "<description>"
+        criticality: "<mission_critical|business_critical|important|supporting>"
+        owning_team: "<team>"
+    business_continuity:
+      solution_rto: "<ISO-8601-duration-or-not_provided>"
+      solution_rpo: "<ISO-8601-duration-or-not_provided>"
+      maximum_tolerable_downtime: "<ISO-8601-duration-or-not_provided>"
+      data_loss_tolerance: "<description-or-not_provided>"
+      critical_business_periods: []
+    regulated_or_sensitive_workloads:
+      present: "<true|false>"
+      classifications: []
+      affected_services: []
+
+  regional_deployment_model:
+    operating_model: "<active_active|active_standby|mixed>"
+    primary_region: "<region-or-not_applicable>"
+    secondary_regions: []
+    region_pairs:
+      - pair_id: "REGION-PAIR-001"
+        region_a: "<region-a>"
+        region_b: "<region-b>"
+        role_model: "<both_active|primary_standby|service_specific>"
+    traffic_behavior:
+      normal_operation: "<multi_region|single_active_region|service_specific>"
+      regional_failover_mode: "<automatic|manual|hybrid|not_provided>"
+      regional_failback_mode: "<automatic|manual|hybrid|not_provided>"
+      data_plane_and_control_plane_independence: "<required|not_required|not_provided>"
+    artifact_contract:
+      same_artifact_across_regions: true
+      deployment_specific_configuration_injected: true
+      region_names_compiled_in_source: false
+
+  ingress_architecture:
+    context_status: "<provided|not_provided>"
+    ingress_paths:
+      - path_id: "INGRESS-001"
+        description: "<external-or-internal-request-path>"
+        client_type: "<internet_client|internal_client|partner|batch|other>"
+        exposure: "<external|internal|partner|mixed>"
+        components:
+          - sequence: 1
+            logical_role: "<external_global_load_balancer|internal_global_load_balancer|regional_ingress|api_gateway|service_mesh_ingress|application>"
+            implementation: "<Akamai|F5|Azure Application Gateway|Azure API Management|Istio|other>"
+            ownership: "<team-or-provider>"
+            required_for_path: true
+        target_service_ids: []
+        authentication_boundary: "<component-id-or-not_provided>"
+        tls_termination_points: []
+        traffic_selection_basis: "<health|priority|geography|manual|other|not_provided>"
+    repository_assessment_boundary:
+      assess_application_facing_contracts_only: true
+      do_not_assess_external_component_deployment: true
+      relevant_application_contracts:
+        - forwarded_headers
+        - correlation_headers
+        - authentication_claims
+        - base_paths
+        - health_endpoints
+        - redirect_and_host_behavior
+
+  application_services:
+    - service_id: "SERVICE-001"
+      service_name: "<service-name>"
+      repository_name: "<repository-name>"
+      repository_path: "<repository-root-or-not_provided>"
+      service_owner: "<team>"
+      business_capabilities: []
+      runtime:
+        language: "<language>"
+        framework: "<framework>"
+        platform: "<AKS|Azure Functions|other>"
+      deployment_model:
+        regional_model: "<active_active|active_standby|single_region|follows_solution|not_provided>"
+        normal_active_regions: []
+        standby_regions: []
+        replica_ownership: "<multi_active|single_active|request_only_multi_active|not_provided>"
+      workload_types:
+        - "<synchronous_api|kafka_producer|kafka_consumer|stream_processor|scheduled_worker|function|batch|other>"
+      direct_dependency_expectations: []
+      authoritative_state_responsibility:
+        owns_authoritative_state: "<true|false>"
+        state_store_ids: []
+      external_side_effects:
+        present: "<true|false>"
+        side_effect_ids: []
+      application_context_reference:
+        expected: "<true|false>"
+        path: "<application-context/path-or-not_applicable>"
+
+  shared_services:
+    - shared_service_id: "SHARED-001"
+      name: "<shared-service-name>"
+      service_type: "<confluent_kafka|key_vault|redis|api_management|application_gateway|event_hubs|other>"
+      logical_role: "<event_transport|secret_management|cache|rate_limiting|gateway|other>"
+      owner: "<platform-team>"
+      regional_operating_model: "<active_active|active_standby|global|regional_independent|not_provided>"
+      consumers: []
+      architecture_reference_ids: []
+      infrastructure_assumed_compliant: true
+
+  state_stores:
+    - state_store_id: "STATE-001"
+      name: "<state-store-name>"
+      technology: "<azure_sql|cosmos_db|dse_cassandra|postgresql|kafka_compacted_topic|other>"
+      owning_service_id: "<service-id>"
+      business_role: "<authoritative_business_state|transactional_system_of_record|durable_operational_state|failure_queue|cache|reporting|other>"
+      authoritative: "<true|false>"
+      api_or_engine: "<mongodb|nosql|sql|cassandra|not_applicable>"
+      throughput_model: "<ru|vcore|provisioned|serverless|not_applicable>"
+      regional_operating_model: "<multi_region_write|active_standby|regional_independent|single_region|not_provided>"
+      multi_region_writes: "<true|false|not_applicable|not_provided>"
+      conflict_model: "<last_write_wins|custom|single_writer|application_managed|not_provided>"
+      failover_model: "<automatic|manual|hybrid|not_provided>"
+      architecture_reference_ids: []
+
+  event_streams:
+    - stream_id: "STREAM-001"
+      logical_name: "<event-stream-or-topic-name>"
+      platform: "<confluent_kafka|event_hubs|other>"
+      producing_service_ids: []
+      consuming_service_ids: []
+      business_event_types: []
+      event_identity_contract:
+        stable_event_id_required: true
+        stable_business_operation_id_required: "<true|false>"
+        correlation_id_required: true
+      ordering_contract:
+        scope: "<partition|business_key|regional_cluster|global_external_sequence|none>"
+        partition_key: "<field-or-not_provided>"
+        global_ordering_assumed: false
+      delivery_contract:
+        expected_semantics: at_least_once
+        consumer_idempotency_required: true
+        replay_supported: true
+        dead_letter_required: true
+      data_classification: "<classification-or-not_provided>"
+
+  processing_chains:
+    - chain_id: "CHAIN-001"
+      name: "<business-processing-chain>"
+      description: "<end-to-end-flow-description>"
+      architecture_status: "<approved|draft|retired>"
+      business_capability_ids: []
+      entry_points: []
+      steps:
+        - sequence: 1
+          component_type: "<service|event_stream|state_store|external_service|function|gateway>"
+          component_id: "<referenced-id>"
+          interaction: "<synchronous_http|kafka_produce|kafka_consume|database_read|database_write|external_side_effect|other>"
+          role: "<request_processor|event_transport|event_processor|authoritative_state|supporting_state|external_effect>"
+          conditional: false
+          condition: "<condition-or-not_applicable>"
+      authoritative_state:
+        present: "<true|false>"
+        state_store_ids: []
+        owning_service_ids: []
+      external_side_effects:
+        present: "<true|false>"
+        side_effect_ids: []
+      regional_ownership:
+        model: "<multi_active|single_active|service_specific|unresolved>"
+        owning_service_ids: []
+        aligned_state_store_ids: []
+      failure_contract:
+        duplicate_execution_possible: true
+        idempotency_required: true
+        reconciliation_required: "<true|false>"
+        compensation_required: "<true|false>"
+
+  external_side_effects:
+    - side_effect_id: "EFFECT-001"
+      name: "<side-effect-name>"
+      initiating_service_ids: []
+      target_system: "<external-system>"
+      effect_type: "<payment|email|sms|inventory_commit|partner_call|other>"
+      reversible: "<true|false|unknown>"
+      idempotency_support: "<native|application_managed|none|unknown>"
+      stable_operation_identity_required: true
+      status_lookup_supported: "<true|false|unknown>"
+      reconciliation_required: "<true|false>"
+      regional_ownership_model: "<multi_active|single_active|not_applicable|unresolved>"
+
+  kafka_architecture:
+    context_status: "<provided|not_provided>"
+    policy_id: KAFKA-OPERATING-SCENARIO
+    policy_version: "3.1.0"
+    stretched_cluster_supported: false
+    default_scenario: unresolved
+    service_scenarios:
+      - service_id: "SERVICE-001"
+        scenario: "<active_standby|independent_regional_active_active|database_independent_kafka|unresolved>"
+        scenario_rule_id: "<KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004>"
+        declaration_status: "<approved|provisional|unresolved>"
+        rationale: "<architecture-rationale>"
+        processing_chain_ids: []
+        cluster_model:
+          type: "<primary_and_standby_clusters|independent_regional_clusters|unknown>"
+          stretched_cluster: false
+        processing_model: "<stateless_producer|stateless_consumer|stream_transformer|topic_bridge|external_side_effect_processor|stateful_stream_processor|mixed|unknown>"
+        regional_processing_model: "<multi_active|single_active|unresolved>"
+        authoritative_state_store_ids: []
+        external_side_effect_ids: []
+        client_affinity: "<local_region_only|active_cluster_only|not_provided>"
+        architecture_confirmation_required: false
+        architecture_reference_ids: []
+
+  workload_ownership:
+    ownership_models:
+      - ownership_id: "OWNERSHIP-001"
+        name: "<ownership-model-name>"
+        applicable_service_ids: []
+        applicable_processing_chain_ids: []
+        model: "<multi_active|single_active>"
+        activation_default: "<active|inactive>"
+        activation_source: "<deployment_property|lease|database_primary_role|manual_promotion|other>"
+        fencing_required: "<true|false>"
+        ownership_epoch_required: "<true|false>"
+        old_active_shutdown_required: "<true|false>"
+        both_active_detection_required: "<true|false>"
+        both_inactive_detection_required: "<true|false>"
+        applies_to:
+          kafka_producers: "<true|false>"
+          kafka_consumers: "<true|false>"
+          schedulers: "<true|false>"
+          outbox_relays: "<true|false>"
+          external_side_effect_processors: "<true|false>"
+
+  failover_and_failback:
+    solution_failover_contract:
+      defined: "<true|false>"
+      coordination_model: "<automatic|manual|hybrid|service_specific>"
+      ordered_steps: []
+      traffic_enablement_gate: "<description-or-not_provided>"
+      data_role_verification_required: true
+      workload_ownership_verification_required: true
+      kafka_readiness_verification_required: "<true|false|not_applicable>"
+      old_active_fencing_required: "<true|false>"
+    solution_failback_contract:
+      defined: "<true|false>"
+      ordered_steps: []
+      reverse_replication_verification_required: "<true|false|not_applicable>"
+      duplicate_replay_protection_required: true
+      stale_ownership_prevention_required: true
+    application_assessment_boundary:
+      assess_code_compatibility: true
+      assess_deployed_failover_automation: false
+      assess_platform_replication_state: false
+
+  dependency_criticality:
+    - dependency_id: "<service-state-stream-or-shared-service-id>"
+      consuming_service_id: "<service-id>"
+      criticality: "<critical|degradable|optional>"
+      critical_capability: "<capability-or-not_applicable>"
+      readiness_participation: "<required|excluded|conditional|unresolved>"
+      liveness_participation: prohibited
+      degraded_behavior: "<description-or-not_provided>"
+      timeout_budget: "<duration-or-not_provided>"
+      retry_allowed: "<true|false|conditional>"
+      idempotency_precondition: "<description-or-not_applicable>"
+
+  security_and_identity_context:
+    workload_identity_model: "<managed_identity|workload_identity|service_principal|mixed|not_provided>"
+    authentication_boundaries: []
+    authorization_ownership: "<team-or-not_provided>"
+    secret_management_service_ids: []
+    management_endpoint_access_model: "<private|authenticated|isolated_port|not_provided>"
+    data_classification_by_service: []
+
+  observability_contract:
+    required_dimensions:
+      - application
+      - service
+      - region
+      - zone
+      - instance
+      - environment
+    required_correlation:
+      inbound_correlation_id: true
+      downstream_propagation: true
+      event_header_propagation: true
+      log_context_propagation: true
+    required_workload_signals:
+      - processing_success
+      - processing_failure
+      - processing_skipped
+      - last_success_time
+      - backlog_or_lag
+      - ownership_state
+      - readiness_state
+    monitoring_owner: "<team>"
+
+  test_and_validation_expectations:
+    cross_service_tests: []
+    regional_scenario_tests:
+      - "<regional-failure-test>"
+      - "<promotion-test>"
+      - "<failback-test>"
+      - "<duplicate-replay-test>"
+    contract_tests:
+      - event_schema_compatibility
+      - stable_event_identity
+      - idempotent_consumer_behavior
+    architecture_confirmation_tests: []
+    infrastructure_validation_outside_code_assessment: true
+
+  architecture_decisions:
+    - decision_id: "ADR-001"
+      title: "<decision-title>"
+      status: "<proposed|approved|superseded|rejected>"
+      decision: "<approved-decision>"
+      rationale: "<rationale>"
+      affected_service_ids: []
+      affected_processing_chain_ids: []
+      affected_state_store_ids: []
+      affected_kafka_scenarios: []
+      approved_by: "<approver>"
+      approved_at: "<YYYY-MM-DD>"
+      reference: "<ADR-path-or-record-id>"
+
+  external_evidence_requirements:
+    - evidence_id: "EXT-001"
+      title: "<required-external-evidence>"
+      owner: "<team>"
+      needed_to_validate: "<assessment-or-architecture-question>"
+      affected_service_ids: []
+      affected_processing_chain_ids: []
+      affected_controls: []
+      affected_findings: []
+      status: "<open|provided|accepted_risk|not_applicable>"
+      source_reference: "<path-or-not_available>"
+
+  known_uncertainties:
+    - uncertainty_id: "UNC-001"
+      description: "<uncertainty>"
+      impact: "<impact>"
+      resolution_owner: "<team>"
+      resolution_action: "<action>"
+      status: "<open|resolved|accepted>"
+
+  governance_validation:
+    required_checks:
+      - context_id_present
+      - context_version_present
+      - lifecycle_status_valid
+      - context_owner_present
+      - referenced_ids_resolve
+      - processing_chain_sequence_unique
+      - authoritative_state_ownership_explicit
+      - kafka_scenarios_use_allowed_values
+      - stretched_cluster_false
+      - repository_and_context_evidence_separated
+      - infrastructure_claims_not_inferred_from_repository
+      - conflicts_route_to_architecture_governance
+    validation_status: "<not_validated|passed|failed>"
+    validation_errors: []
+
+  assessment_consumption_contract:
+    prompt_1:
+      use_for:
+        - approved_cross_repository_processing_chains
+        - transitive_authoritative_state
+        - approved_kafka_scenario_declaration
+        - external_side_effect_classification
+      do_not_use_as:
+        - repository_source_evidence
+        - proof_of_deployed_infrastructure
+    prompt_2:
+      use_for:
+        - scenario_applicability
+        - conditional_finding_context
+        - impact_context
+        - external_evidence_requirements
+      code_findings_require_repository_evidence: true
+    prompt_3a:
+      preserve_context_decisions: true
+      do_not_redesign_architecture: true
+      unresolved_decisions_become_targeted_discovery: true
+    prompt_3b:
+      report_context_separately_from_repository_observations: true
+      identify_context_id_and_version: true
+      identify_unconfirmed_deployment_facts: true
+    prompt_4:
+      architecture_changes_require_separate_approval: true
+      context_does_not_authorize_source_changes: true
+    prompt_5:
+      validate_implementation_against_approved_context: true
+      do_not_recalculate_architecture: true

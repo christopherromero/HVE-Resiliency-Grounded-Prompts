@@ -122,7 +122,7 @@ springboot-active-active-inventory-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/2026-09-01/
 springboot-active-active-inventory-research-review.md
 PLAN_ARTIFACT=.copilot-tracking/plans/2026-09-01/
-springboot-active-active-authoritative-remediation-plan.instructions.md
+springboot-active-active-remediation-plan.instructions.md
 
 APPROVED_PRIORITIES=P0,P1
 APPROVED_WAVES=

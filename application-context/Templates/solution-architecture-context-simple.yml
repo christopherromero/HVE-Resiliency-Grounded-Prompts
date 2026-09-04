@@ -1,0 +1,103 @@
+---
+schema_version: "1.0.0"
+document_type: solution_architecture_context
+lifecycle_status: approved
+---
+
+solution_context:
+
+  solution_name: Ecommerce Platform
+
+  context_owner: Cloud Architecture Team
+
+  approved_at: "2026-09-03"
+
+  deployment_model:
+
+    regions:
+      - westus2
+      - westus
+
+    operating_model: active_active
+
+  shared_services:
+
+    kafka:
+      provider: Confluent
+
+    keyvault:
+      provider: Azure Key Vault
+
+    redis:
+      provider: Azure Managed Redis
+
+  applications:
+
+    - name: api-gateway
+
+    - name: order-service
+
+    - name: payment-service
+
+    - name: inventory-service
+
+    - name: notification-service
+
+  authoritative_state:
+
+    - service: payment-service
+      dependency: azure_sql
+      operating_model: active_standby
+
+    - service: inventory-service
+      dependency: cosmos_db
+      operating_model: multi_region_write
+
+  processing_chains:
+
+    - name: Order Processing
+
+      path:
+        - order-service
+        - kafka
+        - notification-service
+
+      authoritative_state:
+        dependency: azure_sql
+
+    - name: Inventory Processing
+
+      path:
+        - inventory-service
+        - cosmos_db
+
+      authoritative_state:
+        dependency: cosmos_db
+
+  kafka_scenarios:
+
+    payment-service:
+      scenario: active_standby
+
+    order-service:
+      scenario: active_standby
+
+    notification-service:
+      scenario: active_standby
+
+    inventory-service:
+      scenario: independent_regional_active_active
+
+  assumptions:
+
+    - Shared services comply with enterprise standards.
+    - Infrastructure deployment is out of scope for repository assessments.
+    - Kafka is never deployed as a stretched cluster.
+
+  external_evidence_required:
+
+    - Kafka cluster topology
+    - Cluster Linking configuration
+    - Azure SQL Failover Group deployment
+    - Cosmos DB multi-region-write configuration
+``
