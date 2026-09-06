@@ -1,4 +1,4 @@
-schema_version: "1.0.0"
+schema_version: "1.2.0"
 document_type: phase_handoff_schema
 schema_id: ASSESSMENT-PHASE-HANDOFF
 lifecycle_status: active
@@ -160,3 +160,20 @@ validation:
     - passed
     - failed
     - partial
+
+priority_filtered_reporting:
+  preserve_across_report_handoff:
+    - selection_mode
+    - included_priorities
+    - omitted_priorities
+    - included_finding_ids
+    - omitted_finding_ids
+    - included_change_ids
+    - omitted_change_ids
+    - selection_frozen
+  assessment_report_required_section:
+    - report_finding_selection_summary
+  prohibited_behavior:
+    - recalculate_priorities_for_filtered_view
+    - renumber_findings_for_filtered_view
+    - imply_omitted_findings_do_not_exist

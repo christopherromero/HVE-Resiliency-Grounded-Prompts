@@ -1,0 +1,41 @@
+---
+schema_version: "1.0.0"
+document_type: assessment_scope_context
+lifecycle_status: active
+context_id: default-assessment-scope
+context_version: "1.0.0"
+owner: Cloud Architecture Team
+---
+assessment_scope:
+  application_code: {status: enabled}
+  application_configuration: {status: enabled}
+  container_build: {status: disabled}
+  cicd_pipeline: {status: disabled}
+  deployment_configuration: {status: disabled}
+  infrastructure_as_code: {status: disabled}
+  deployed_infrastructure: {status: disabled}
+scope_rules:
+  repository_owned_only: true
+  externally_owned_assets: evidence_gap_only
+  missing_context_behavior: use_governed_defaults
+  unknown_ownership_behavior: not_assessed
+  deployed_infrastructure_findings_allowed: false
+  pcf_findings_allowed: false
+report_preferences:
+  finding_selection:
+    mode: priority_filter
+    include_priorities:
+      - P0
+      - P1
+    include_conditional_findings: true
+    include_verified_controls: false
+    include_evidence_gaps: true
+    excluded_priority_behavior: omit_from_filtered_report
+  testing_output:
+    mode: hidden
+    show_test_findings: true
+    show_test_code: false
+    show_validation_commands: false
+    show_acceptance_criteria: true
+    show_validation_evidence: false
+    include_consolidated_validation_strategy: true

@@ -1,0 +1,71 @@
+# Assessment Domain Standard Registry Additions
+# Merge this block at the top level of grounding/registry/dependency-standard-registry.yml.
+
+assessment_domain_standards:
+  cicd-pipeline-resiliency:
+    display_name: CI/CD Pipeline Resiliency
+    grounding_file: grounding/dependencies/cicd-pipeline-resiliency.md
+    standard_id: CICD-PIPELINE-RESILIENCY
+    version: "1.0.0"
+    assessment_domain: cicd_pipeline
+    activate_when:
+      scope_status: enabled
+    repository_patterns:
+      - .github/workflows/*.yml
+      - .github/workflows/*.yaml
+      - azure-pipelines.yml
+      - azure-pipelines.yaml
+      - pipelines/*.yml
+      - pipelines/*.yaml
+
+  container-build-resiliency:
+    display_name: Container Build Resiliency
+    grounding_file: grounding/dependencies/container-build-resiliency.md
+    standard_id: CONTAINER-BUILD-RESILIENCY
+    version: "1.0.0"
+    assessment_domain: container_build
+    activate_when:
+      scope_status: enabled
+    repository_patterns:
+      - Dockerfile
+      - Dockerfile.*
+      - docker/*.Dockerfile
+      - container/*.Dockerfile
+
+  kubernetes-deployment-resiliency:
+    display_name: Kubernetes Deployment Resiliency
+    grounding_file: grounding/dependencies/kubernetes-deployment-resiliency.md
+    standard_id: KUBERNETES-DEPLOYMENT-RESILIENCY
+    version: "1.0.0"
+    assessment_domain: deployment_configuration
+    activate_when:
+      scope_status: enabled
+    repository_patterns:
+      - deployment*.yml
+      - deployment*.yaml
+      - statefulset*.yml
+      - statefulset*.yaml
+      - service*.yml
+      - service*.yaml
+      - k8s/**/*.yml
+      - k8s/**/*.yaml
+      - manifests/**/*.yml
+      - manifests/**/*.yaml
+
+  helm-kustomize-resiliency:
+    display_name: Helm and Kustomize Resiliency
+    grounding_file: grounding/dependencies/helm-kustomize-resiliency.md
+    standard_id: HELM-KUSTOMIZE-RESILIENCY
+    version: "1.0.0"
+    assessment_domain: deployment_configuration
+    activate_when:
+      scope_status: enabled
+    repository_patterns:
+      - Chart.yaml
+      - values*.yml
+      - values*.yaml
+      - templates/**/*.yaml
+      - kustomization.yml
+      - kustomization.yaml
+      - overlays/**/*.yml
+      - overlays/**/*.yaml

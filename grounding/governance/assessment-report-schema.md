@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.2.0"
+  schema_version: "1.4.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -397,3 +397,42 @@ schema_conformance:
 ### Kafka scenario reporting
 
 When Kafka is applicable, Assessment Overview must include scenario, source, policy version/rule, validation status, architecture confirmation, processing model, regional processing model, external side effects, and Kafka-backed/local state. Allowed scenarios: `active_standby`, `independent_regional_active_active`, `database_independent_kafka`, and `unresolved`. Database-independent must not be presented as automatically stateless or multi-active.
+
+### Priority-filtered report views
+
+The report may be rendered as a priority-filtered view when `report_preferences.finding_selection.mode` is `priority_filter`.
+
+Rules:
+- `include_priorities` may contain only `P0`, `P1`, `P2`, and `P3` and must contain at least one unique value.
+- Filtering is a presentation operation only. It must not modify Step 2 findings, Step 3A priorities, finding IDs, change IDs, or authoritative artifacts.
+- Detailed recommendation sections, Summary Findings, Full Finding Matrix, and Implementation Roadmap must include only findings and changes mapped to the selected priorities.
+- Cross-references to excluded findings must remain identifiable as omitted references and must not be silently renumbered or reassigned.
+- Display IDs must remain deterministic from the complete authoritative finding set. Do not renumber selected findings merely because other priorities are omitted.
+- Evidence gaps and verified controls follow their independent inclusion preferences. They are not selected by remediation priority unless an authoritative priority exists.
+- The report title and metadata must identify the document as a filtered view.
+- Assessment Overview must list included priorities, omitted priorities, context path/version, and the authoritative Step 2 and Step 3A artifact paths.
+- The report must state that omitted priorities remain in the authoritative assessment and remediation plan.
+- Filtered counts must reconcile to filtered sections and the filtered Full Finding Matrix. Do not label filtered counts as total assessment counts.
+- A filtered report must not claim full-schema coverage of omitted priorities. Schema conformance evaluates the selected report scope.
+
+Required metadata:
+```yaml
+report_scope:
+  selection_mode: priority_filter
+  included_priorities: [P0, P1]
+  omitted_priorities: [P2, P3]
+  filtered_view: true
+  authoritative_findings_changed: false
+  priorities_recalculated: false
+```
+
+Add these conformance fields:
+```yaml
+priority_filter_applied: true
+included_priorities_valid: true
+omitted_priorities_declared: true
+filtered_summary_counts_reconcile: true
+filtered_matrix_reconciles: true
+filtered_roadmap_reconciles: true
+excluded_findings_renumbered: false
+```

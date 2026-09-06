@@ -97,7 +97,7 @@ Before generating the report, verify that the schema contains:
 ```yaml
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.2.0"
+  schema_version: "1.4.0"
   lifecycle_status: active
 ```
 
@@ -235,7 +235,7 @@ At the beginning of the report, include the schema identity in an HTML comment:
 <!--
 report_governance:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.2.0"
+  schema_version: "1.4.0"
   schema_path: grounding/governance/assessment-report-schema.md
   schema_validation: passed
   generated_by_phase: Step 3B
@@ -682,7 +682,7 @@ Before completing, add this validation record to the report's final HTML comment
 ```yaml
 schema_conformance:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.2.0"
+  schema_version: "1.4.0"
   required_sections_present: true
   required_section_order_valid: true
   required_finding_fields_present: true
@@ -860,4 +860,55 @@ Report only:
 - Confirmation that no application source, configuration, test, deployment, or infrastructure file was modified
 - Confirmation that Step 3B generated the report directly and Task Implementor was not used
 
+## Priority-Filtered Report Generation
 
+Read `report_preferences.finding_selection` from `ASSESSMENT_SCOPE_CONTEXT`. If absent, use `all_priorities` and include P0 through P3.
+
+### Selection algorithm
+
+1. Validate `mode` and `include_priorities` against `assessment-scope-schema.yml`.
+2. Read all authoritative Step 2 findings and Step 3A mappings before filtering.
+3. Resolve every included priority to exact finding IDs and change IDs.
+4. Freeze the report selection before rendering.
+5. Render detailed recommendations, filtered summary counts, Full Finding Matrix, and roadmap from the frozen selection.
+6. Do not modify or regenerate IDs, priorities, severity, status, category, evidence, or change mappings.
+7. Preserve cross-references to excluded findings as `Not included in this priority-filtered report`.
+
+Required machine-readable record:
+```yaml
+report_finding_selection:
+  mode: priority_filter
+  requested_priorities:
+    - P0
+    - P1
+  included_priorities:
+    - P0
+    - P1
+  omitted_priorities:
+    - P2
+    - P3
+  included_finding_ids: []
+  omitted_finding_ids: []
+  included_change_ids: []
+  omitted_change_ids: []
+  selection_frozen: true
+  authoritative_findings_changed: false
+  priorities_recalculated: false
+```
+
+### Rendering requirements
+
+- Title a P0/P1 view `Application Resiliency Assessment: Critical and High-Priority Findings`.
+- Add a prominent `Report Scope` subsection in Assessment Overview.
+- Label summary counts `Filtered Findings Summary`.
+- Include only selected findings in detailed recommendation sections and the Full Finding Matrix.
+- Include only selected changes in roadmap priority, wave, and change-index tables.
+- Do not render empty excluded priority sections.
+- State where the authoritative full assessment and plan are located.
+- Apply testing-output preferences after priority selection.
+- If `include_conditional_findings` is false, omit conditional findings from narrative and matrix, declare the omission, and preserve them in the authoritative Step 2 artifact.
+- `include_verified_controls` and `include_evidence_gaps` remain independent of priority filtering.
+
+### Conformance and handoff
+
+Add the selected and omitted priority lists, finding/change counts, and frozen selection record to the final schema-conformance comment and `03B-report-summary.yml`. Validate that filtered summary, matrix, roadmap, and detailed sections reconcile exactly. A mismatch causes report conformance failure.
