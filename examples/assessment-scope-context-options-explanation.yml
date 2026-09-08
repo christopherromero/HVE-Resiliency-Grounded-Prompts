@@ -1,0 +1,203 @@
+---
+schema_version: "1.0.0"
+document_type: assessment_scope_context
+lifecycle_status: active
+context_id: "<application-name>-assessment-scope"
+context_version: "1.0.0"
+owner: "<architecture-owner-or-team>"
+approved_by: "<approver-or-not_applicable>"
+approved_at: "<YYYY-MM-DD-or-not_applicable>"
+---
+
+assessment_scope:
+
+  # Allowed: enabled | disabled
+  application_code:
+    status: enabled
+
+  # Allowed: enabled | disabled
+  application_configuration:
+    status: enabled
+
+  # Dockerfiles and repository-owned container build definitions.
+  # Allowed: enabled | disabled
+  container_build:
+    status: disabled
+
+  # GitHub Actions, Azure Pipelines, and repository-owned release workflows.
+  # Allowed: enabled | disabled
+  cicd_pipeline:
+    status: disabled
+
+  # Helm, Kustomize, Kubernetes manifests, and deployment scripts.
+  # Allowed: enabled | disabled
+  deployment_configuration:
+    status: disabled
+
+  # Terraform, Bicep, or other repository-owned IaC.
+  # Allowed:
+  #   disabled
+  #   inventory_only
+  #   findings_enabled
+  infrastructure_as_code:
+    status: disabled
+
+  # Deployed infrastructure findings are not supported by the
+  # repository code-assessment workflow.
+  # Allowed: disabled
+  deployed_infrastructure:
+    status: disabled
+
+
+scope_rules:
+
+  # Require the assessed artifact to be owned by this repository
+  # before generating a finding.
+  # Allowed: true | false
+  # Recommended: true
+  repository_owned_only: true
+
+  # Behavior for pipeline templates, manifests, overlays, or other
+  # artifacts owned outside the assessed repository.
+  # Allowed:
+  #   evidence_gap_only
+  #   not_assessed
+  # Recommended: evidence_gap_only
+  externally_owned_assets: evidence_gap_only
+
+  # Behavior when this context file is absent.
+  # Allowed:
+  #   use_governed_defaults
+  #   stop_and_report_context_required
+  # Recommended: use_governed_defaults
+  missing_context_behavior: use_governed_defaults
+
+  # Behavior when artifact ownership cannot be established.
+  # Allowed:
+  #   not_assessed
+  #   evidence_gap_only
+  # Recommended: not_assessed
+  unknown_ownership_behavior: not_assessed
+
+  # Deployed infrastructure findings remain prohibited.
+  # Allowed: false
+  deployed_infrastructure_findings_allowed: false
+
+  # PCF and its aliases remain excluded.
+  # Allowed: false
+  pcf_findings_allowed: false
+
+
+report_preferences:
+
+  finding_selection:
+
+    # Allowed:
+    #   all_priorities
+    #   priority_filter
+    mode: priority_filter
+
+    # Allowed values:
+    #   P0
+    #   P1
+    #   P2
+    #   P3
+    #
+    # At least one priority is required when mode is priority_filter.
+    # Values must be unique.
+    include_priorities:
+      - P0
+      - P1
+
+    # Include conditional findings when their priority is selected.
+    # Allowed: true | false
+    include_conditional_findings: true
+
+    # Include compliant, evidence-backed controls in the report.
+    # Allowed: true | false
+    include_verified_controls: false
+
+    # Include externally owned or unavailable evidence in the
+    # Repository and IaC Evidence Gap Analysis section.
+    # Allowed: true | false
+    include_evidence_gaps: true
+
+    # Behavior for findings whose priorities are not selected.
+    # Allowed:
+    #   omit_from_filtered_report
+    #   summary_only
+    #
+    # omit_from_filtered_report:
+    #   Exclude from detailed findings, filtered matrix, and roadmap.
+    #
+    # summary_only:
+    #   Mention omitted-priority counts without rendering findings.
+    excluded_priority_behavior: omit_from_filtered_report
+
+
+  testing_output:
+
+    # Allowed:
+    #   full
+    #   summary
+    #   roadmap_only
+    #   hidden
+    #
+    # full:
+    #   Show testing and validation details within each finding.
+    #
+    # summary:
+    #   Show concise validation intent within each finding and create
+    #   one consolidated Validation Strategy in the roadmap.
+    #
+    # roadmap_only:
+    #   Suppress per-finding testing details and show validation only
+    #   in the Implementation Roadmap.
+    #
+    # hidden:
+    #   Suppress testing and validation details from the report.
+    #   Details remain authoritative in the Step 3A plan.
+    mode: summary
+
+    # Include findings whose primary subject is missing or inadequate
+    # testing, such as APP-AA-018.
+    #
+    # When false, testing findings must remain in the authoritative
+    # Step 2 review and Step 3A plan. The filtered report must disclose
+    # that testing findings were omitted.
+    #
+    # Allowed: true | false
+    show_test_findings: true
+
+    # Render illustrative JUnit, Mockito, WireMock, Testcontainers,
+    # pipeline-test, or other proposed test code from Step 3A.
+    #
+    # Normally effective only with mode: full.
+    # Allowed: true | false
+    show_test_code: false
+
+    # Render commands such as Maven, Gradle, Helm, Kustomize,
+    # Docker, or pipeline validation commands.
+    #
+    # Allowed: true | false
+    show_validation_commands: false
+
+    # Render the acceptance criteria defined by Step 3A.
+    #
+    # Allowed: true | false
+    show_acceptance_criteria: true
+
+    # Render validation evidence details from authoritative artifacts.
+    #
+    # Usually most useful after implementation. For a pre-implementation
+    # assessment report, this will often be false.
+    #
+    # Allowed: true | false
+    show_validation_evidence: false
+
+    # Create a consolidated Validation Strategy subsection under the
+    # Implementation Roadmap.
+    #
+    # Recommended for summary and roadmap_only modes.
+    # Allowed: true | false
+    include_consolidated_validation_strategy: true
