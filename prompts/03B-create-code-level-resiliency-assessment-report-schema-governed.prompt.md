@@ -838,7 +838,7 @@ This phase is complete only when:
 5. Summary counts match the Full Finding Matrix.
 6. No application source, configuration, test, deployment, or infrastructure file was modified.
 7. Report generation was not delegated to Task Implementor.
-8. Verify that one compact handoff summary exists under `.copilot-tracking/handoffs/`.
+8. Verify that one compact handoff summary exists under `.copilot-tracking/plans/handoffs/`.
 
 Do not report successful completion if only a report-generation plan, placeholder, shell, or backlog item was created.
 

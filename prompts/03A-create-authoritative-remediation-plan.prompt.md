@@ -705,7 +705,7 @@ Before completing:
 18. Verify no infrastructure or PCF remediation was added.
 19. Verify priority and wave indexes contain every change exactly once in each applicable index.
 20. Verify both Step 3B and Step 4 handoff contracts are present.
-21. Verify that one compact handoff summary exists under `.copilot-tracking/handoffs/`.
+21. Verify that one compact handoff summary exists under `.copilot-tracking/plans/handoffs/`.
 22. Verify targeted discovery is assigned per target, not automatically per change.
 23. Verify an unresolved adapter or technology choice does not suppress
   repository interfaces, configuration contracts, service boundaries,

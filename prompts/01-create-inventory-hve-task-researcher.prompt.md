@@ -534,5 +534,5 @@ Before completing:
 4. Verify no findings, recommendations, severity ratings, scores, or implementation plans appear.
 5. Verify PCF references are informational only.
 6. Verify the handoff block prohibits re-inventory.
-7. Verify that one compact handoff summary exists under `.copilot-tracking/handoffs/`.
+7. Verify that one compact handoff summary exists under `.copilot-tracking/research/handoffs/`.
 8. Report the exact artifact path, assessment run ID, files examined, confirmed dependencies, and unresolved uncertainties.
