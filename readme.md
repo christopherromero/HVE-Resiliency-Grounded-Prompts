@@ -1,8 +1,11 @@
+README - 09/09/2026
+
 # Here is the process for setting up your workstation
 
 There is a ZIP that has the folder structure and the required files
 
 /Assessment
+ - .copilot
  - .copilot.tracking
     - research
         - handoffs
@@ -15,24 +18,25 @@ There is a ZIP that has the folder structure and the required files
         - reports
     - details
     - changes
-
+      - handoffs
  - .github
     - instructions
     - modernize
+    - prompts
  - .vscode
  - application-context
     - templates
+ - examples
  - grounding
-    - archive
     - dependencies
     - exclusions
     - governance
     - master
     - registry
+    - standards
  - prompts
-    - archive
  - source/customer-app (repo source goes here)
-execution prompts.md
+readme.md
 
 
 1) Create a directory called assessment
@@ -48,9 +52,11 @@ execution prompts.md
 
 1) Copy, clone, the repository code into the customer-app folder
 2) Open assessment-context/assessment-context.md and change the application name at the top to the name of the repo you are assessing.
-3) Prepare the Solution-architecture-context and the application-architecture-context files, see below
+3) Prepare the application-architecture-context files, See the guide in the examples folder 
 
 ### Setting the scope
+
+refer to examples/assessment-scope-context-options-explanation.yml
 
 You need to configure what options you want in the inventory (assessment scope) and in the assessment report (report preferences)
 
@@ -68,6 +74,8 @@ There are the testing output
 note look in /examples for some example scope configurations
 
 The following example has app code/configuration and CICD included in the inventory, blocks deployed infrastructure and PCF findings, only includes P0-P1 findings, and hides all test and validation infomation.
+
+For details on allowed options for each setting look at examples/assessment-scope-context-options-explanation.yml 
 
 ```
 schema_version: "1.0.0"
@@ -112,7 +120,7 @@ report_preferences:
     include_consolidated_validation_strategy: false
 ```
 
-## Optional - recommend to not the solution and application context unless the research cannot determine the configuration of DB and Kafka from the inventory
+## Optional - recommend to not the solution context unless the application is provided with all microservices in a single repository
 
 ### Setting the Solution Architecture Context
 
@@ -121,6 +129,8 @@ solution-architecture-context.md - this allows you to specify the overall applic
 There is only one template for the solution architecture, so just copy it tot he application-context folder and rename it to solution-application-context.md and edit it.
 
 ### Setting the repo architecture context
+
+refer to examples/application-architecture-context-v2-guide.yml for details
 
 application-architecture-context.md - this allows you to specify the context of the repo you are assessing.
 
@@ -134,17 +144,28 @@ NOTE: There are simple form templates and then detailed form templates, use the 
 
 Note that each Step uses a HVE Agent that is different
 
-1) Open the Execution Prompts.md file in the folder root, these are the steps you will execute
-2) Copy the step 1 instructions from Follow: to the end of the step instructions
-3) Set your agent to Task Reasearcher
-4) Set the model to Claude Opus 5.0
-5) If you are using MS EMU license, Enable Autopilot so you do not have to approve anything (status bar under the agent selection)
-6) Paste the step 1 prompt into the chat window and run it,
-7) The output files have the todays date in the name, you must ensure the instructions are updated with todays date in the paths. For example Step 1 produces the inventory file INVENTORY_ARTIFACT=.copilot-tracking/research/2026-09-02/springboot-active-active-inventory-research.md, you must make sure that Step 2, 3A, 3B all have the correct filename before you run those instructions, best to edit them all now.
-8) When Step 1 Prompt is done, run /clear, reenable opus as the model, reenable autopilot, Change agent to Task Reviewer , run the step 2 instructions
-9) When Step 2 prompt is done, run /clear, reenable opus as the model, reenable autopilot, Change agent to Task Planner, run step 3A instructions
-10) When Step 3A is done, run /clear, reenable opus as the model, reneable autopilot, leave agent to Task Planner, run step 3B instructions
-11) When step 3B is done, the assessment report should be created. Assessment report will be created under .copilot-tracking/plans/reports and have the name code-level-resiliency-assessment.md
+1) To execute step one prompt
+2) Set your agent to Task Reasearcher
+3) Set the model to Claude Opus 5.0
+4) If you are using MS EMU license, Enable Allow All so you do not have to approve anything (status bar under the agent selection)
+5) Paste the following prompt into the chat window and modify it to todays date
+
+/01-inventory runDate=2026-09-09 sourceroot=source/customer-app taskSlug=springboot-active-active-inventory
+
+6) The output files have the todays date in the name, you must ensure the instructions are updated with todays date in the paths. For example Step 1 produces the inventory file INVENTORY_ARTIFACT=.copilot-tracking/research/2026-09-02/springboot-active-active-inventory-research.md
+7) When Step 1 Prompt is done, Click the KEEP button, run /clear, reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Reviewer , run the step 2 prompt
+
+/02-findings  runDate=2026-09-09  taskSlug=springboot-active-active-inventory
+
+8) When Step 2 prompt is done, click the KEEP button, run /clear, reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Planner, run step 3A prompt
+
+/03A-plan runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
+
+9) When Step 3A is done, click the KEEP button, run /clear, reenable opus 5 as the model, reneable Allow ALL, leave agent to Task Planner, run step 3B prompt
+
+/03B-report runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
+
+10) When step 3B is done, the assessment report should be created. Assessment report will be created under .copilot-tracking/plans/reports and have the name code-level-resiliency-assessment.md
 
 Summary of each step work will also be created and stored in the handoffs subfolder of each agent folder, but full details are in the normal locations
 
