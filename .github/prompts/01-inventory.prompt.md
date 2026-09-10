@@ -36,3 +36,7 @@ Create the authoritative inventory using `TASK_SLUG`. Record enabled and disable
 Do not generate findings, recommendations, severity, priority, compliance status, readiness scores, or implementation plans.
 
 Create the compact Step 1 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted by agent write boundaries. Report the exact inventory and handoff paths. Verify the inventory was written to `EXPECTED_INVENTORY_ARTIFACT`; if the HVE runtime chooses a different actual path, report that exact path and do not fabricate conformance.
+
+## Repository-agnostic snapshot rule
+
+Capture an assessment snapshot classification. Git revision is optional; workspace snapshots, uploaded archives, source drops, and unknown-with-limitations are supported.

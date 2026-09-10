@@ -36,3 +36,7 @@ Implement only the frozen approved change IDs. Do not re-inventory, reassess, re
 Run the plan-required validation. Do not commit, push, create a pull request, execute a live deployment, or modify deployed infrastructure.
 
 Write the authoritative implementation record in the agent-authorized changes area and create the compact Step 4 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report exact paths.
+
+## Repository-agnostic snapshot rule
+
+Resolve source drift without requiring Git. Compare path, symbol, excerpt, and fingerprint; line numbers remain advisory.

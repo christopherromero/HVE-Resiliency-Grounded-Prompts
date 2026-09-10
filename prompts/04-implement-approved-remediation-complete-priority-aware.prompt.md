@@ -383,3 +383,35 @@ Report:
 ### Kafka scenario constraint
 
 Preserve the approved Kafka scenario and processing ownership from Step 3A. Do not introduce a database into database-independent Kafka, change multi-active/single-active ownership, or alter cluster topology without an approved architecture change.
+
+## Repository-Agnostic Source Drift Resolution
+
+Do not require a Git repository or commit SHA before implementation. Resolve source using path, symbol, original excerpt, and fingerprint. Use `assessment_snapshot` only to describe provenance and expected baseline.
+
+```yaml
+source_resolution:
+  evidence_id: EV-F-001-01
+  assessment_snapshot:
+    type: workspace_snapshot
+    identifier: <identifier-or-not_available>
+    provenance: workspace_generated
+  repository_path: src/main/java/example/Service.java
+  approved_symbol: Service.processPayment
+  assessed_fingerprint: <sha256-or-not_available>
+  current_fingerprint: <sha256-or-not_available>
+  current_excerpt_match: exact|equivalent|changed|not_found
+  source_drift_status: none|line_drift_only|content_drift|symbol_moved|target_not_found|baseline_provenance_limited
+  original_line_range: 142-156
+  current_line_range: 165-179|not_available
+  line_numbers_authoritative: false
+  implementation_allowed: true|false
+```
+
+Rules:
+
+- Never run `git init`, create a commit, or require Git metadata for drift validation.
+- When both assessed and current source fingerprints are available, compare them.
+- When fingerprint is unavailable, compare path, symbol, exact excerpt, and behavior and record `baseline_provenance_limited` where appropriate.
+- Non-Git snapshot types do not block implementation.
+- `unknown` snapshot type requires an explicit limitation, but implementation may continue when the approved target is otherwise unambiguous.
+- Line drift alone never blocks implementation.

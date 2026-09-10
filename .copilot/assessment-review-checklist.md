@@ -339,3 +339,13 @@ Do not advance to the next phase when:
 - [ ] Step 4 scope is not frozen.
 - [ ] Required validation is failed or unaccounted for.
 - [ ] Step 5 lacks sufficient evidence for closure.
+
+## Repository-Agnostic Snapshot Checks
+
+- [ ] The workflow did not assume `.git` metadata exists.
+- [ ] Step 2 classified the snapshot as Git revision, workspace snapshot, uploaded archive, source drop, or unknown.
+- [ ] Git commit SHA was required only for a Git revision.
+- [ ] A source fingerprint was captured when computable.
+- [ ] Missing Git metadata did not suppress findings, planning, reporting, implementation, or review.
+- [ ] Snapshot limitations were recorded explicitly.
+- [ ] Step 4 and Step 5 resolved source identity by path, symbol, excerpt, fingerprint, and behavior.

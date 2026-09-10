@@ -750,3 +750,31 @@ Report:
 ### Kafka scenario preservation
 
 For Kafka findings preserve operating_scenario, scenario_source, policy version/rule, processing_model, regional_processing_model, external_side_effects, kafka_backed_state, validation status, and architecture confirmation. Do not redesign scenario during planning. Database-independent remediation must not introduce a database unless an approved architecture decision requires it.
+
+## Repository-Agnostic Snapshot Preservation
+
+Preserve Step 2 `assessment_snapshot` and `source_fingerprint` verbatim. Do not require or invent a Git commit SHA. Do not convert a workspace snapshot, uploaded archive, or source drop into a Git revision.
+
+Targeting precedence is path, symbol/element, original excerpt, fingerprint, assessment snapshot, then advisory line range.
+
+```yaml
+target:
+  repository_path: src/main/java/example/Service.java
+  symbol: Service.processPayment
+  assessment_snapshot:
+    type: workspace_snapshot
+    identifier: assessment-run-2026-09-09T190000Z
+    provenance: workspace_generated
+    git_commit_sha: not_applicable
+    limitations: []
+  source_fingerprint:
+    algorithm: sha256
+    value: <hash>
+  original_line_range:
+    start_line: 142
+    end_line: 156
+    status: advisory
+  line_numbers_authoritative: false
+```
+
+A missing Git repository is not targeted-discovery justification and must not suppress illustrative implementation. Preserve any snapshot limitations for Step 4 drift handling.

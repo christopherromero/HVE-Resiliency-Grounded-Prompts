@@ -343,4 +343,22 @@ Report:
 - Scope violations
 - Required follow-up
 
+## Repository-Agnostic Snapshot Review
 
+Do not require Git metadata to validate implementation. Review the Step 4 source-resolution record against path, symbol, original behavior, fingerprint when available, current diff, and validation evidence.
+
+```yaml
+source_locator_review:
+  snapshot_type: git_revision|workspace_snapshot|uploaded_archive|source_drop|unknown
+  snapshot_identifier_considered: true
+  git_metadata_required: false
+  path_match: true
+  symbol_match: true
+  original_excerpt_addressed: true
+  fingerprint_validation: matched|changed_and_explained|not_available
+  provenance_limitations_accepted_or_escalated: true
+  line_numbers_treated_as_advisory: true
+  source_drift_handled_correctly: true
+```
+
+Do not block closure solely because a commit SHA is unavailable. Block closure when source identity or behavioral remediation cannot be established.

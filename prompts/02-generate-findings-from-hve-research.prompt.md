@@ -308,3 +308,69 @@ evidence_summary:
 ## Completion validation
 
 Verify that the inventory run ID is carried into the outputs, no new dependencies were added, only listed standards were loaded, every finding maps to a noncompliant control, missing evidence became `not_assessed`, no infrastructure or PCF findings were created, and `re_inventory_performed` remains false. Report output paths, standards loaded, findings by severity, not-assessed count, inventory exceptions, and confirmation that no re-inventory occurred.
+
+## Repository-Agnostic Assessment Snapshot and Source Locator Contract
+
+Do not require the assessed source folder to be a Git repository. Git commit SHA is one optional snapshot identifier, not a prerequisite for assessment evidence.
+
+Use this authoritative source-locator precedence:
+
+1. `repository_path`
+2. `symbol` or configuration/build element
+3. `original_source_excerpt`
+4. `source_fingerprint`
+5. `assessment_snapshot`
+6. `original_line_range`
+
+Required evidence structure:
+
+```yaml
+repository_evidence:
+  - evidence_id: EV-F-001-01
+    repository_path: src/main/java/example/Service.java
+    symbol: Service.processPayment
+    source_language: java
+    assessment_snapshot:
+      type: git_revision|workspace_snapshot|uploaded_archive|source_drop|unknown
+      identifier: <stable-identifier-or-not_available>
+      provenance: repository_metadata|workspace_generated|uploaded_file|customer_supplied|unknown
+      git_commit_sha: <full-sha-or-not_applicable>
+      dirty_worktree: true|false|not_applicable|unknown
+      captured_at: <ISO-8601-timestamp-or-not_available>
+      limitations: []
+    source_fingerprint:
+      algorithm: sha256
+      normalization: exact_utf8_excerpt
+      fingerprint_scope: exact_excerpt|redacted_excerpt
+      value: <sha256-or-not_available>
+    original_line_range:
+      start_line: 142
+      end_line: 156
+      status: exact|advisory|not_available
+    evidence_purpose: primary
+    original_source_excerpt: |
+      // exact source excerpt
+```
+
+Snapshot selection rules:
+
+- If valid Git metadata is available, use `type: git_revision`, the full commit SHA as `identifier`, and populate `git_commit_sha`.
+- If the source is a working directory without usable Git metadata, use `type: workspace_snapshot` and create a deterministic assessment-run identifier from the inventory run ID plus snapshot capture time or a workspace manifest fingerprint.
+- If the source came from an uploaded ZIP or archive, use `type: uploaded_archive`; use the archive name plus an available checksum or supplied version as the identifier.
+- If the source is a customer or vendor source drop, use `type: source_drop`; use the supplied release/version/date identifier when available.
+- If no stable snapshot identifier can be established, use `type: unknown`, `identifier: not_available`, and describe the limitation. Continue when path, symbol, excerpt, and fingerprint still provide sufficient evidence.
+- Never initialize Git, create a commit, or require `.git` metadata solely to produce assessment evidence.
+
+Fingerprint rules:
+
+- Fingerprint the exact UTF-8 `original_source_excerpt` without trimming, reindentation, line-ending normalization, or post-hash redaction.
+- When redaction is required, hash the redacted excerpt and set `fingerprint_scope: redacted_excerpt`.
+- If hashing cannot be performed, use `not_available` and preserve the exact excerpt.
+
+Line-number rules:
+
+- Calculate line numbers from the assessed snapshot when possible; never estimate them.
+- Treat line numbers as advisory navigation metadata and classify their status explicitly.
+- Path, symbol, excerpt, and fingerprint remain stronger evidence than line numbers.
+
+Completion validation must verify that Git metadata absence does not block evidence capture and that each applicable evidence item has a valid snapshot classification or an explicit `unknown` limitation.

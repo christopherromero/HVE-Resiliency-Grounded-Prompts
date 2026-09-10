@@ -32,3 +32,7 @@ Read `IMPLEMENTATION_ARTIFACT` and use its frozen `resolved_change_ids`. Do not 
 Do not re-inventory, repeat the full assessment, recalculate priorities, create unrelated findings, or modify source code. Report scope violations separately. Report filtering and hidden testing output must not affect closure decisions.
 
 Write the authoritative post-implementation review in the agent-authorized reviews area and create the compact Step 5 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report exact paths.
+
+## Repository-agnostic snapshot rule
+
+Review source identity and behavior without requiring a commit SHA.

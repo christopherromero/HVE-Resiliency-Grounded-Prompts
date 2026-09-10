@@ -97,7 +97,7 @@ Before generating the report, verify that the schema contains:
 ```yaml
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.4.0"
+  schema_version: "1.7.0"
   lifecycle_status: active
 ```
 
@@ -235,7 +235,7 @@ At the beginning of the report, include the schema identity in an HTML comment:
 <!--
 report_governance:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.4.0"
+  schema_version: "1.7.0"
   schema_path: grounding/governance/assessment-report-schema.md
   schema_validation: passed
   generated_by_phase: Step 3B
@@ -682,7 +682,7 @@ Before completing, add this validation record to the report's final HTML comment
 ```yaml
 schema_conformance:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.4.0"
+  schema_version: "1.7.0"
   required_sections_present: true
   required_section_order_valid: true
   required_finding_fields_present: true
@@ -912,3 +912,104 @@ report_finding_selection:
 ### Conformance and handoff
 
 Add the selected and omitted priority lists, finding/change counts, and frozen selection record to the final schema-conformance comment and `03B-report-summary.yml`. Validate that filtered summary, matrix, roadmap, and detailed sections reconcile exactly. A mismatch causes report conformance failure.
+
+## Repository-Agnostic Snapshot Rendering
+
+Render the Step 2 `assessment_snapshot` exactly as preserved by Step 3A. Do not reopen the workspace to manufacture Git metadata and do not treat non-Git snapshots as report errors.
+
+Example non-Git rendering:
+
+```markdown
+**Repository path:** `src/main/java/example/Service.java`
+
+**Symbol:** `Service.processPayment`
+
+**Source fingerprint:** `sha256:1234567890ab...`
+
+**Assessment snapshot:** Workspace snapshot `assessment-run-2026-09-09T190000Z`
+
+**Snapshot provenance:** Workspace generated
+
+**Original assessed lines (advisory):** 142-156
+
+**Repository evidence:** `EV-F-001-01`
+```
+
+Show a Git commit SHA only for `git_revision`. Apply schema version 1.7.0 and record repository-agnostic snapshot conformance in the final comment and handoff.
+
+## Incremental Report Assembly and Recovery
+
+Generate the report through bounded incremental assembly. Do not attempt one unbounded write containing the entire report when detailed findings contain substantial evidence or illustrative code.
+
+### Freeze before writing
+
+Before creating the report:
+
+1. Validate all authoritative inputs and schema version 1.7.0.
+2. Freeze selected priorities, omitted priorities, selected finding IDs, selected change IDs, display IDs, categories, counts, and roadmap mappings.
+3. Create the schema-required `report_assembly_manifest`.
+4. Do not reconsider these values during writing or recovery.
+
+### Bounded write sequence
+
+1. Initialize the final report with governance metadata, title, table of contents, and the frozen manifest metadata.
+2. Append Assessment Overview.
+3. Append detailed recommendations one complete finding at a time.
+4. Append Non-Resiliency Recommendations.
+5. Append Repository and IaC Evidence Gap Analysis.
+6. Append the Full Finding Matrix.
+7. Append Standards Alignment.
+8. Append the Implementation Roadmap.
+9. Append final schema and assembly conformance metadata.
+10. Reopen and validate the completed file.
+
+Use the schema-required invisible markers before each top-level section and detailed finding.
+
+### Finding write unit
+
+For each selected finding:
+
+- Read the authoritative Step 2 finding and its Step 3A change/proposals.
+- Render the entire finding in memory.
+- Validate all required fields and exact evidence.
+- Verify its stable marker does not already exist.
+- Append it once.
+- Record its ID as completed.
+
+Do not regenerate a completed finding after a recoverable error.
+
+### Recoverable request and write errors
+
+When a request or file-write operation recovers:
+
+- Reopen the report.
+- Inspect stable section and finding markers.
+- Resume after the last verified completed unit.
+- Preserve the frozen manifest.
+- Do not restart report planning or generation.
+- Do not duplicate content or change IDs, anchors, priorities, categories, counts, or scope.
+- Record the recovery count.
+
+If the last completed unit or file integrity cannot be established, stop, set report conformance to failed, identify the partial artifact and last verified marker, and do not claim completion.
+
+### Source rendering safeguards
+
+- Display source fingerprints in abbreviated form using the first 12 hexadecimal characters plus an ellipsis.
+- Preserve complete fingerprints in Step 2 and Step 3A only.
+- The `Original source requiring update` fenced block must contain the exact Step 2 excerpt and nothing else.
+- Never insert language-specific `before` comments, labels, IDs, line annotations, or synthetic ellipses inside original-source blocks.
+- Place all explanatory labels outside code fences.
+
+### Final validation
+
+After writing, reopen the report and verify:
+
+- Every required section marker occurs exactly once.
+- Every selected finding marker occurs exactly once.
+- No omitted or unexpected finding marker exists.
+- Summary, detailed findings, matrix, roadmap, and selected scope reconcile.
+- Full source fingerprints remain only in authoritative artifacts.
+- Original-source fenced blocks match Step 2 exactly.
+- Final schema and assembly conformance are passed.
+
+Successful Step 3B completion requires a complete validated final report, not a partial file or report text that exists only in chat.

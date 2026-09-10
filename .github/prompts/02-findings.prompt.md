@@ -29,3 +29,7 @@ Read `INVENTORY_ARTIFACT`. Do not re-inventory the repository. Evaluate only the
 Preserve the Step 1 assessment-scope resolution and architecture/Kafka scenario provenance. Generate findings only for enabled domains and repository-owned evidence. Do not assign remediation priority. Do not invoke Task Researcher, researcher subagents, or modify source code.
 
 Create the compact Step 2 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report the exact review and handoff paths. Verify the review path against `EXPECTED_REVIEW_ARTIFACT`; report the runtime-selected path if different.
+
+## Repository-agnostic snapshot rule
+
+Do not require Git metadata. Capture assessment_snapshot, exact excerpt fingerprint, path, symbol, and advisory line range.

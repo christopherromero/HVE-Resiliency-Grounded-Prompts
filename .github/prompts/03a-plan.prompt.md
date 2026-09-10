@@ -34,3 +34,7 @@ Apply the highest-confidence illustrative implementation principle. Generate con
 Do not add deployed-infrastructure or PCF remediation.
 
 Create the compact Step 3A handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report the exact plan and handoff paths. Verify the plan path against `EXPECTED_PLAN_ARTIFACT`; report the actual runtime path if different.
+
+## Repository-agnostic snapshot rule
+
+Preserve the repository-agnostic assessment snapshot and fingerprint. Missing Git is not targeted discovery.

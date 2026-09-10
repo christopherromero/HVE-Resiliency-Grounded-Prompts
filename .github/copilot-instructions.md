@@ -489,3 +489,9 @@ At the end of every phase:
 - Report exact output paths.
 - Report unresolved items and blockers.
 - Do not claim successful completion when the authoritative phase artifact is incomplete.
+
+## Repository-Agnostic Assessment Snapshots
+
+Do not assume the assessed folder is a Git repository. Supported snapshot types are `git_revision`, `workspace_snapshot`, `uploaded_archive`, `source_drop`, and `unknown`. Git commit SHA is optional and applies only to `git_revision`.
+
+Use source locator authority in this order: repository path, symbol/configuration element, exact excerpt, source fingerprint, assessment snapshot, then advisory line range. Never initialize Git or require a commit solely for assessment traceability.
