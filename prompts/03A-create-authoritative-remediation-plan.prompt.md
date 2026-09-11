@@ -778,3 +778,150 @@ target:
 ```
 
 A missing Git repository is not targeted-discovery justification and must not suppress illustrative implementation. Preserve any snapshot limitations for Step 4 drift handling.
+
+## Simplified Approved-Library Resolution
+
+### Optional governance input
+
+Read this optional file when present:
+
+```text
+APPROVED_LIBRARIES=grounding/governance/approved-libraries.yml
+```
+
+The file is valid as approval authority only when its top-level `lifecycle_status` is `approved`. A missing or draft file does not authorize a vendor-specific library.
+
+The simplified policy identifies:
+
+- The approved resiliency library
+- Approved resiliency capabilities
+- Observability and testing libraries
+- The approved version-source strategy
+- Cross-cutting library usage constraints
+
+Do not require artifact coordinates, exact versions, framework matrices, or a Git repository in this governance file. Resolve repository compatibility and dependency availability from the authoritative inventory, findings, cited build evidence, and permitted targeted inspection.
+
+### Resolution precedence
+
+Use this order:
+
+1. Approved application-specific library declaration, when supplied
+2. Approved `grounding/governance/approved-libraries.yml`
+3. Existing repository dependency or parent/build-management evidence
+4. Technology-neutral illustrative implementation
+5. Targeted discovery for only the blocked vendor-specific target
+
+Preserve these distinctions:
+
+- Policy approval means the product choice is sanctioned.
+- Repository evidence means the library or API is currently available.
+- Policy approval does not prove repository availability.
+- Repository dependency presence does not prove governance approval.
+
+### Required compact resolution record
+
+For each proposal requiring a vendor or framework API, record:
+
+```yaml
+library_resolution:
+  capability: circuit_breaker|retry|bulkhead|time_limiter|metrics|tracing|integration_testing|api_mocking|other
+  approved_library: resilience4j|spring_retry|failsafe|custom_platform_wrapper|micrometer|open_telemetry|testcontainers|wiremock|other|not_selected
+  approval_source: application_architecture_context|approved_libraries_governance|not_available
+  approval_status: approved|not_approved|not_available
+  repository_availability: available|dependency_change_required|unknown
+  version_source: parent_pom|bom|dependency_management|repository_declared|not_specified
+  dependency_change_required: true|false|unknown
+  unresolved_inputs: []
+```
+
+### Approved and repository-available
+
+When the policy is approved, the capability is listed under `approved_capabilities`, and repository evidence establishes a compatible library/API:
+
+- Generate concrete vendor-specific illustrative code and configuration.
+- Reuse repository-observed package names, APIs, configuration prefixes, programming model, and test conventions.
+- Do not invent API signatures that cannot be validated from the repository's effective library version.
+
+### Approved but dependency change required
+
+When the policy is approved but the library is not currently available:
+
+- Set `repository_availability: dependency_change_required`.
+- Set `dependency_change_required: true`.
+- Generate a dependency-change proposal only when the artifact identity can be established from authoritative repository or organization evidence.
+- Follow `library_rules.version_source`.
+- Do not hardcode a version when the approved source is a parent POM, BOM, or dependency-management section.
+- Generate vendor-specific code only when compatibility and the API family can be established responsibly.
+- Otherwise generate technology-neutral boundaries and mark only the vendor-specific adapter/decorator target `targeted_discovery_required`.
+
+### Repository library present but not approved
+
+When repository evidence contains a resilience library but no approved policy or application decision sanctions it:
+
+- Set `approval_status: not_available` or `not_approved` as applicable.
+- Do not treat dependency presence as product approval.
+- Generate technology-neutral proposals where possible.
+- Identify governance confirmation as an unresolved input for the vendor-specific target.
+- Do not create a new finding in Step 3A solely because approval is unavailable.
+
+### No approved library
+
+When no approved library is selected:
+
+- Do not choose Resilience4j, Spring Retry, Failsafe, or another vendor on behalf of the organization.
+- Generate technology-neutral interfaces, configuration contracts, fallback behavior, failure classification, metrics expectations, and tests where supported.
+- Mark only the vendor-specific dependency, decorator, adapter, or annotation target `targeted_discovery_required`.
+- State that product selection is an architecture or platform-governance input, not a repository defect by itself.
+
+### Circuit-breaker proposal behavior
+
+For circuit-breaker remediation, always define the technology-neutral design first:
+
+```yaml
+circuit_breaker_design:
+  protected_operation: <repository symbol>
+  fallback_behavior: fail_fast|cached_read|safe_default|queued_recovery|none|unresolved
+  failure_classification: <repository-supported classification>
+  state_scope: per_dependency|per_operation|other|unresolved
+  timeout_relationship: <bounded ordering contract>
+  configuration_externalized: true
+  approved_library: <library_resolution.approved_library>
+```
+
+Do not invent breaker names, thresholds, sliding-window values, open durations, half-open call counts, fallback values, or exception lists. Use externalized placeholders unless authoritative evidence supplies approved values.
+
+### Simplified example
+
+```yaml
+library_resolution:
+  capability: circuit_breaker
+  approved_library: resilience4j
+  approval_source: approved_libraries_governance
+  approval_status: approved
+  repository_availability: dependency_change_required
+  version_source: dependency_management
+  dependency_change_required: true
+  unresolved_inputs: []
+```
+
+If artifact coordinates are established elsewhere, an illustrative dependency proposal may omit an explicit version when dependency management is authoritative:
+
+```xml
+<dependency>
+  <groupId>io.github.resilience4j</groupId>
+  <artifactId>resilience4j-spring-boot3</artifactId>
+</dependency>
+```
+
+### Completion validation
+
+Before completing, verify:
+
+- Every vendor-specific proposal includes the compact `library_resolution` record.
+- The governance file was used as approval authority only when `lifecycle_status: approved`.
+- The selected capability is listed under `approved_capabilities`.
+- Repository availability and product approval were evaluated separately.
+- Missing library approval blocked only vendor-specific targets.
+- Technology-neutral contracts and tests were still generated when evidence supported them.
+- No unmanaged version, unsupported API, or unapproved product substitution was invented.
+- Step 3A did not create a new finding solely because the approved-library file was absent or draft.

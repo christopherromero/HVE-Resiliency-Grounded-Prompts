@@ -42,3 +42,11 @@ Do not add notes to each finding merely stating that configured report content w
 Do not create new findings, infrastructure findings, or PCF findings and recommendations.
 
 Create the compact Step 3B handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report the exact assessment-report and handoff paths.
+
+## Incremental report assembly requirement
+
+Use the incremental assembly and recoverable-write protocol in the authoritative Step 3B prompt and report schema version 1.7.0.
+
+Freeze the report manifest before writing. Append bounded sections and one complete finding at a time. Use stable invisible markers and resume after the last verified completed unit following a recoverable request error. Do not restart report planning, duplicate completed content, or change IDs, counts, priorities, categories, or scope.
+
+Abbreviate source fingerprints in the customer report. Preserve exact Step 2 source excerpts without adding comments or labels inside original-source code blocks. Reopen and validate the final report before claiming completion.

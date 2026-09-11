@@ -140,6 +140,17 @@ For the application-architecture-context, You take the sample template that woul
 
 NOTE: There are simple form templates and then detailed form templates, use the simple for now.
 
+## Approved Libraies for use in the refactoring
+
+There is a new file grounding\governance\approved-libraries.yml
+
+This defines the libraries that should be used in the refactoring as the standard for different purposes 
+
+New templates that describe the options
+
+examples\approved-libraries-template-simplified.yml
+examples\approved-libraries-template-complex.yml
+
 ## Instructions to run the assessment for a prepared repo
 
 Note that each Step uses a HVE Agent that is different

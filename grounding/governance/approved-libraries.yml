@@ -1,0 +1,30 @@
+---
+schema_version: "1.0.0"
+document_type: approved_libraries
+lifecycle_status: approved
+owner: Albertsons
+approved_by: Albertsons
+approved_at: 2026-09-01
+---
+
+approved_libraries:
+  resiliency:
+    library: resilience4j
+    approved_capabilities:
+      - circuit_breaker
+      - retry
+      - bulkhead
+      - time_limiter
+
+  observability:
+    metrics: micrometer
+    tracing: open_telemetry
+
+  testing:
+    integration: testcontainers
+    api_mocking: wiremock
+
+library_rules:
+  version_source: not_specified
+  require_externalized_resiliency_settings: true
+  prohibit_unapproved_library_substitution: true

@@ -1,0 +1,30 @@
+---
+schema_version: "1.0.0"
+document_type: approved_libraries
+lifecycle_status: "<draft|approved>"
+owner: "<architecture-or-platform-owner>"
+approved_by: "<approver-or-not_applicable>"
+approved_at: "<YYYY-MM-DD-or-not_applicable>"
+---
+
+approved_libraries:
+  resiliency:
+    library: "<resilience4j|spring_retry|failsafe|custom_platform_wrapper>"
+    approved_capabilities:
+      - circuit_breaker
+      - retry
+      - bulkhead
+      - time_limiter
+
+  observability:
+    metrics: "<micrometer|other|not_specified>"
+    tracing: "<open_telemetry|micrometer_tracing|other|not_specified>"
+
+  testing:
+    integration: "<testcontainers|other|not_specified>"
+    api_mocking: "<wiremock|mockwebserver|other|not_specified>"
+
+library_rules:
+  version_source: "<parent_pom|bom|dependency_management|repository_declared|not_specified>"
+  require_externalized_resiliency_settings: true
+  prohibit_unapproved_library_substitution: true
