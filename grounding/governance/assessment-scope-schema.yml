@@ -37,8 +37,6 @@ report_finding_selection:
     include_priorities:
       - P0
       - P1
-      - P2
-      - P3
     include_conditional_findings: true
     include_verified_controls: true
     include_evidence_gaps: true

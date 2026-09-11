@@ -280,11 +280,12 @@ Columns:
 
 Absence of infrastructure evidence must not be reported as infrastructure noncompliance.
 
-### PCF exclusion
+<!--### PCF exclusion
 
 Include:
 
 > PCF and its aliases are retired and excluded from findings, scoring, remediation, modernization, migration, and cleanup recommendations. Historical repository references, if discovered, are informational only and are not included in the finding matrix.
+-->
 
 ## Full Finding Matrix columns
 
