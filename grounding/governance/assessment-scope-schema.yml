@@ -49,3 +49,11 @@ report_finding_selection:
     - filtered_report_must_declare_omitted_priorities
     - filtered_counts_must_reconcile_to_selected_priorities
     - authoritative_total_counts_must_remain_available_in_source_artifacts
+  testing_output:
+    mode: Full
+    show_test_findings: true
+    show_test_code: true
+    show_validation_commands: true
+    show_acceptance_criteria: true
+    show_validation_evidence: true
+    include_consolidated_validation_strategy: true
