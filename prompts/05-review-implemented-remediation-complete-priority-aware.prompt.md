@@ -157,6 +157,56 @@ For every resolved change ID:
 12. Verify no unrelated scope was introduced.
 13. Verify supporting files changed outside core production code were necessary for resolved changes.
 
+### Configuration consistency validation
+
+When a remediation introduces, removes, or modifies:
+
+- readiness indicators
+- liveness indicators
+- startup probes
+- actuator health contributors
+- health groups
+- dependency health checks
+- readiness participation requirements
+- dependency enablement properties
+
+the reviewer must verify that all supporting configuration required by
+the implementation is present and internally consistent.
+
+Examples:
+
+If readiness includes:
+
+```yaml
+mongo
+```
+
+then verify that the corresponding Mongo health contributor is enabled.
+
+Example:
+
+```yaml
+management.health.mongo.enabled=true
+```
+
+or an equivalent implementation.
+
+Review validation must confirm:
+
+- readiness groups reference valid health contributors
+- required contributors are enabled
+- code and configuration describe the same behavior
+- no remediation introduced disabled contributors
+- no remediation introduced contradictory health settings
+- startup, readiness, and liveness semantics remain aligned
+
+If implementation intent and configuration behavior differ:
+
+- do not mark the change fully remediated
+- record the finding as partially_closed or open
+- document the configuration inconsistency
+- identify the affected files and configuration keys
+
 ## Required status model
 
 Assign each resolved change one status:
@@ -330,6 +380,11 @@ Before completing, verify that:
 9. No source code was modified during review.
 10. Scope expansion and regressions were explicitly checked.
 11. Follow-up work was routed to the correct phase.
+12. Verify that all prerequisite configuration required by implemented source-code changes is present.
+13. Verify that readiness, liveness, startup, and actuator configuration are internally consistent.
+14. Verify that enabled health contributors match health-group participation.
+15. Verify that code behavior and configuration behavior are aligned.
+16. Verify that implementation did not introduce disabled or orphaned resiliency configuration.
 
 Report:
 

@@ -44,9 +44,127 @@ A globally shared provider should normally surface through metrics and circuit-b
 ### HTTP-010: Certificate and trust-material access is bounded
 Do not fetch certificates or trust material on every request without timeout and cache. Require expiration monitoring, secure storage, rotation behavior, and bounded last-known-good use when approved.
 
+#### HTTP-011: Reconciliation and status-lookup outcomes are classified correctly
+
+Do not treat:
+
+- timeout
+- connection failure
+- 5xx provider failure
+- lookup failure
+- unknown provider state
+- incomplete provider response
+
+as proof that:
+
+- an operation succeeded
+- an operation failed
+- an operation is a duplicate
+
+Require explicit handling of:
+
+- success
+- failure
+- duplicate
+- unknown
+
+states.
+
+Unknown outcomes must remain recoverable through
+status lookup, reconciliation, compensation,
+or controlled retry behavior.
+
+A failed lookup must not suppress an operation
+unless duplicate execution is proven.
+
+#### HTTP-012: Business operation state machines preserve unknown outcomes
+
+**Severity:** Critical
+
+**Category:** data-correctness-and-reconciliation
+
+**Applies when:**
+
+The application performs a non-idempotent or externally observable business operation and uses any of the following to determine the operation's outcome:
+
+- Provider status lookup
+- Delivery lookup
+- Duplicate lookup
+- Reconciliation API
+- Recovery workflow
+- Callback or webhook
+- Locally persisted operation state
+- Fallback provider selection
+
+Examples include:
+
+- Order creation
+- Payment authorization, capture, refund, or void
+- Shipment or delivery creation
+- Inventory reservation or release
+- Customer enrollment
+- Email or SMS delivery
+- Loyalty transaction processing
+- Partner API mutation
+
+**Required behavior:**
+
+Model business-operation outcomes using explicit states that preserve uncertainty.
+
+The state model must distinguish at least:
+
+- `pending`
+- `completed`
+- `failed`
+- `duplicate`
+- `unknown`
+
+Additional domain-specific states may be used when required.
+
+An `unknown` outcome must not be collapsed into:
+
+- Success
+- Completed
+- Duplicate
+- Permanent failure
+- Safe-to-discard
+
+unless authoritative evidence establishes that classification.
+
+Duplicate classification requires positive evidence, such as:
+
+- A matching stable business-operation identifier
+- A matching provider idempotency key
+- A provider response explicitly identifying the operation as duplicate
+- A persisted authoritative operation record
+- A successful status lookup that returns the previously completed operation
+
+A timeout, connection failure, unavailable provider, HTTP `5xx`, malformed response, failed reconciliation lookup, or other transport failure is not proof of duplicate execution.
+
+An HTTP `404` response may be treated as evidence that an operation does not exist only when the provider contract explicitly defines that behavior for the supplied stable operation identity. A `404` must not automatically be interpreted as duplicate, completed, or safe-to-discard.
+
+**Unknown-outcome handling:**
+
+When the outcome cannot be established, the application must use an explicitly governed recovery path, such as:
+
+- Bounded status lookup
+- Durable reconciliation
+- Deferred recovery
+- Retry using the same provider-supported idempotency key
+- Safe fallback to another 
+
 ## Quality caveats
 
 - Prescribed timeout and retry numbers are illustrative unless evidenced and approved.
 - `RestTemplate` presence alone is not a finding; missing budgets or unsafe threading are.
 - A random UUID per attempt is not idempotency.
 - A fallback response must not hide an incomplete financial operation.
+- A failed status lookup is not proof of duplicate execution.
+- Unknown outcomes must remain distinguishable from success.
+- Duplicate classification requires positive evidence.
+- An unsuccessful reconciliation or status lookup is not proof of duplicate execution. 
+- Duplicate classification requires positive evidence tied to the stable business-operation identity.
+- Unknown provider outcomes must remain distinguishable from success, failure, and duplicate outcomes.
+- An HTTP 404 establishes non-creation only when the approved provider contract explicitly defines that meaning for the supplied operation identity.
+- A failed lookup must not silently suppress the original operation or prevent an otherwise safe recovery path.
+- Fallback to another provider must not occur while the primary-provider outcome is unknown unless duplicate effects are independently prevented.

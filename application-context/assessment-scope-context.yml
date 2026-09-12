@@ -32,10 +32,10 @@ report_preferences:
     include_evidence_gaps: true
     excluded_priority_behavior: omit_from_filtered_report
   testing_output:
-    mode: hidden
-    show_test_findings: false
-    show_test_code: false
-    show_validation_commands: false
-    show_acceptance_criteria: false
-    show_validation_evidence: false
-    include_consolidated_validation_strategy: false
+    mode: full
+    show_test_findings: true
+    show_test_code: true
+    show_validation_commands: true
+    show_acceptance_criteria: true
+    show_validation_evidence: true
+    include_consolidated_validation_strategy: true

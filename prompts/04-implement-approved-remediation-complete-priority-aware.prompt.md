@@ -187,6 +187,9 @@ For every resolved change ID:
 12. Preserve or improve recovery after dependency restoration without requiring a pod restart when required.
 13. Run focused tests first, followed by approved broader build and test commands.
 14. Record changed files, validation results, deviations, unresolved issues, and blockers.
+15. Verify that every configuration change required by the planned implementation was applied.
+16. Verify that readiness, liveness, startup, timeout, retry, circuit-breaker, health, and dependency-management changes include all supporting configuration properties.
+17. Verify that no remediation introduces disabled contributors,   orphaned configuration, or contradictory settings.
 
 ## Readiness and liveness implementation rule
 
@@ -220,6 +223,29 @@ Record command outcomes as:
 - `not_run`
 
 Distinguish environmental limitations from product or code failures.
+
+### Configuration dependency validation
+
+When a remediation introduces, removes, or modifies:
+
+- readiness indicators
+- liveness indicators
+- startup probes
+- health groups
+- readiness group membership
+- dependency health checks
+- actuator health contributors
+
+the implementation must validate all prerequisite health contributors,
+enablement settings, and supporting configuration properties required
+for the intended behavior.
+
+Examples:
+
+If readiness includes:
+
+```yaml
+mongo
 
 ## Required implementation record
 
