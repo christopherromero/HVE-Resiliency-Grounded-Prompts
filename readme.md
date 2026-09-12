@@ -180,6 +180,9 @@ Note that each Step uses a HVE Agent that is different
 
 Summary of each step work will also be created and stored in the handoffs subfolder of each agent folder, but full details are in the normal locations
 
+Run `py tools/validate_assessment_report.py <generated-report-path>` after Step 3B to validate the report matches the template, should get a PASSED
+
+py tools/validate_assessment_report.py .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
 
 ## Prompt Approach/Assumptions
 

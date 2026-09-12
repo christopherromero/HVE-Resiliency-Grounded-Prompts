@@ -13,8 +13,9 @@ This is a planning phase. Do not modify application source code, repository conf
 Provide exact paths when invoking this prompt:
 
 ```text
-INVENTORY_ARTIFACT=.copilot-tracking/research/YYYY-MM-DD/springboot-active-active-inventory-research.md
-REVIEW_ARTIFACT=.copilot-tracking/reviews/YYYY-MM-DD/springboot-active-active-inventory-review.md
+INVENTORY_ARTIFACT=<exact authoritative Step 1 inventory artifact path>
+REVIEW_ARTIFACT=<exact authoritative Step 2 review artifact path>
+PLAN_ARTIFACT=<exact authoritative Step 3A output artifact path>
 ```
 
 Always read:
@@ -574,7 +575,17 @@ The plan must:
 
 ## Required outputs
 
-Write one consolidated authoritative planning artifact to the HVE-authorized planning location, normally under `.copilot-tracking/plans/` or the location selected by the installed HVE planning workflow.
+Write exactly one consolidated authoritative planning artifact to
+PLAN_ARTIFACT.
+
+PLAN_ARTIFACT is the binding authoritative output path supplied by
+the execution wrapper.
+
+Do not rename the artifact, remove filename suffixes, or substitute
+an HVE-selected default path.
+
+If PLAN_ARTIFACT cannot be written, stop and report the exact blocked
+path. Do not create an alternate authoritative planning artifact.
 
 The consolidated artifact must contain:
 
@@ -600,8 +611,9 @@ planning:
   schema_version: "2.0"
   phase: remediation_planning
   artifact_role: authoritative_remediation_plan
-  inventory_artifact: "exact Step 1 path"
-  review_artifact: "exact Step 2 path"
+  inventory_artifact: "${INVENTORY_ARTIFACT}"
+  review_artifact: "${REVIEW_ARTIFACT}"
+  plan_artifact: "${PLAN_ARTIFACT}"
   planner_agent: task-planner
   repository_reinventoried: false
   controls_reassessed: false

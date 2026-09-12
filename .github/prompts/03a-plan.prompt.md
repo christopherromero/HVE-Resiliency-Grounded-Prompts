@@ -16,8 +16,10 @@ PLAN_SLUG=${input:planSlug:Remediation plan artifact slug}
 AUTHORITATIVE_PROMPT=prompts/03A-create-authoritative-remediation-plan.prompt.md
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/${RUN_DATE}/${TASK_SLUG}-research-review.md
+PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
+EXPECTED_PLAN_ARTIFACT=${PLAN_ARTIFACT}
+
 PRIORITY_POLICY=grounding/governance/remediation-prioritization.md
-EXPECTED_PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
 EXPECTED_HANDOFF_ARTIFACT=.copilot-tracking/plans/handoffs/03A-planning-summary.yml
 PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
@@ -33,7 +35,17 @@ Apply the highest-confidence illustrative implementation principle. Generate con
 
 Do not add deployed-infrastructure or PCF remediation.
 
-Create the compact Step 3A handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report the exact plan and handoff paths. Verify the plan path against `EXPECTED_PLAN_ARTIFACT`; report the actual runtime path if different.
+Create the compact Step 3A handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report the exact plan and handoff paths. 
+
+Write the authoritative Step 3A remediation plan exactly to PLAN_ARTIFACT.
+
+PLAN_ARTIFACT is a binding output path, not an advisory expectation.
+
+Do not substitute another filename, remove the .instructions suffix,
+or use the HVE default plan filename.
+
+If PLAN_ARTIFACT cannot be written, stop and report the exact blocked path.
+Do not create an alternate authoritative plan at another location.
 
 ## Repository-agnostic snapshot rule
 

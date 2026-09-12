@@ -35,6 +35,7 @@ PLAN_ARTIFACT=<exact Step 3A authoritative remediation-plan artifact>
 APPLICATION_CONTEXT=<optional application-context file path>
 REFERENCE_ARCHITECTURE_REGISTRY=<optional approved reference-architecture registry path>
 REPORT_SCHEMA=grounding/governance/assessment-report-schema.md
+REPORT_TEMPLATE=grounding/governance/templates/code-level-resiliency-assessment-template.md
 REPORT_OUTPUT_PATH=<optional; defaults to .copilot-tracking/plans/reports/code-level-resiliency-assessment.md>
 ```
 
@@ -263,6 +264,14 @@ report_governance:
   implementation_artifact: false
 -->
 ```
+
+#### Canonical template rendering contract
+
+Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the seven required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
+
+Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
+
+When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied, render only applicable approved entries. When absent, render the schema-required no-registry statement. Never source customer-specific references from hardcoded prompt or schema content.
 
 ### Schema-driven report rendering
 
