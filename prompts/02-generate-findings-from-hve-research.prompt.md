@@ -10,7 +10,7 @@ The authoritative inventory is the HVE Task Researcher artifact under `.copilot-
 
 Set the input path explicitly when invoking this prompt:
 
-`INVENTORY_ARTIFACT=.copilot-tracking/research/YYYY-MM-DD/springboot-active-active-inventory-research.md`
+`INVENTORY_ARTIFACT=.copilot-tracking/research/{{YYYY-MM-DD}}/{{task_slug}}-research.md`
 
 Read that artifact first. Verify that its `Evaluation Handoff Contract` identifies it as `authoritative_inventory`, specifies `next_phase: evaluation`, and sets `re_inventory_allowed: false`.
 
@@ -24,6 +24,24 @@ Always read:
 - `grounding/exclusions/pcf-code-assessment-exclusion.md`
 
 Read dependency-specific standards only for identifiers listed under `Dependency Standards to Load` in the authoritative inventory artifact.
+
+### Step 1 scope and architecture resolution
+
+Preserve the Step 1 `assessment_scope_resolution`, `assessment_snapshot`, `architecture_relationship_context`, `architecture_conflict`, `dependency_standard_gaps`, and standards-to-load lists. Do not recalculate them.
+
+If `architecture_conflict.detected: true`:
+
+- Continue evaluating common controls when repository evidence is sufficient.
+- Mark affected scenario-specific or architecture-dependent controls `not_assessed`.
+- Create an architecture/evidence follow-up, not a code finding for the conflict itself.
+- Preserve `route_to: architecture_governance_review`.
+- Do not silently select a replacement scenario or architecture.
+
+If Step 1 recorded a dependency or assessment-domain registry gap, do not load a substitute standard. Mark controls dependent on the missing standard `not_assessed` and preserve the governance gap.
+
+### Machine-readable output convention
+
+Pipe-delimited placeholders in this prompt describe allowed values only. Generated artifacts must contain one concrete value. For example, emit `status: consistent`, never `status: consistent|inferred|conflict`.
 
 ## Kafka Scenario Evaluation
 
@@ -194,7 +212,7 @@ Assume the approved two-region infrastructure exists. Do not assess Azure resour
 
 Create exactly one authoritative review artifact using the HVE research path convention:
 
-`.copilot-tracking/reviews/{{YYYY-MM-DD}}/springboot-active-active-inventory-research-review.md`
+`.copilot-tracking/reviews/{{YYYY-MM-DD}}/{{task_slug}}-research-review.md`
 
 If HVE automatically chooses a date or equivalent slug-compliant filename, report the exact generated path in your completion response. That reported path becomes the input to Prompt 3A.
 
@@ -219,7 +237,7 @@ Include:
 
 ```yaml
 assessment_execution:
-  inventory_artifact: ".copilot-tracking/research/YYYY-MM-DD/springboot-active-active-inventory-research.md"
+  inventory_artifact: ".copilot-tracking/research/{{YYYY-MM-DD}}/{{task_slug}}-research.md"
   inventory_agent: task-researcher
   evaluator_agent: task-reviewer
   re_inventory_performed: false
@@ -229,29 +247,52 @@ assessment_execution:
   standards_loaded: []
 ```
 
-## New Mandatory repository_evidence structure
+### Mandatory repository evidence contract
+
+Use only the repository-agnostic, snapshot-aware evidence structure below. This is the single authoritative Step 2 source-evidence contract.
+
 ```yaml
 repository_evidence:
   - evidence_id: EV-F-001-01
     repository_path: src/main/java/example/Service.java
-    symbol: processPayment
-    start_line: 142
-    end_line: 156
+    symbol: Service.processPayment
     source_language: java
+    assessment_snapshot:
+      type: "<git_revision|workspace_snapshot|uploaded_archive|source_drop|unknown>"
+      identifier: "<stable-identifier-or-not_available>"
+      provenance: "<repository_metadata|workspace_generated|uploaded_file|customer_supplied|unknown>"
+      git_commit_sha: "<full-sha-or-not_applicable>"
+      dirty_worktree: "<true|false|not_applicable|unknown>"
+      captured_at: "<ISO-8601-timestamp-or-not_available>"
+      limitations: []
+    source_fingerprint:
+      algorithm: sha256
+      normalization: exact_utf8_excerpt
+      fingerprint_scope: "<exact_excerpt|redacted_excerpt>"
+      value: "<sha256-or-not_available>"
+    original_line_range:
+      start_line: 142
+      end_line: 156
+      status: "<exact|advisory|not_available>"
     evidence_purpose: primary
     original_source_excerpt: |
       // exact source excerpt
 ```
 
-## Required Rules
-- Capture exact repository-relative path.
-- Capture symbol, start_line, end_line.
-- Preserve exact original source excerpt.
-- Do not rewrite, normalize, or regenerate source.
-- Redact only sensitive values.
-- Use not_available when exact line numbers cannot be proven.
-- Original source evidence becomes authoritative input for Step 3A and Step 3B.
+Rules:
 
+- Preserve the Step 1 assessment snapshot; do not require Git or invent a commit SHA.
+- Capture the exact repository-relative path and the most precise symbol, property, configuration key, build element, or test identifier available.
+- Preserve the exact original source excerpt. Do not rewrite, normalize, reindent, or regenerate it.
+- Fingerprint the exact UTF-8 excerpt. If redaction is required, hash the redacted excerpt and set `fingerprint_scope: redacted_excerpt`.
+- Calculate line numbers from the assessed snapshot when possible. Never estimate them.
+- Treat line numbers as advisory navigation metadata.
+- Use explicit `not_available` values and limitations when exact evidence cannot be established.
+- Path, symbol, excerpt, and fingerprint are stronger locators than snapshot metadata and line numbers.
+- A coincidental line-number match is not sufficient evidence.
+- This evidence becomes immutable authoritative input for Steps 3A and 3B.
+
+Completion validation must verify that each applicable source/configuration finding has a path, symbol or element, exact excerpt or explicit unavailability, snapshot classification, fingerprint when computable, and line-range status.
 
 ## End-of-Phase Compact Handoff Summary
 
@@ -374,3 +415,24 @@ Line-number rules:
 - Path, symbol, excerpt, and fingerprint remain stronger evidence than line numbers.
 
 Completion validation must verify that Git metadata absence does not block evidence capture and that each applicable evidence item has a valid snapshot classification or an explicit `unknown` limitation.
+### Completion validation
+
+Before completing:
+- Verify the inventory run ID and exact task-slug-driven inventory path are preserved.
+- Verify no new dependencies were added and no dependency rediscovery or broad re-inventory occurred.
+- Verify only Step 1 `Dependency Standards to Load` and `Assessment Domain Standards to Load` entries were loaded.
+- Verify runtime dependency standards and assessment-domain standards remain separate.
+- Verify missing registry entries remain governance gaps and no substitute path was invented.
+- Verify Step 1 assessment scope, snapshot, architecture relationships, Kafka scenario, and conflict records were preserved without recalculation.
+- Verify architecture conflicts made affected architecture-dependent controls `not_assessed` and did not create code findings by themselves.
+- Verify every applicable control has exactly one valid status.
+- Verify every finding maps to an evidence-backed `non_compliant` control.
+- Verify missing or stale evidence became `not_assessed`, not a finding.
+- Verify the repository evidence contract appears only once and uses the snapshot-aware structure.
+- Verify every applicable evidence item has path, symbol/element, exact excerpt or explicit unavailability, fingerprint when computable, snapshot classification, and advisory line-range status.
+- Verify line numbers were never estimated or used as authoritative locators.
+- Verify all generated machine-readable fields contain one concrete value rather than pipe-delimited alternatives.
+- Verify no infrastructure or PCF findings were created.
+- Verify no source code or repository configuration was modified.
+- Verify one compact Step 2 handoff exists when agent write permissions permit it.
+- Report exact output paths, standards loaded by class, findings by severity and status, not-assessed count, registry gaps, inventory exceptions, architecture conflicts, and confirmation that no re-inventory occurred.

@@ -22,7 +22,7 @@ Do not generate findings, compliance statuses, severity ratings, recommendations
 
 Create exactly one authoritative research artifact using the HVE research path convention:
 
-`.copilot-tracking/research/{{YYYY-MM-DD}}/springboot-active-active-inventory-research.md`
+`.copilot-tracking/research/{{YYYY-MM-DD}}/{{task_slug}}-research.md`
 
 If HVE automatically chooses a date or equivalent slug-compliant filename, report the exact generated path in your completion response. That reported path becomes the input to Prompt 2.
 
@@ -407,6 +407,142 @@ dependency_standards_to_load:
 ```
 
 
+## Architecture and Scope Resolution
+
+### Assessment scope context and schema boundary
+
+Read these configured inputs:
+
+```text
+ASSESSMENT_SCOPE_CONTEXT=application-context/assessment-scope-context.yml
+ASSESSMENT_SCOPE_SCHEMA=grounding/governance/assessment-scope-schema.yml
+```
+
+The context and schema are distinct artifacts:
+
+- The context must declare `document_type: assessment_scope_context` and contains selected settings.
+- The schema must declare `document_type: assessment_scope_schema` and defines allowed values, defaults, and validation rules.
+
+Do not substitute an example, base, or similarly named file when the configured schema is missing or invalid. Do not search example folders for a replacement schema. If the schema is invalid, stop before optional-domain inventory and report the exact path and validation error. If the context is absent, apply defaults from the valid schema.
+
+Required output:
+
+```yaml
+assessment_scope_resolution:
+  context_path: application-context/assessment-scope-context.yml
+  schema_path: grounding/governance/assessment-scope-schema.yml
+  context_status: "<valid|not_provided|invalid>"
+  schema_status: "<valid|missing|invalid>"
+  defaults_used: false
+  enabled_domains: []
+  disabled_domains: []
+  inventory_only_domains: []
+  report_preferences:
+    finding_selection_mode: "<all_priorities|priority_filter>"
+    included_priorities: []
+    testing_output_mode: "<full|summary|roadmap_only|hidden>"
+  validation_errors: []
+```
+
+Inventory Dockerfiles, pipelines, deployment configuration, and IaC only when their domains are enabled. Never inventory or assess deployed infrastructure.
+
+### Repository-agnostic assessment snapshot
+
+Do not assume the assessed folder is a Git repository. Never initialize Git or create a commit solely to establish assessment provenance.
+
+```yaml
+assessment_snapshot:
+  type: "<git_revision|workspace_snapshot|uploaded_archive|source_drop|unknown>"
+  identifier: "<stable-identifier-or-not_available>"
+  provenance: "<repository_metadata|workspace_generated|uploaded_file|customer_supplied|unknown>"
+  git_commit_sha: "<full-sha-or-not_applicable>"
+  dirty_worktree: "<true|false|not_applicable|unknown>"
+  captured_at: "<ISO-8601-timestamp-or-not_available>"
+  limitations: []
+```
+
+Use `git_revision` only when valid Git metadata is available. Otherwise classify the input as a workspace snapshot, uploaded archive, source drop, or unknown source with explicit limitations.
+
+### Application architecture relationships
+
+When approved application architecture context exists, preserve business role, authoritative state, upstream dependencies, downstream dependencies, external side effects, and architecture decisions separately from repository-observed interactions.
+
+```yaml
+architecture_relationship_context:
+  source_path: application-context/application-architecture-context.yml
+  context_status: "<approved|draft|invalid|not_provided>"
+  business_role: "<value-or-not_provided>"
+  upstream_dependencies: []
+  downstream_dependencies: []
+  external_side_effects:
+    present: "<true|false|unknown>"
+    types: []
+```
+
+Architecture context explains intended workflow position but does not prove implementation. Use solution architecture context only when cross-repository or transitive facts are required.
+
+### Architecture conflict record
+
+When approved context conflicts with repository or policy evidence, emit:
+
+```yaml
+architecture_conflict:
+  detected: true
+  affected_area: "<kafka_scenario|authoritative_state|regional_processing|dependency_relationship|other>"
+  context_source: "<application_context|solution_context>"
+  context_declaration: "<concise-value>"
+  repository_evidence: []
+  policy_evidence: []
+  resolution_status: unresolved
+  assessment_action:
+    common_controls: evaluate_when_evidence_available
+    scenario_specific_controls: not_assessed
+    code_finding_created_for_conflict: false
+    route_to: architecture_governance_review
+```
+
+Do not silently override approved context or create a code finding solely because of the conflict.
+
+## Assessment Domain Standards to Load
+
+Use `grounding/registry/dependency-standard-registry.yml` as the only registry authority. Do not invent grounding paths or search examples for substitutes.
+
+If a confirmed dependency or enabled assessment domain has no valid registry entry, record:
+
+```yaml
+dependency_standard_gaps:
+  - id: "<normalized-dependency-or-domain-id>"
+    evidence: []
+    registry_path: grounding/registry/dependency-standard-registry.yml
+    gap_reason: "<entry_missing|grounding_file_missing|entry_invalid>"
+    downstream_action: not_assessed_until_governance_resolved
+```
+
+Keep optional assessment-domain standards separate from runtime dependency standards:
+
+```yaml
+assessment_domain_standards_to_load:
+  - id: cicd-pipeline-resiliency
+    assessment_domain: cicd_pipeline
+    grounding_file: grounding/dependencies/cicd-pipeline-resiliency.md
+    repository_owned_artifacts: []
+```
+
+### Machine-readable template convention
+
+Pipe-delimited placeholders document allowed values only. Generated artifacts must contain one concrete value. Emit `status: consistent`, never `status: consistent|conflict|insufficient_evidence`.
+
+### Evidence location rule
+
+Calculate line numbers when possible and never estimate them. Treat them as advisory navigation metadata:
+
+```yaml
+original_line_range:
+  start_line: 1
+  end_line: 10
+  status: "<exact|advisory|not_available>"
+```
+
 ## Evaluation handoff contract
 
 End the artifact with this machine-readable block:
@@ -462,7 +598,7 @@ Include:
 ```yaml
 phase_metadata:
   schema_id: ASSESSMENT-PHASE-HANDOFF
-  schema_version: "1.0.0"
+  schema_version: "<active-version-from-phase-handoff-schema.yml>"
   phase: inventory
   phase_order: "01"
   assessment_run_id: <run-id>
@@ -528,11 +664,22 @@ next_phase:
 
 Before completing:
 
-1. Verify the research artifact exists under `.copilot-tracking/research/`.
-2. Verify every confirmed dependency has production-code evidence.
-3. Verify the dependency standards list contains only confirmed dependencies.
-4. Verify no findings, recommendations, severity ratings, scores, or implementation plans appear.
-5. Verify PCF references are informational only.
-6. Verify the handoff block prohibits re-inventory.
-7. Verify that one compact handoff summary exists under `.copilot-tracking/research/handoffs/`.
-8. Report the exact artifact path, assessment run ID, files examined, confirmed dependencies, and unresolved uncertainties.
+- Verify the authoritative research artifact exists under `.copilot-tracking/research/` and its path uses the configured `task_slug` consistently.
+- Verify every confirmed dependency has production-code evidence.
+- Verify the dependency standards list contains only confirmed dependencies.
+- Verify dependency standards and assessment-domain standards are listed separately.
+- Verify missing or invalid registry entries are recorded as governance gaps and no grounding path was invented.
+- Verify assessment-scope context and schema were distinguished and validated.
+- Verify no example or base schema was used as an unapproved fallback.
+- Verify optional artifact domains were inventoried only when enabled.
+- Verify the assessment snapshot was classified without requiring Git metadata.
+- Verify upstream dependencies, downstream dependencies, and external side effects from approved context remain separate from repository-observed interactions.
+- Verify architecture conflicts use the deterministic conflict record and do not produce code findings by themselves.
+- Verify generated machine-readable fields contain one concrete allowed value rather than pipe-delimited alternatives.
+- Verify evidence line numbers were calculated when possible, never estimated, and classified as exact, advisory, or unavailable.
+- Verify no findings, recommendations, severity ratings, scores, remediation plans, or source changes appear.
+- Verify PCF references are informational only.
+- Verify the evaluation handoff prohibits re-inventory.
+- Verify the handoff schema version is read from `grounding/governance/phase-handoff-schema.yml` rather than hardcoded.
+- Verify one compact handoff summary exists under `.copilot-tracking/research/handoffs/` when agent write permissions permit it.
+- Report the exact artifact path, assessment run ID, snapshot type and identifier, files examined, enabled scope domains, confirmed dependencies, registry gaps, architecture conflicts, and unresolved uncertainties.

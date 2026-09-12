@@ -29,12 +29,13 @@ References to Step 4, Task Implementor, approval selectors, and implementation b
 Provide exact paths:
 
 ```text
-INVENTORY_ARTIFACT=.copilot-tracking/research/YYYY-MM-DD/springboot-active-active-inventory-research.md
+INVENTORY_ARTIFACT=.copilot-tracking/research/{{YYYY-MM-DD}}/{{task_slug}}-research.md
 REVIEW_ARTIFACT=<exact Step 2 authoritative review artifact or output path>
 PLAN_ARTIFACT=<exact Step 3A authoritative remediation-plan artifact>
 APPLICATION_CONTEXT=<optional application-context file path>
 REFERENCE_ARCHITECTURE_REGISTRY=<optional approved reference-architecture registry path>
 REPORT_SCHEMA=grounding/governance/assessment-report-schema.md
+REPORT_OUTPUT_PATH=<optional; defaults to .copilot-tracking/plans/reports/code-level-resiliency-assessment.md>
 ```
 
 `REPORT_SCHEMA` is normally fixed and must not be changed per application unless an approved schema version is intentionally selected.
@@ -97,7 +98,7 @@ Before generating the report, verify that the schema contains:
 ```yaml
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.7.0"
+  schema_version: "<active-version-read-from-REPORT_SCHEMA>"
   lifecycle_status: active
 ```
 
@@ -112,6 +113,25 @@ Also verify that the schema defines these required sections:
 7. Implementation Roadmap
 
 If the schema is missing, unreadable, inactive, or structurally invalid, stop and report the schema validation error. Do not generate a best-effort report from memory, and do not route the error to Task Implementor.
+
+### Schema-version and template-value rules
+
+Read `schema_id`, `schema_version`, and `lifecycle_status` directly from `REPORT_SCHEMA`. Do not hardcode an expected schema version in this prompt or generated report. Require the schema ID to equal `CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT` and lifecycle status to be `active`; preserve the version actually read.
+
+Pipe-delimited placeholders in examples describe allowed values only. Generated artifacts must contain one concrete value. Emit `status: passed`, never `status: passed|failed`.
+
+### Source locator authority
+
+Render and validate source locators in this order:
+
+1. Repository path
+2. Symbol or configuration/build element
+3. Exact original source excerpt
+4. Source fingerprint
+5. Assessment snapshot
+6. Original assessed line range, explicitly labeled advisory
+
+Line numbers are navigation metadata. Never present a line number alone as the authoritative locator, recalculate Step 2 line numbers, or treat line drift as evidence drift.
 
 ## Purpose
 
@@ -235,7 +255,7 @@ At the beginning of the report, include the schema identity in an HTML comment:
 <!--
 report_governance:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.7.0"
+  schema_version: "<active-version-read-from-REPORT_SCHEMA>"
   schema_path: grounding/governance/assessment-report-schema.md
   schema_validation: passed
   generated_by_phase: Step 3B
@@ -244,268 +264,21 @@ report_governance:
 -->
 ```
 
-## Required report structure
+### Schema-driven report rendering
 
-Follow `assessment-report-schema.md` exactly. The required top-level structure is reiterated below for workflow clarity, but the governance schema remains authoritative.
+Follow `assessment-report-schema.md` exactly for top-level sections, section order, required finding fields, notices, tables, finding matrix, standards alignment, roadmap, priority filtering, testing-output preferences, source-locator display, and report conformance.
 
-<a id="top"></a>
+Do not reproduce or reinterpret the schema contract from memory. For each required section:
 
-# Code-Level Resiliency Assessment
+- Preserve the section even when authoritative content is unavailable.
+- Use the schema-defined unavailable-content behavior.
+- Render only authoritative Step 1, Step 2, and Step 3A facts.
+- Preserve Step 2 finding status and severity and Step 3A priority and change mapping.
+- Apply the frozen report selection consistently to detailed findings, summary, matrix, and roadmap.
+- Render exact Step 2 source excerpts and Step 3A illustrative proposals according to their target-level status.
+- Display source locators using the authority order defined in this prompt.
 
-Include schema-required report metadata:
-
-- Application
-- Assessment date
-- Repository scope
-- Current deployment
-- Target deployment
-- Language and framework
-- Runtime platform
-- Report version
-
-Use `Not provided` for unavailable required metadata.
-
-## Table of Contents
-
-Include schema-required links to:
-
-1. Assessment Overview
-2. Resiliency-Focused Recommendations
-3. Non-Resiliency-Focused Recommendations
-4. Repository and IaC Evidence Gap Analysis
-5. Full Finding Matrix
-6. Standards Alignment
-7. Implementation Roadmap
-
-## 1. Assessment Overview
-
-### Application and repository overview
-
-Write a factual narrative covering the schema-required application characteristics supported by inventory evidence, including build system, versions, modules, workload model, inbound interfaces, schedulers or consumers, data paths, repository-owned configuration, confirmed dependencies, deployment context, and evidence boundary.
-
-### Assessment themes
-
-Provide concise themes. Each theme must explain observed behavior, regional resiliency relevance, related finding IDs, and whether the conclusion is verified or conditional.
-
-### Approved shared-service and reference architectures
-
-If an approved reference registry is supplied, create the schema-defined reference table using only supplied references.
-
-If no registry is supplied, state:
-
-> No customer-specific reference-architecture registry was supplied. The assessment uses the grounded application behavior standards and cited Microsoft patterns.
-
-### Summary findings table
-
-Create the schema-defined summary table and reconcile counts to the Full Finding Matrix.
-
-Count only approved findings. Exclude verified controls, non-findings, `not_assessed`, `not_applicable`, accepted risks, and PCF references.
-
-### Illustrative-code notice
-
-Include the exact notice required by the schema.
-
-Include `[Back to Top](#top)`.
-
-## 2. Resiliency-Focused Recommendations
-
-### P0 Critical Immediate Action
-
-#### Database Resiliency
-
-F-001
-
-#### Messaging Resiliency
-
-F-002
-
-### P1 High Priority
-
-#### Configuration
-
-F-003
-
-### P2 Moderate Priority
-
-F-004
-
-### P3 Optimization
-
-F-005
-...
-
-Create only priority subsections containing resiliency-related findings.
-
-Group findings first by governed priority.
-
-Required order:
-
-P0
-P1
-P2
-P3
-
-Within each priority group,
-organize findings by repository-specific category.
-
-Render every category using:
-
-```html
-<h3 style="color:#0F6CBD;">
-{Category Name}
-</h3>
-```
-
-The category heading is a visual grouping construct and must:
-
-- appear before the first finding in the category
-- be larger than the finding heading
-- not be treated as a finding
-- not receive a finding ID
-- not appear in finding counts
-
-Do not create a category-only structure.
-
-Priority is the primary organization mechanism.
-Category is secondary. 
-Do not force a category unsupported by evidence.
-
-
-### Required detailed finding content
-
-For each finding, include every schema-required field:
-
-- Finding ID and title
-- Priority
-- Priority policy, version, and rule
-- Severity
-- Resiliency relationship
-- Finding status
-- Issue
-- What the recommendation solves
-- Active-active or active-passive impact
-- Recommended fix
-- Repository evidence
-- Target file and location
-- Original source requiring update
-- Illustrative proposed implementation
-- Validation requirements
-- Dependencies
-- Notes
-- Standards reference
-
-Rules:
-
-- Preserve line numbers when available.
-- Use fenced code blocks with the correct language.
-- Label every illustrative code proposal as required by the schema.
-- Do not fabricate code when Step 3A requires targeted implementation discovery.
-- When Step 3A marks a proposal `generated`, render the concrete code/configuration block exactly; narrative-only remediation is invalid.
-- When Step 3A marks targeted discovery required, render the reason and unresolved inputs without presenting prose as code.
-- For conditional findings, include the condition and evidence required.
-- Distinguish minimum remediation from optional architectural alternatives.
-- Cross-reference related findings and change IDs.
-
-Include `[Back to Top](#top)`.
-
-## 3. Non-Resiliency-Focused Recommendations
-
-### P0
-
-...
-
-### P1
-
-...
-
-### P2
-
-...
-
-### P3
-
-...
-Include only approved findings explicitly classified as not resiliency-related.
-
-Use the schema-required detailed finding format, replacing regional resiliency impact with operational or quality impact where appropriate.
-
-Do not place PCF references in this section.
-
-### Verified controls
-
-Include evidence-backed controls for which no application code change is required. Do not include verified controls in finding counts.
-
-Include `[Back to Top](#top)`.
-
-## 4. Repository and IaC Evidence Gap Analysis
-
-Respect the application-code-only boundary.
-
-Explain which application configuration, pipeline, Docker, Helm, Kubernetes, workflow, build, or test artifacts were actually present, and which platform artifacts were external or absent.
-
-Absence of infrastructure evidence is not an infrastructure finding.
-
-### Available to review
-
-Create the schema-defined table using only proven repository artifacts.
-
-### Not available or externally owned
-
-Create the schema-defined table for evidence needed to validate application assumptions or conditional findings.
-
-### PCF exclusion statement
-
-Include the exact PCF exclusion statement required by the schema.
-
-Include `[Back to Top](#top)`.
-
-## 5. Full Finding Matrix
-
-Create one row per approved finding using the schema-defined columns.
-
-Requirements:
-
-- Link each finding ID to its detailed heading.
-- Preserve priority, severity, resiliency relationship, and status.
-- Include the mapped Step 3A change ID.
-- Exclude verified controls, observations, not-assessed controls, accepted risks, and PCF references.
-- Reconcile counts with the summary table.
-
-Include `[Back to Top](#top)`.
-
-## 6. Standards Alignment
-
-Create the schema-defined standards-alignment table.
-
-Include only standards supported by grounding or supplied approved references. Use concise evidence-based status descriptions.
-
-Do not invent standards or links.
-
-Include `[Back to Top](#top)`.
-
-## 7. Implementation Roadmap
-
-Summarize Step 3A without replacing it.
-
-Include the schema-required:
-
-- Priority summary
-- Implementation waves
-- Change index
-- Targeted implementation-discovery items
-- Step 4 approval boundary
-
-State that Step 4 uses the authoritative Step 3A plan and supports:
-
-- `APPROVED_PRIORITIES`
-- `APPROVED_WAVES`
-- `APPROVED_CHANGE_IDS`
-
-State that priorities are preferred and Step 4 freezes resolved change IDs before modifying source code.
-
-This roadmap is report content only. It does not make Task Implementor responsible for generating the report.
-
-Include `[Back to Top](#top)`.
+The final report must include every schema-required top-level section exactly once and in schema order. Repository-specific categories may appear only beneath schema-authorized sections.
 
 ## Report writing requirements
 
@@ -682,7 +455,7 @@ Before completing, add this validation record to the report's final HTML comment
 ```yaml
 schema_conformance:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.7.0"
+  schema_version: "<active-version-read-from-REPORT_SCHEMA>"
   required_sections_present: true
   required_section_order_valid: true
   required_finding_fields_present: true
@@ -734,55 +507,11 @@ Before completing:
 26. Verify blocked implementation adapters are distinguished from
   generated application abstractions and tests.
 
-# Prompt 3B Update: Report Kafka Scenario Source and Validation
+### Kafka scenario reporting
 
-Add this subsection to Assessment Overview when Kafka is applicable:
+When Kafka is applicable, render the Step 1 scenario declaration, provenance, policy validation, processing model, regional processing model, external-side-effect classification, Kafka-backed state, conditional assumptions, architecture confirmation requirement, and unresolved infrastructure facts exactly as required by `REPORT_SCHEMA` and the authoritative Kafka policy.
 
-```markdown
-### Kafka Operating Scenario
-
-- **Scenario:** <Active-Standby|Independent Regional Active-Active|Database-Independent Kafka>
-- **Processing model:** <value-or-not-applicable>
-- **Regional processing model:** <value-or-unresolved>
-- **External side effects:** <value>
-- **Kafka-backed state:** <value>
-- **Scenario source:** Approved application architecture context
-- **Context ID:** `<id>`
-- **Context version:** `<version>`
-- **Policy:** `KAFKA-OPERATING-SCENARIO` version `2.0.0`
-- **Policy rule:** `KAFKA-SCENARIO-001`
-- **Policy validation:** Consistent
-- **Repository compatibility:** Consistent
-- **Architecture confirmation required:** No
-- **Kafka topology:** Independent primary and standby clusters
-- **Stretched cluster:** No
-- **Authoritative state alignment:** Azure SQL primary/standby
-```
-
-If inferred, report:
-
-```markdown
-- **Scenario source:** Inferred from repository-observed dependencies
-- **Architecture confirmation required:** Yes
-```
-
-If conflicted or unresolved, report the reason and state that scenario-specific Kafka
-controls were not assessed.
-
-Add separate overview subsections:
-
-1. `Repository-Observed Interactions`
-2. `Supplied External Architecture Context`
-
-Never present Akamai, F5, Application Gateway, APIM, downstream processors, or
-transitive state stores as repository-discovered unless direct repository evidence exists.
-
-External architecture context can explain scenario and impact. It cannot be used as the
-original source-code evidence for a finding or as proof of deployed infrastructure noncompliance.
-
-### Database-independent Kafka reporting
-
-When selected, report that no application database is used, then state processing model, regional ownership, external side effects, Kafka-backed/local state, scenario source, confidence, and architecture confirmation. Do not describe database independence as automatically stateless, active-active, or safe for multi-active processing.
+Do not recreate scenario inference in Step 3B. Keep repository-observed interactions and supplied architecture context separate. Do not present context as source-code evidence or as proof of deployed infrastructure.
 
 ## End-of-Phase Compact Handoff Summary
 
@@ -935,7 +664,7 @@ Example non-Git rendering:
 **Repository evidence:** `EV-F-001-01`
 ```
 
-Show a Git commit SHA only for `git_revision`. Apply schema version 1.7.0 and record repository-agnostic snapshot conformance in the final comment and handoff.
+Show a Git commit SHA only for `git_revision`. Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
 
 ## Incremental Report Assembly and Recovery
 
@@ -945,7 +674,7 @@ Generate the report through bounded incremental assembly. Do not attempt one unb
 
 Before creating the report:
 
-1. Validate all authoritative inputs and schema version 1.7.0.
+1. Validate all authoritative inputs and the active schema version read from `REPORT_SCHEMA`.
 2. Freeze selected priorities, omitted priorities, selected finding IDs, selected change IDs, display IDs, categories, counts, and roadmap mappings.
 3. Create the schema-required `report_assembly_manifest`.
 4. Do not reconsider these values during writing or recovery.
