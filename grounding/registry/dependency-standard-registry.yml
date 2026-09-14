@@ -105,7 +105,7 @@ standards:
         - spring.session.store-type=redis
 
     standard:
-      path: grounding/dependencies/azure-managed-redis.md
+      path: grounding/dependencies/springboot-azure-managed-redis.md
       version: "2.0.0"
 
 

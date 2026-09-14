@@ -1,0 +1,47 @@
+---
+schema_version: "1.0.0"
+document_type: approved_libraries_policy
+policy_id: APPROVED-APPLICATION-LIBRARIES
+policy_version: "1.0.0"
+lifecycle_status: template
+owner: "<architecture-or-platform-owner>"
+approved_by: "<approver-or-not_applicable>"
+approved_at: "<YYYY-MM-DD-or-not_applicable>"
+---
+
+approved_libraries:
+  resiliency:
+    - rule_id: RESILIENCY-001
+      lifecycle_status: "<approved|draft|retired>"
+      framework: spring_boot
+      framework_major_versions:
+        - "3"
+      java_versions:
+        - "17"
+        - "21"
+      library: "<resilience4j|spring_retry|failsafe|custom_platform_wrapper>"
+      artifact_coordinates:
+        group_id: "<group-id>"
+        artifact_id: "<artifact-id>"
+      version_source:
+        type: "<parent_pom|bom|dependency_management|explicit_version|platform_wrapper>"
+        reference: "<parent-or-bom-reference>"
+        approved_version: "<version-or-managed>"
+      approved_capabilities:
+        - circuit_breaker
+        - retry
+        - bulkhead
+        - time_limiter
+      prohibited_capabilities: []
+      configuration_prefix: "<configuration-prefix-or-not_applicable>"
+      usage_constraints:
+        require_externalized_thresholds: true
+        require_bounded_timeout: true
+        prohibit_retry_of_non_idempotent_operations_without_protection: true
+        require_metrics: true
+        require_recovery_tests: true
+      architecture_reference: "<ADR-or-standard-reference>"
+
+  observability: []
+  persistence: []
+  testing: []

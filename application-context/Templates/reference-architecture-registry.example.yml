@@ -1,0 +1,11 @@
+document_type: reference_architecture_registry
+schema_version: "1.0.0"
+lifecycle_status: example
+customer: "Replace with customer name"
+references:
+  - service_id: example-service
+    azure_shared_service: "Replace with service"
+    architecture_title: "Replace with approved title"
+    reference_url: "Replace with approved URL"
+    approval_status: draft
+    version: "Not provided"

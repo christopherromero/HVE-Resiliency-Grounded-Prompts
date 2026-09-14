@@ -13,8 +13,9 @@ This is a planning phase. Do not modify application source code, repository conf
 Provide exact paths when invoking this prompt:
 
 ```text
-INVENTORY_ARTIFACT=.copilot-tracking/research/YYYY-MM-DD/springboot-active-active-inventory-research.md
-REVIEW_ARTIFACT=.copilot-tracking/reviews/YYYY-MM-DD/springboot-active-active-inventory-review.md
+INVENTORY_ARTIFACT=<exact authoritative Step 1 inventory artifact path>
+REVIEW_ARTIFACT=<exact authoritative Step 2 review artifact path>
+PLAN_ARTIFACT=<exact authoritative Step 3A output artifact path>
 ```
 
 Always read:
@@ -283,6 +284,67 @@ Code examples must:
 
 If names or APIs cannot be verified, do not invent compilable code. Describe the intended pattern and set `targeted_implementation_discovery_required: true`.
 
+### Business-Logic and Security Preservation Boundary
+
+Resiliency remediation must preserve existing business semantics,
+partner-contract interpretation, privacy controls, and security behavior
+unless an explicit approved architecture or business decision authorizes
+a change.
+
+#### Business-logic changes requiring explicit approval
+
+Do not propose a change as directly implementable when it would alter:
+
+- The meaning assigned to an HTTP status code
+- Success, failure, duplicate, pending, or unknown classification
+- Primary or fallback provider selection
+- The conditions under which fallback is attempted
+- Order, payment, delivery, inventory, or enrollment state transitions
+- Whether a business operation is retried, discarded, compensated, or
+  routed for reconciliation
+- The number or type of externally observable partner operations
+- Customer-visible results
+- Business validation rules
+- Authorization behavior
+- Personal-information redaction or scrubbing
+- Logging sanitization
+- Encryption, tokenization, masking, or security controls
+
+These changes require an explicit approval record from the appropriate
+architecture, product, business, security, privacy, or partner-contract
+owner.
+
+#### Required change classification
+
+Classify every proposed implementation target:
+
+```yaml
+change_boundary:
+  classification:
+    resiliency_mechanism |
+    supporting_configuration |
+    test_only |
+    business_logic_change |
+    partner_contract_change |
+    security_or_privacy_change |
+    mixed
+
+  existing_business_behavior_preserved: true|false|unknown
+
+  security_and_privacy_behavior_preserved: true|false|unknown
+
+  external_interaction_pattern_changed: true|false
+
+  approval_required: true|false
+
+  approval:
+    status: approved|not_approved|not_required|not_available
+    decision_id: <ADR-or-approval-id-or-not_applicable>
+    approved_by: <owner-or-not_applicable>
+    approved_at: <date-or-not_applicable>
+
+  implementation_allowed: true|false
+  unresolved_inputs: []
 
 ### Enforced illustrative-code generation contract
 
@@ -513,7 +575,17 @@ The plan must:
 
 ## Required outputs
 
-Write one consolidated authoritative planning artifact to the HVE-authorized planning location, normally under `.copilot-tracking/plans/` or the location selected by the installed HVE planning workflow.
+Write exactly one consolidated authoritative planning artifact to
+PLAN_ARTIFACT.
+
+PLAN_ARTIFACT is the binding authoritative output path supplied by
+the execution wrapper.
+
+Do not rename the artifact, remove filename suffixes, or substitute
+an HVE-selected default path.
+
+If PLAN_ARTIFACT cannot be written, stop and report the exact blocked
+path. Do not create an alternate authoritative planning artifact.
 
 The consolidated artifact must contain:
 
@@ -539,8 +611,9 @@ planning:
   schema_version: "2.0"
   phase: remediation_planning
   artifact_role: authoritative_remediation_plan
-  inventory_artifact: "exact Step 1 path"
-  review_artifact: "exact Step 2 path"
+  inventory_artifact: "${INVENTORY_ARTIFACT}"
+  review_artifact: "${REVIEW_ARTIFACT}"
+  plan_artifact: "${PLAN_ARTIFACT}"
   planner_agent: task-planner
   repository_reinventoried: false
   controls_reassessed: false
@@ -683,59 +756,82 @@ The handoff must preserve the Step 3A frozen priority and wave indexes without r
 
 ## Completion validation
 
-Before completing:
+Before completing Step 3A, run the following consolidated validation gate.
 
-1. Verify every target with a path, symbol, original excerpt, and sufficient implementation evidence has `illustrative_code_status: generated` and a non-empty syntactic code/configuration block.
-2. Verify narrative-only text does not appear in `illustrative_code`.
-3. Verify every `targeted_discovery_required` target identifies a specific blocking fact and unresolved input.
-4. Verify multi-file changes generate concrete proposals for all unblocked targets rather than suppressing the whole change.
-5. Verify `illustrative_code_coverage.narrative_only_generated_proposals` is `0`.
-6. Verify `illustrative_code_coverage.coverage_complete` is `true`.
-7. Verify every planned change maps to an approved noncompliant finding.
-8. Verify every approved finding is mapped or explicitly consolidated.
-9. Verify no new findings or control statuses were created.
-10. Verify no source files were modified.
-11. Verify every change cites a valid governance rule and policy version.
-12. Verify priority was not derived solely from severity.
-13. Verify P2 data-correctness candidates were evaluated for P0 elevation.
-14. Verify required tests inherit the priority of the behavior they validate.
-15. Verify illustrative code is labeled non-authoritative and grounded in evidence.
-16. Verify configuration examples contain no hardcoded region names or endpoints.
-17. Verify every change has tests, acceptance criteria, and validation commands.
-18. Verify no infrastructure or PCF remediation was added.
-19. Verify priority and wave indexes contain every change exactly once in each applicable index.
-20. Verify both Step 3B and Step 4 handoff contracts are present.
-21. Verify that one compact handoff summary exists under `.copilot-tracking/handoffs/`.
-22. Verify targeted discovery is assigned per target, not automatically per change.
-23. Verify an unresolved adapter or technology choice does not suppress
-  repository interfaces, configuration contracts, service boundaries,
-  domain changes, or tests that can be responsibly illustrated.
-24. Verify unresolved inputs from related findings do not block code
-  generation for the current finding unless they are genuinely required.
-25. Verify every narrative-only change was evaluated for partial concrete
-  proposals.
-26. Verify each targeted-discovery reason references the specific target
-  that cannot be generated.
-27. Verify each remediation was divided into independently expressible
-  implementation targets.
-28. Verify concrete illustrative code was generated for every target
-  supported by authoritative repository evidence.
-29. Verify targeted discovery applies only to the specific blocked target,
-  not automatically to the entire change.
-30. Verify unresolved adapter, persistence, or vendor decisions did not
-  suppress technology-neutral interfaces, service contracts,
-  configuration contracts, domain changes, or tests.
-31. Verify every targeted-discovery record identifies the exact unresolved
-  decision and the information Task Implementor must validate.
-32. Verify concrete illustrative code was generated for every target
-  supported by authoritative repository evidence.
-33. Verify targeted discovery applies only to the specific blocked target,
-  not automatically to the entire change.
-34. Verify unresolved adapter, persistence, or vendor decisions did not
-  suppress technology-neutral interfaces, service contracts,
-  configuration contracts, domain changes, or tests.
-35. Verify every targeted-discovery record identifies the exact unresolved
-  decision and the information Task Implementor must validate.
+### Core planning validation
+
+- Verify every planned change maps to at least one approved noncompliant Step 2 finding.
+- Verify every approved finding is mapped to exactly one primary change or explicitly consolidated under another root-cause change.
+- Verify no new findings, dependencies, or control statuses were created.
+- Verify no repository source, configuration, test, pipeline, deployment, or infrastructure file was modified.
+- Verify every change has a unique stable change ID, implementation wave, complexity, objective, acceptance criteria, validation commands, risks, rollback considerations, and dependency mapping.
+- Verify priority was assigned only through the governed remediation-prioritization policy.
+- Verify every change cites a valid policy ID, policy version, and rule ID.
+- Verify priority was not derived solely from severity.
+- Verify P2 data-correctness candidates were evaluated for P0 elevation where active-active operation could make a critical transaction materially unsafe.
+- Verify required tests inherit the priority of the behavior they validate.
+- Verify priority and wave indexes contain every change exactly once in each applicable index.
+- Verify no deployed-infrastructure or PCF remediation was added.
+
+### Source evidence and targeting validation
+
+- Verify Step 2 repository paths, symbols or configuration elements, exact excerpts, source fingerprints, assessment snapshots, evidence IDs, and advisory line ranges were preserved verbatim.
+- Verify original source was never regenerated or normalized.
+- Verify original source, target location, and illustrative implementation remain separate.
+- Verify source targeting uses path, symbol or element, exact excerpt, fingerprint, assessment snapshot, and advisory line range in that order.
+- Verify line numbers are explicitly non-authoritative for every source or configuration target.
+- Verify missing Git metadata did not suppress planning or illustrative proposals.
+- Verify evidence limitations are explicit where snapshot identity, fingerprint, excerpt, or line range is unavailable.
+
+### Illustrative-code validation
+
+- Verify every source, configuration, build, or test target has exactly one status: `generated`, `targeted_discovery_required`, or `not_applicable`.
+- Verify every target with sufficient authoritative evidence has `illustrative_code_status: generated` and a non-empty syntactic code or configuration block.
+- Verify narrative-only text does not appear in `illustrative_code`.
+- Verify comments alone do not satisfy Java, YAML, properties, XML, SQL, shell, build, or test proposal requirements.
+- Verify each remediation was divided into independently expressible targets.
+- Verify multi-file changes contain concrete proposals for every unblocked target.
+- Verify targeted discovery applies only to the specific blocked target, not automatically to the entire change.
+- Verify every targeted-discovery record identifies the exact blocking fact and required unresolved input.
+- Verify unresolved adapter, persistence, vendor, or external-contract decisions did not suppress technology-neutral interfaces, service contracts, configuration contracts, domain changes, or tests.
+- Verify unrelated findings or downstream contracts were not combined merely to avoid generating code.
+- Verify configuration examples contain no hardcoded region names, regional endpoints, credentials, or unapproved numeric settings.
+- Verify all illustrative proposals are labeled non-authoritative.
+- Verify `illustrative_code_coverage.narrative_only_generated_proposals` is `0`.
+- Verify `illustrative_code_coverage.coverage_complete` is `true`.
+
+### Business-logic, partner-contract, security, and privacy validation
+
+- Verify every implementation target has a `change_boundary` classification.
+- Verify directly implementable targets preserve existing business semantics and security/privacy behavior.
+- Verify HTTP status codes were not reinterpreted without approved partner-contract evidence.
+- Verify success, failure, duplicate, pending, and unknown classifications were not changed without explicit approval.
+- Verify no new external provider call or external interaction pattern was proposed as directly implementable without explicit approval.
+- Verify primary-provider, fallback-provider, retry, discard, compensation, and reconciliation behavior remains unchanged unless an approved decision authorizes the change.
+- Verify no PII scrubbing, logging sanitization, redaction, authentication, authorization, encryption, tokenization, masking, or validation behavior was removed, weakened, or bypassed.
+- Verify mixed changes isolate eligible resiliency targets from approval-required business, partner-contract, security, and privacy targets.
+- Verify approval-required targets have `implementation_allowed: false` until approval is recorded.
+
+### Approved-library validation
+
+- Verify every vendor-specific illustrative proposal contains the compact `library_resolution` record.
+- Verify `approved-libraries.yml` was used as approval authority only when `lifecycle_status: approved`.
+- Verify the selected capability is listed under `approved_capabilities`.
+- Verify product approval and repository availability were evaluated separately.
+- Verify dependency presence was not treated as governance approval.
+- Verify policy approval was not treated as proof that the dependency or compatible API is present.
+- Verify dependency proposals follow the approved version-source strategy.
+- Verify no unmanaged version, unsupported API signature, or unapproved library substitution was invented.
+- Verify missing library approval blocked only vendor-specific targets and did not suppress technology-neutral contracts or tests.
+- Verify Step 3A did not create a new finding solely because the approved-library file was absent, draft, or incomplete.
+
+### Handoff and completion validation
+
+- Verify the Step 3B report handoff and Step 4 Task Implementor handoff contracts are present.
+- Verify the planning handoff preserves the frozen priority and wave indexes without recalculation.
+- Verify one compact handoff summary exists under `.copilot-tracking/plans/handoffs/` when agent write permissions permit it.
+- Verify the handoff summary is non-authoritative and identifies exact authoritative artifact paths.
+- Verify all unresolved decisions, governance blocks, targeted-discovery items, and approval-required targets are reported.
 
 Report:
 
@@ -743,10 +839,190 @@ Report:
 - Prioritization policy version
 - Change counts by priority
 - Implementation waves
+- Illustrative-code coverage summary
 - Items requiring targeted implementation discovery
+- Approval-required business, partner-contract, security, or privacy targets
+- Approved-library resolution exceptions
 - Priority overrides
-- Confirmation that no source code was modified
+- Confirmation that no source code or repository configuration was modified
 
 ### Kafka scenario preservation
 
 For Kafka findings preserve operating_scenario, scenario_source, policy version/rule, processing_model, regional_processing_model, external_side_effects, kafka_backed_state, validation status, and architecture confirmation. Do not redesign scenario during planning. Database-independent remediation must not introduce a database unless an approved architecture decision requires it.
+
+## Repository-Agnostic Snapshot Preservation
+
+Preserve Step 2 `assessment_snapshot` and `source_fingerprint` verbatim. Do not require or invent a Git commit SHA. Do not convert a workspace snapshot, uploaded archive, or source drop into a Git revision.
+
+Targeting precedence is path, symbol/element, original excerpt, fingerprint, assessment snapshot, then advisory line range.
+
+```yaml
+target:
+  repository_path: src/main/java/example/Service.java
+  symbol: Service.processPayment
+  assessment_snapshot:
+    type: workspace_snapshot
+    identifier: assessment-run-2026-09-09T190000Z
+    provenance: workspace_generated
+    git_commit_sha: not_applicable
+    limitations: []
+  source_fingerprint:
+    algorithm: sha256
+    value: <hash>
+  original_line_range:
+    start_line: 142
+    end_line: 156
+    status: advisory
+  line_numbers_authoritative: false
+```
+
+A missing Git repository is not targeted-discovery justification and must not suppress illustrative implementation. Preserve any snapshot limitations for Step 4 drift handling.
+
+## Simplified Approved-Library Resolution
+
+### Optional governance input
+
+Read this optional file when present:
+
+```text
+APPROVED_LIBRARIES=grounding/governance/approved-libraries.yml
+```
+
+The file is valid as approval authority only when its top-level `lifecycle_status` is `approved`. A missing or draft file does not authorize a vendor-specific library.
+
+The simplified policy identifies:
+
+- The approved resiliency library
+- Approved resiliency capabilities
+- Observability and testing libraries
+- The approved version-source strategy
+- Cross-cutting library usage constraints
+
+Do not require artifact coordinates, exact versions, framework matrices, or a Git repository in this governance file. Resolve repository compatibility and dependency availability from the authoritative inventory, findings, cited build evidence, and permitted targeted inspection.
+
+### Resolution precedence
+
+Use this order:
+
+1. Approved application-specific library declaration, when supplied
+2. Approved `grounding/governance/approved-libraries.yml`
+3. Existing repository dependency or parent/build-management evidence
+4. Technology-neutral illustrative implementation
+5. Targeted discovery for only the blocked vendor-specific target
+
+Preserve these distinctions:
+
+- Policy approval means the product choice is sanctioned.
+- Repository evidence means the library or API is currently available.
+- Policy approval does not prove repository availability.
+- Repository dependency presence does not prove governance approval.
+
+### Required compact resolution record
+
+For each proposal requiring a vendor or framework API, record:
+
+```yaml
+library_resolution:
+  capability: circuit_breaker|retry|bulkhead|time_limiter|metrics|tracing|integration_testing|api_mocking|other
+  approved_library: resilience4j|spring_retry|failsafe|custom_platform_wrapper|micrometer|open_telemetry|testcontainers|wiremock|other|not_selected
+  approval_source: application_architecture_context|approved_libraries_governance|not_available
+  approval_status: approved|not_approved|not_available
+  repository_availability: available|dependency_change_required|unknown
+  version_source: parent_pom|bom|dependency_management|repository_declared|not_specified
+  dependency_change_required: true|false|unknown
+  unresolved_inputs: []
+```
+
+### Approved and repository-available
+
+When the policy is approved, the capability is listed under `approved_capabilities`, and repository evidence establishes a compatible library/API:
+
+- Generate concrete vendor-specific illustrative code and configuration.
+- Reuse repository-observed package names, APIs, configuration prefixes, programming model, and test conventions.
+- Do not invent API signatures that cannot be validated from the repository's effective library version.
+
+### Approved but dependency change required
+
+When the policy is approved but the library is not currently available:
+
+- Set `repository_availability: dependency_change_required`.
+- Set `dependency_change_required: true`.
+- Generate a dependency-change proposal only when the artifact identity can be established from authoritative repository or organization evidence.
+- Follow `library_rules.version_source`.
+- Do not hardcode a version when the approved source is a parent POM, BOM, or dependency-management section.
+- Generate vendor-specific code only when compatibility and the API family can be established responsibly.
+- Otherwise generate technology-neutral boundaries and mark only the vendor-specific adapter/decorator target `targeted_discovery_required`.
+
+### Repository library present but not approved
+
+When repository evidence contains a resilience library but no approved policy or application decision sanctions it:
+
+- Set `approval_status: not_available` or `not_approved` as applicable.
+- Do not treat dependency presence as product approval.
+- Generate technology-neutral proposals where possible.
+- Identify governance confirmation as an unresolved input for the vendor-specific target.
+- Do not create a new finding in Step 3A solely because approval is unavailable.
+
+### No approved library
+
+When no approved library is selected:
+
+- Do not choose Resilience4j, Spring Retry, Failsafe, or another vendor on behalf of the organization.
+- Generate technology-neutral interfaces, configuration contracts, fallback behavior, failure classification, metrics expectations, and tests where supported.
+- Mark only the vendor-specific dependency, decorator, adapter, or annotation target `targeted_discovery_required`.
+- State that product selection is an architecture or platform-governance input, not a repository defect by itself.
+
+### Circuit-breaker proposal behavior
+
+For circuit-breaker remediation, always define the technology-neutral design first:
+
+```yaml
+circuit_breaker_design:
+  protected_operation: <repository symbol>
+  fallback_behavior: fail_fast|cached_read|safe_default|queued_recovery|none|unresolved
+  failure_classification: <repository-supported classification>
+  state_scope: per_dependency|per_operation|other|unresolved
+  timeout_relationship: <bounded ordering contract>
+  configuration_externalized: true
+  approved_library: <library_resolution.approved_library>
+```
+
+Do not invent breaker names, thresholds, sliding-window values, open durations, half-open call counts, fallback values, or exception lists. Use externalized placeholders unless authoritative evidence supplies approved values.
+
+### Simplified example
+
+```yaml
+library_resolution:
+  capability: circuit_breaker
+  approved_library: resilience4j
+  approval_source: approved_libraries_governance
+  approval_status: approved
+  repository_availability: dependency_change_required
+  version_source: dependency_management
+  dependency_change_required: true
+  unresolved_inputs: []
+```
+
+If artifact coordinates are established elsewhere, an illustrative dependency proposal may omit an explicit version when dependency management is authoritative:
+
+```xml
+<dependency>
+  <groupId>io.github.resilience4j</groupId>
+  <artifactId>resilience4j-spring-boot3</artifactId>
+</dependency>
+```
+
+### Approved-library validation
+
+Validate library resolution while building each affected change. The authoritative phase-completion gate is the consolidated `## Completion validation` section later in this prompt.
+
+Before completing library resolution, verify:
+
+- Every vendor-specific proposal includes the compact `library_resolution` record.
+- The governance file was used as approval authority only when `lifecycle_status: approved`.
+- The selected capability is listed under `approved_capabilities`.
+- Repository availability and product approval were evaluated separately.
+- Missing library approval blocked only vendor-specific targets.
+- Technology-neutral contracts and tests were still generated when evidence supported them.
+- No unmanaged version, unsupported API, or unapproved product substitution was invented.
+- Step 3A did not create a new finding solely because the approved-library file was absent or draft.

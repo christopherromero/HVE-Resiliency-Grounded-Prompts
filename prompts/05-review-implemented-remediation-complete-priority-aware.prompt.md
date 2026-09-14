@@ -13,7 +13,7 @@ It does not repeat inventory or the full multi-region assessment.
 Provide exact artifact paths:
 
 ```text
-INVENTORY_ARTIFACT=.copilot-tracking/research/YYYY-MM-DD/springboot-active-active-inventory-research.md
+INVENTORY_ARTIFACT=.copilot-tracking/research/{{YYYY-MM-DD}}/{{task_slug}}-research.md
 ORIGINAL_REVIEW_ARTIFACT=<exact Step 2 assessment artifact or output path>
 PLAN_ARTIFACT=<exact Step 3 authoritative remediation-plan artifact>
 IMPLEMENTATION_ARTIFACT=<exact Step 4 authoritative implementation-record artifact>
@@ -139,6 +139,110 @@ You may inspect:
 
 If implementation exposes a possible unrelated issue, record it as `follow_up_observation`. Do not convert it into a new finding during this review.
 
+## Source Locator Authority
+
+Review source identity using this precedence:
+
+1. Repository path
+2. Symbol or configuration/build element
+3. Exact original source excerpt
+4. Source fingerprint
+5. Assessment snapshot
+6. Original assessed line range, treated as advisory
+
+Line numbers are navigation metadata only. Do not validate closure from line-number correspondence alone, and do not fail closure solely because lines moved.
+
+## Assessment-Scope Compliance Review
+
+Read and preserve the Step 1 `assessment_scope_resolution` and the Step 4 `implementation_domain_scope` records.
+
+Verify that every modified artifact class was authorized by Step 1 scope and mapped to a resolved Step 3A change:
+
+```yaml
+assessment_scope_review:
+  enabled_domains: []
+  disabled_domains: []
+  inventory_only_domains: []
+  modified_artifact_domains: []
+  unauthorized_modified_artifacts: []
+  scope_compliant: true
+```
+
+Rules:
+
+- `inventory_only` does not authorize modification.
+- Dockerfile changes require `container_build` to be enabled.
+- Pipeline changes require `cicd_pipeline` to be enabled.
+- Helm, Kustomize, Kubernetes manifest, and deployment-script changes require `deployment_configuration` to be enabled.
+- Repository-owned IaC changes require `infrastructure_as_code: findings_enabled` and an explicitly approved Step 3A target.
+- Deployed infrastructure changes are always outside this review scope.
+- An unauthorized modified artifact is an implementation-scope violation and prevents closure of affected findings.
+
+## Approved-Library Compliance Review
+
+For every vendor-specific implementation, compare the Step 3A `library_resolution` with the Step 4 `library_implementation_check` and the actual repository changes.
+
+```yaml
+library_resolution_review:
+  change_id: CHANGE-AA-001
+  capability: circuit_breaker
+  approved_library: resilience4j
+  approval_status: approved
+  repository_availability: dependency_change_required
+  version_source: dependency_management
+  implemented_library: resilience4j
+  implementation_matches_plan: true
+  compatibility_evidence: []
+  unapproved_library_introduced: false
+  disposition: compliant
+```
+
+Verify:
+
+- No unapproved resilience library or product substitution was introduced.
+- The implemented capability was approved.
+- Dependency coordinates and version sourcing match the approved plan and effective build-management strategy.
+- The implemented API is compatible with the repository runtime and dependency version.
+- A dependency already present in the repository was not treated as governance approval by itself.
+
+An unapproved or incompatible library implementation prevents closure of affected findings.
+
+## Commit Traceability Review
+
+Read the Step 4 `commit_execution` and `change_commits` records when present.
+
+```yaml
+commit_review:
+  commit_mode: "<none|per_change>"
+  repository_is_git: "<true|false|not_applicable>"
+  starting_worktree_clean: "<true|false|not_applicable|unknown>"
+  change_commit_reviews:
+    - change_id: CHANGE-AA-001
+      commit_status: "<committed|not_committed|validation_failed|blocked|skipped_non_git_workspace>"
+      commit_sha: "<full-sha-or-not_applicable>"
+      commit_subject: "<subject-or-not_applicable>"
+      mapped_finding_ids: []
+      files_in_commit: []
+      unrelated_files_in_commit: []
+      validation_passed_before_commit: true
+      commit_matches_change_scope: true
+  push_performed: false
+  branch_created: false
+  pull_request_created: false
+  traceability_status: passed
+```
+
+When `commit_mode: per_change`, verify:
+
+- Each committed Step 3A change ID has one atomic local commit.
+- All findings mapped to that root-cause change are recorded with the commit.
+- Unrelated change IDs and unrelated files are not included.
+- Required validation passed before the commit was created.
+- The commit SHA exists and resolves in the current Git repository.
+- No unauthorized push, branch creation, or pull request occurred.
+
+Do not require commits when `commit_mode: none`. Do not require Git metadata for a non-Git workspace. A missing or incorrect commit record affects commit traceability, but finding closure is blocked only when it also prevents reliable validation of the implemented change or violates an explicit approval requirement.
+
 ## Review objectives
 
 For every resolved change ID:
@@ -156,6 +260,46 @@ For every resolved change ID:
 11. Verify recovery after dependency restoration when required.
 12. Verify no unrelated scope was introduced.
 13. Verify supporting files changed outside core production code were necessary for resolved changes.
+
+### Configuration Consistency Validation
+
+When a remediation modifies readiness, liveness, startup probes, Actuator health contributors, health groups, dependency checks, readiness participation, dependency enablement, resiliency properties, or dependency management, verify that all supporting configuration is present and internally consistent.
+
+If readiness includes Mongo, verify that the effective configuration enables the Mongo health contributor, for example:
+
+```yaml
+management:
+  health:
+    mongo:
+      enabled: true
+```
+
+The exact property must match the repository's Spring Boot version and configuration model.
+
+Record:
+
+```yaml
+configuration_consistency_review:
+  change_id: CHANGE-AA-001
+  readiness_configuration_verified: true
+  liveness_configuration_verified: true
+  startup_configuration_verified: true
+  health_contributors_verified: true
+  resiliency_properties_verified: true
+  dependency_management_verified: true
+  contradictory_configuration: []
+  missing_required_configuration: []
+  review_status: passed
+```
+
+Confirm that:
+
+- Readiness groups reference valid, enabled health contributors.
+- Code and configuration describe the same operational behavior.
+- Startup, readiness, and liveness semantics remain aligned.
+- No disabled contributor, orphaned property, contradictory setting, or incomplete dependency change was introduced.
+
+If implementation intent and effective configuration differ, do not mark the change fully remediated. Keep associated findings partially closed or open and identify the affected files and keys.
 
 ## Required status model
 
@@ -228,6 +372,11 @@ change_reviews:
     regressions_detected: []
     scope_violations: []
     unresolved_items: []
+    assessment_scope_review: {}
+    library_resolution_review: {}
+    commit_review: {}
+    configuration_consistency_review: {}
+    business_and_security_preservation: {}
     rationale: ""
 
 follow_up_observations: []
@@ -280,6 +429,40 @@ Do not silently repair issues during review.
 
 Verify implementation preserves the approved scenario, processing model, regional ownership, external-side-effect safety, and state/recovery contract. For database-independent Kafka, verify no unapproved database dependency or pod-local correctness state was introduced.
 
+## Business-Logic, Partner-Contract, Security, and Privacy Preservation Review
+
+For every resolved change, compare pre-change and post-change behavior against the Step 3A `change_boundary` and Step 4 `behavior_preservation_check`.
+
+Verify:
+
+- HTTP status mappings remain unchanged unless explicitly approved.
+- Success, failure, duplicate, pending, and unknown classifications remain unchanged unless explicitly approved.
+- No additional partner API operation was introduced without approval.
+- Primary and fallback-provider behavior remains unchanged unless explicitly approved.
+- Existing exception contracts remain compatible.
+- PII and personal-information scrubbing remains present.
+- Logging redaction and sanitization remain effective.
+- Authentication, authorization, validation, encryption, tokenization, masking, and audit behavior remain intact.
+
+Record one concrete value for every field:
+
+```yaml
+business_and_security_preservation:
+  change_id: CHANGE-AA-001
+  business_logic_changed: false
+  partner_contract_changed: false
+  external_interaction_pattern_changed: false
+  security_or_privacy_behavior_changed: false
+  approved_changes: []
+  unapproved_changes: []
+  pii_scrubbing_preserved: true
+  disposition: preserved
+```
+
+Allowed dispositions are `preserved`, `approved_change`, `implementation_scope_violation`, and `unable_to_validate`.
+
+Any unapproved business-logic, partner-contract, security, or privacy change is an implementation-scope violation. It prevents closure of every associated finding until the change is reverted or explicit approval is recorded and the implementation is revalidated.
+
 ## End-of-Phase Compact Handoff Summary
 
 At the end of this phase, create one compact handoff summary under:
@@ -288,22 +471,18 @@ At the end of this phase, create one compact handoff summary under:
 .copilot-tracking/reviews/handoffs/
 ```
 
-Read and follow:
+Read and follow `grounding/governance/phase-handoff-schema.yml`. Read the active schema version from that file; do not hardcode it.
 
-```text
-grounding/governance/phase-handoff-schema.yml
-```
-
-The handoff summary is a non-authoritative index of facts already established by this phase. It supports state reconstruction after `/clear` or a new chat. It never replaces the authoritative phase artifact.
+The handoff summary is a non-authoritative index of facts already established by this phase. It supports state reconstruction after `/clear` or a new chat and never replaces the authoritative phase artifact.
 
 Requirements:
 
-- Derive every value from the authoritative phase artifacts.
-- Preserve stable finding, evidence, change, policy, scenario, and control IDs.
-- Include exact authoritative input and output artifact paths.
-- Include key decisions, counts, unresolved items, exceptions, and required next-phase inputs.
+- Derive every value from authoritative phase artifacts.
+- Preserve stable finding, evidence, change, policy, scenario, control, and commit IDs.
+- Include exact authoritative input and output paths.
+- Include key decisions, counts, unresolved items, exceptions, and next-phase inputs.
 - Do not create findings, reassess controls, recalculate priority, change scenarios, invent evidence, authorize implementation, or modify source.
-- When the summary conflicts with an authoritative artifact, the authoritative artifact wins and the handoff must record a `handoff_exception`.
+- When the summary conflicts with an authoritative artifact, the authoritative artifact wins and the handoff records a `handoff_exception`.
 - Report the generated handoff path in the completion response.
 
 ### Step 5 handoff
@@ -330,6 +509,11 @@ Before completing, verify that:
 9. No source code was modified during review.
 10. Scope expansion and regressions were explicitly checked.
 11. Follow-up work was routed to the correct phase.
+12. Verify that all prerequisite configuration required by implemented source-code changes is present.
+13. Verify that readiness, liveness, startup, and actuator configuration are internally consistent.
+14. Verify that enabled health contributors match health-group participation.
+15. Verify that code behavior and configuration behavior are aligned.
+16. Verify that implementation did not introduce disabled or orphaned resiliency configuration.
 
 Report:
 
@@ -343,4 +527,24 @@ Report:
 - Scope violations
 - Required follow-up
 
+## Repository-Agnostic Snapshot Review
 
+Do not require Git metadata to validate implementation. Review the Step 4 source-resolution record using the source-locator authority defined above.
+
+```yaml
+source_locator_review:
+  snapshot_type: "<git_revision|workspace_snapshot|uploaded_archive|source_drop|unknown>"
+  snapshot_identifier_considered: true
+  git_metadata_required: false
+  path_match: true
+  symbol_match: true
+  original_excerpt_addressed: true
+  fingerprint_validation: "<matched|changed_and_explained|not_available>"
+  provenance_limitations_accepted_or_escalated: true
+  line_numbers_treated_as_advisory: true
+  source_drift_handled_correctly: true
+```
+
+Do not block closure solely because a commit SHA is unavailable. Block closure when source identity, implementation scope, or behavioral remediation cannot be established.
+
+Pipe-delimited placeholders in this prompt document allowed values only. Generated review artifacts must contain one concrete value.

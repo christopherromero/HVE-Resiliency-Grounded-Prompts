@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.4.0"
+  schema_version: "1.7.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -280,11 +280,12 @@ Columns:
 
 Absence of infrastructure evidence must not be reported as infrastructure noncompliance.
 
-### PCF exclusion
+<!--### PCF exclusion
 
 Include:
 
 > PCF and its aliases are retired and excluded from findings, scoring, remediation, modernization, migration, and cleanup recommendations. Historical repository references, if discovered, are informational only and are not included in the finding matrix.
+-->
 
 ## Full Finding Matrix columns
 
@@ -435,4 +436,154 @@ filtered_summary_counts_reconcile: true
 filtered_matrix_reconciles: true
 filtered_roadmap_reconciles: true
 excluded_findings_renumbered: false
+```
+
+### Repository-Agnostic Assessment Snapshot
+
+The report must not require or imply that the assessed folder is a Git repository.
+
+Render source locators in this order:
+
+1. Repository path
+2. Symbol or configuration/build element
+3. Source fingerprint
+4. Assessment snapshot type and identifier
+5. Git commit SHA only when snapshot type is `git_revision`
+6. Original assessed lines, labeled advisory
+7. Evidence ID
+
+Allowed snapshot types:
+
+- `git_revision`
+- `workspace_snapshot`
+- `uploaded_archive`
+- `source_drop`
+- `unknown`
+
+Required Assessment Overview notice:
+
+> Source line numbers are advisory and identify the location observed in the assessed snapshot. Repository path, symbol, exact source excerpt, and source fingerprint are the primary evidence locators. The assessment snapshot may be a Git revision, workspace snapshot, uploaded archive, or source drop. Git metadata is optional.
+
+For non-Git snapshots, render the snapshot type, identifier, provenance, and material limitations. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
+
+Add conformance checks:
+
+```yaml
+repository_git_metadata_required: false
+assessment_snapshot_type_valid: true
+assessment_snapshot_identifier_present_or_explicitly_unavailable: true
+git_sha_shown_only_for_git_revision: true
+source_fingerprint_precedes_snapshot_and_lines: true
+line_numbers_labeled_advisory: true
+```
+
+### Incremental report assembly and recoverable-write protocol
+
+Large reports must be assembled in bounded units rather than through one unbounded file-creation operation.
+
+#### Required assembly order
+
+1. Read and validate all authoritative inputs.
+2. Freeze report scope, selected findings, display IDs, categories, and change mappings.
+3. Create a report assembly manifest.
+4. Initialize the final report with governance metadata, title, and table of contents.
+5. Append top-level sections in schema order.
+6. Append one complete detailed finding at a time.
+7. Append the Full Finding Matrix, Standards Alignment, and Implementation Roadmap.
+8. Append final conformance metadata.
+9. Reopen and validate the completed report.
+
+The final deliverable remains one Markdown report. Temporary fragments are non-authoritative and must not replace the final report.
+
+#### Required report assembly manifest
+
+```yaml
+report_assembly_manifest:
+  report_path: .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+  selected_priorities: []
+  omitted_priorities: []
+  selected_finding_ids: []
+  selected_change_ids: []
+  expected_finding_count: 0
+  sections:
+    - assessment_overview
+    - resiliency_recommendations
+    - non_resiliency_recommendations
+    - evidence_gap_analysis
+    - full_finding_matrix
+    - standards_alignment
+    - implementation_roadmap
+  assembly_status:
+    report_initialized: false
+    completed_sections: []
+    completed_finding_ids: []
+    recovery_count: 0
+    final_validation_complete: false
+```
+
+The manifest controls assembly only. It must not alter findings, priorities, IDs, evidence, or roadmap mappings.
+
+#### Stable invisible markers
+
+Use invisible HTML markers so recovery can identify completed units:
+
+```html
+<!-- section:assessment-overview -->
+<!-- finding:F-001 -->
+<!-- section:full-finding-matrix -->
+```
+
+Each expected marker must occur exactly once in the completed report.
+
+#### Recoverable-write behavior
+
+After a recoverable request or file-write error:
+
+- Reopen the current report.
+- Inspect stable markers and the frozen assembly manifest.
+- Resume after the last completed section or finding.
+- Do not restart from the beginning.
+- Do not duplicate completed content.
+- Do not recalculate display IDs, categories, priorities, counts, or selected scope.
+- Increment `recovery_count`.
+
+If report integrity cannot be proven, stop with conformance failed, preserve the partial report for diagnostics, identify the last completed unit, and do not claim successful completion.
+
+#### Fingerprint display
+
+Authoritative artifacts retain complete source fingerprints. In the customer report display only the algorithm and first 12 hexadecimal characters followed by an ellipsis, for example:
+
+```text
+sha256:12ab34cd56ef...
+```
+
+The abbreviated report value must not be used for programmatic validation.
+
+#### Exact original source blocks
+
+The fenced block under `Original source requiring update` must contain only the exact Step 2 `original_source_excerpt`.
+
+Do not insert `Before`, `Current`, finding IDs, evidence IDs, line comments, explanatory comments, or synthetic ellipses inside the original-source block. Place labels outside the fenced block.
+
+#### Required assembly conformance
+
+```yaml
+report_assembly_conformance:
+  incremental_assembly_used: true
+  report_manifest_frozen: true
+  selected_findings_written_once: true
+  required_sections_written_once: true
+  duplicate_section_markers: 0
+  duplicate_finding_markers: 0
+  missing_selected_finding_markers: 0
+  unexpected_finding_markers: 0
+  report_reopened_after_write: true
+  final_report_parse_complete: true
+  recovery_count: 0
+
+source_rendering_conformance:
+  full_fingerprints_preserved_in_authoritative_artifacts: true
+  report_fingerprints_abbreviated: true
+  original_source_blocks_unmodified: true
+  comments_added_inside_original_source_blocks: false
 ```

@@ -1,3 +1,7 @@
+---
+description: Active-active readiness assessment scope and evaluation rules
+applyTo: "**"
+---
 You are an Active-Active Readiness Assessment Agent.
 
 Scope:

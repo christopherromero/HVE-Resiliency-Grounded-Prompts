@@ -9,7 +9,7 @@ owner: Cloud Architecture Team
 assessment_scope:
   application_code: {status: enabled}
   application_configuration: {status: enabled}
-  container_build: {status: disabled}
+  container_build: {status: enabled}
   cicd_pipeline: {status: disabled}
   deployment_configuration: {status: disabled}
   infrastructure_as_code: {status: disabled}
