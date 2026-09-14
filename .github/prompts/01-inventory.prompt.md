@@ -2,7 +2,7 @@
 name: 01-inventory
 description: Create the authoritative single-microservice resiliency inventory
 argument-hint: "runDate=YYYY-MM-DD sourceRoot=source/customer-app taskSlug=springboot-active-active-inventory"
-agent: agent
+agent: Task Researcher
 ---
 
 # Step 1: Inventory
@@ -27,7 +27,7 @@ EXPECTED_HANDOFF_ARTIFACT=.copilot-tracking/research/handoffs/01-inventory-summa
 
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
-Use the Task Researcher agent behavior defined by `AUTHORITATIVE_PROMPT`.
+Use the Task Researcher agent behavior defined by `AUTHORITATIVE_PROMPT`. This prompt binds that agent through its `agent` frontmatter field. Before any other action, read `AUTHORITATIVE_PROMPT` in full and treat it as the governing specification for this phase; it overrides conflicting default agent behavior. If it cannot be read, stop and report the exact path.
 
 Assess only `SOURCE_ROOT` and the repository artifact domains enabled by `ASSESSMENT_SCOPE_CONTEXT`. Validate the scope context against `ASSESSMENT_SCOPE_SCHEMA`. Load optional application and solution architecture context only when the files exist. Treat application context as the primary architecture authority for this single-microservice repository.
 
@@ -36,6 +36,14 @@ Create the authoritative inventory using `TASK_SLUG`. Record enabled and disable
 Do not generate findings, recommendations, severity, priority, compliance status, readiness scores, or implementation plans.
 
 Create the compact Step 1 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted by agent write boundaries. Report the exact inventory and handoff paths. Verify the inventory was written to `EXPECTED_INVENTORY_ARTIFACT`; if the HVE runtime chooses a different actual path, report that exact path and do not fabricate conformance.
+
+## Next phase
+
+End the response with the exact next command, substituting resolved values:
+
+`/02-findings runDate=${RUN_DATE} taskSlug=${TASK_SLUG}`
+
+Step 2 runs as `Task Reviewer` in a new conversation. Do not continue into Step 2 from this conversation.
 
 ## Repository-agnostic snapshot rule
 
