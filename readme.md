@@ -1,8 +1,8 @@
-README - 09/09/2026
+README - 09/13/2026
 
 # Here is the process for setting up your workstation
 
-There is a ZIP that has the folder structure and the required files
+There is a repo that has the folder structure and the required files
 
 /Assessment
  - .copilot
@@ -22,7 +22,7 @@ There is a ZIP that has the folder structure and the required files
  - .github
     - instructions
     - modernize
-    - prompts
+    - prompts (Wrapper prompts)
  - .vscode
  - application-context
     - templates
@@ -31,19 +31,22 @@ There is a ZIP that has the folder structure and the required files
     - dependencies
     - exclusions
     - governance
+      - templates
     - master
     - registry
     - standards
- - prompts
+ - prompts  (Actual prompts)
  - source/customer-app (repo source goes here)
+ - tools
 readme.md
 
 
-1) Create a directory called assessment
-2) Right click the Zip, select properties, check unblock, apply, ok
-3) Open the ZIP and copy the contents into C:\assessment
-4) From VSCode, open the C:\assessment folder so it is the workspace root
+1) Create a directory called assessment for example, this is the folder you will open in VSCode
+2) Clone the HVE-Grouneded-Prompts repo on your machine
+3) Go to the clone folder and copy all contents into \assessment
+4) From VSCode, open the \assessment folder so it is the workspace root
 
+Now you have the base folders and all of the files you need to run the assessment
 ---
 #### We do not want the prompts and output to be stored in the customer repo, that should be external to the repo, that is why the repo is in a child folder source/customer-app and not at the root.
 ---
@@ -89,7 +92,7 @@ assessment_scope:
   application_code: {status: enabled}
   application_configuration: {status: enabled}
   container_build: {status: enabled}
-  cicd_pipeline: {status: enabled}
+  cicd_pipeline: {status: disabled}
   deployment_configuration: {status: disabled}
   infrastructure_as_code: {status: disabled}
   deployed_infrastructure: {status: disabled}
@@ -111,13 +114,13 @@ report_preferences:
     include_evidence_gaps: true
     excluded_priority_behavior: omit_from_filtered_report
   testing_output:
-    mode: hidden
-    show_test_findings: false
-    show_test_code: false
-    show_validation_commands: false
-    show_acceptance_criteria: false
-    show_validation_evidence: false
-    include_consolidated_validation_strategy: false
+    mode: full
+    show_test_findings: true
+    show_test_code: true
+    show_validation_commands: true
+    show_acceptance_criteria: true
+    show_validation_evidence: true
+    include_consolidated_validation_strategy: true
 ```
 
 ## Optional - recommend to not the solution context unless the application is provided with all microservices in a single repository
