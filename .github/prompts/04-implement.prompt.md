@@ -22,7 +22,7 @@ PULL_REQUEST_CREATION_ALLOWED=false
 AUTHORITATIVE_PROMPT=prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/${RUN_DATE}/${TASK_SLUG}-research-review.md
-PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.md
+PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
 EXPECTED_HANDOFF_ARTIFACT=.copilot-tracking/changes/handoffs/04-implementation-summary.yml
 PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
