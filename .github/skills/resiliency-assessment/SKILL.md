@@ -11,7 +11,7 @@ compatibility: 'Requires the HVE Core agents declared by the workspace wrapper p
 
 Route the governed resiliency assessment to the HVE agent bound by each workspace wrapper prompt.
 
-This skill performs orchestration only. It does not perform assessment work, define assessment behavior, duplicate prompt requirements, execute slash commands, or change the active chat agent.
+This skill resolves which step runs next and returns its invocation. It does not perform assessment work, define assessment behavior, or duplicate prompt requirements. Execution belongs to the caller: an orchestrating agent runs the step as a subagent under the bound agent, and a user runs the slash command directly.
 
 ## Sources of truth
 
@@ -20,7 +20,7 @@ Read and apply these sources directly. Do not reproduce their substantive rules 
 1. `.github/copilot-instructions.md` governs the cross-phase authority model, assessment boundary, evidence rules, approval requirements, and completion behavior.
 2. The target step's file under `prompts/` is the authoritative specification for that step's inputs, outputs, boundaries, validation, handoff, and completion criteria.
 3. The matching file under `.github/prompts/` is the invocation wrapper. Use it for the slash-command name and bound HVE agent from its frontmatter, and for invocation input names and declared artifact paths from its Inputs section. Use its declared paths only as described in Artifact path resolution.
-4. `.github/agents/resiliency-assessment.agent.md` is the workspace entry-point agent that delegates step resolution to this skill. Use it only for the handoff labels and bound agents it declares. When it implies a workflow gate that `.github/copilot-instructions.md` does not require, apply `.github/copilot-instructions.md` and report the divergence.
+4. `.github/agents/resiliency-assessment.agent.md` is the workspace orchestrator that delegates step resolution to this skill. Use it for the run modes, delegation format, handoff labels, and bound agents it declares. When it implies a workflow gate that `.github/copilot-instructions.md` does not require, apply `.github/copilot-instructions.md` and report the divergence.
 5. Authoritative artifacts produced by completed steps are the source of truth for run state. Phase handoffs provide orientation only and never replace an authoritative artifact.
 
 When sources conflict, follow the precedence rules in `.github/copilot-instructions.md` and the Artifact path resolution order below. Do not resolve any other conflict by inventing a value or by adding a new workflow rule.
@@ -29,9 +29,9 @@ Verify `.github/copilot-instructions.md` exists before routing. Verify a step's 
 
 ## Quick start
 
-For a new assessment, read the Step 1 authoritative prompt in full and the wrapper's invocation metadata, collect only the inputs they require, and present the fully resolved Step 1 slash command.
+For a new assessment, read the Step 1 authoritative prompt in full and the wrapper's invocation metadata, collect only the inputs they require, and return the fully resolved Step 1 invocation.
 
-For a resumed assessment, follow Required procedure to resolve the target step from authoritative artifacts, then present only that step's fully resolved slash command.
+For a resumed assessment, follow Required procedure to resolve the target step from authoritative artifacts, then return that step's fully resolved invocation.
 
 ## Step map
 
@@ -66,7 +66,7 @@ A step's authoritative prompt does not always declare a concrete output path. Re
 
 This order locates artifacts only. It never changes an artifact's role, required structure, validation, or completion criteria, which remain governed by the authoritative prompt.
 
-Some declared paths are not run-scoped, including handoff summaries and the Step 3B report default. Never infer run identity, run date, task slug, or plan slug from a non-run-scoped path. Resolve run identity from run-scoped artifact folders or from the user.
+Some declared paths are not run-scoped, including handoff summaries and the Step 3B report default. Never infer run identity from a non-run-scoped path. Resolve run identity from run-scoped artifact folders, from declared run defaults, or from the user.
 
 ## Required procedure
 
@@ -78,7 +78,7 @@ Read `.github/copilot-instructions.md` in full. Preserve its phase boundaries an
 
 Determine whether the user is starting a new assessment, resuming one, checking status, asking what comes next, or requesting a specific step.
 
-When intent or run identity is ambiguous, inspect existing run-scoped `.copilot-tracking/` phase artifacts and present the matching runs for the user to choose from. Do not assume the current date, select among multiple runs, or invent a task slug, plan slug, artifact path, approval, or selector.
+When intent or run identity is ambiguous, inspect existing run-scoped `.copilot-tracking/` phase artifacts and present the matching runs for the user to choose from. Do not select among multiple runs or invent an artifact path, approval, or selector. Resolve run date and slug defaults from the orchestrator's Run Defaults when the caller declares them, and state the resolved values rather than leaving them blank.
 
 ### Stage C: Resolve the target step
 
@@ -112,11 +112,13 @@ When VS Code reports the bound agent unavailable, stop and report the exact agen
 
 Resolve phase transitions and handoff behavior only from `.github/copilot-instructions.md` and the authoritative prompt. Resolve input values from the user's request and validated authoritative artifacts. Ask for missing required values. Do not create defaults, normalize values, or reinterpret selectors unless the wrapper or authoritative prompt explicitly instructs it.
 
-### Stage E: Present one handoff
+### Stage E: Return the resolved step
 
-Present only the target step's resolved slash command and its bound HVE agent. Instruct the user to run it in a new conversation when the authoritative prompt requires a new session.
+Return the target step's bound HVE agent, its wrapper and authoritative prompt paths, and its slash command with every required value resolved.
 
-Do not execute the command, invoke the bound HVE agent as a subagent, continue into the next step, or claim the step completed.
+The caller executes. An orchestrating agent runs the step as a subagent under the bound agent and then validates the resulting artifact. A user runs the slash command directly, in a new conversation when the authoritative prompt requires a new session.
+
+Do not claim a step completed without validating its authoritative artifact. Do not advance past a gate declared by `.github/copilot-instructions.md` or the target step's authoritative prompt.
 
 ## Approval gate
 
@@ -137,7 +139,7 @@ This skill adds no assessment, evidence, architecture, scenario, priority, imple
 
 Do not create a separate run index, assessment artifact, finding, plan, report, implementation record, review record, or handoff summary while routing.
 
-Do not support unattended execution across steps. Preserve the conversation and approval boundaries required by the authoritative sources.
+Preserve the approval boundaries required by the authoritative sources. Never advance past the Phase 1 to Phase 2 approval gate without explicit user-supplied selectors.
 
 ## Response format
 
@@ -146,7 +148,8 @@ For a resolved step, report:
 * Target step
 * Bound HVE agent read from wrapper frontmatter
 * Validated prerequisite artifact paths required by the target step's authoritative prompt
+* Wrapper and authoritative prompt paths, for delegated execution
 * Exact slash command with all required values resolved
 * Any unresolved required input, path divergence, or source conflict that affects routing
 
-Do not summarize the target step's authoritative prompt's substantive instructions unless the user asks. The slash command and source paths are the handoff.
+Do not summarize the target step's authoritative prompt's substantive instructions unless the user asks. The resolved invocation and source paths are the handoff.
