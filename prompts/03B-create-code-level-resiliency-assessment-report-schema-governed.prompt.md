@@ -267,9 +267,23 @@ report_governance:
 
 #### Canonical template rendering contract
 
-Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the seven required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
+Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the eight required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
 
-Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
+Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged, except for the H1 title, which the schema's report-title rule governs when the report is a filtered view. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
+
+<!--
+Superseded 2026-09-16. Retained for reference. Not active.
+
+  Validate the seven required section headings ...
+  Preserve fixed headings, table-of-contents links, section markers, and back-to-top
+  links unchanged.
+
+Reason: the report now has eight top-level sections because Appendix A was added, so
+"seven" was stale. The blanket instruction to preserve fixed headings also conflicted
+with the priority-filtered reporting rule that the title must identify a filtered view,
+which the template's generic H1 does not do. The active wording states the section count
+and names the single authorized exception.
+-->
 
 Render the shared-service reference-architecture table from the schema's required Albertsons Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
 
@@ -718,9 +732,11 @@ Before creating the report:
 3. Create the schema-required `report_assembly_manifest`.
 4. Do not reconsider these values during writing or recovery.
 
+Freezing applies to scope, identifiers, counts, and mappings. The assembly manifest's `assembly_status` is progress tracking and is expected to change as sections and findings are appended.
+
 ### Bounded write sequence
 
-1. Initialize the final report with governance metadata, title, table of contents, and the frozen manifest metadata.
+1. Initialize the final report with the governance block, the assembly manifest, the title, and the table of contents.
 2. Append Assessment Overview.
 3. Append detailed recommendations one complete finding at a time.
 4. Append Non-Resiliency Recommendations.
@@ -729,8 +745,22 @@ Before creating the report:
 7. Append Standards Alignment.
 8. Append the Implementation Roadmap.
 9. Append Appendix A: Traceability.
-10. Append final schema and assembly conformance metadata.
-11. Reopen and validate the completed file.
+10. Append the hidden report-metadata block.
+11. Append the final conformance block.
+12. Reopen and validate the completed file.
+
+Use the schema's assembly block names. The governance block, assembly manifest, report-metadata block, and conformance block are four separate blocks in three positions, and none substitutes for another. The report-metadata block is the required report metadata fields, is hidden, and belongs after Appendix A rather than beneath the title.
+
+<!--
+Superseded 2026-09-16. Retained for reference. Not active.
+
+  1. Initialize the final report with governance metadata, title, table of contents, and the frozen manifest metadata.
+  11. Append final schema and assembly conformance metadata.
+
+Reason: four different blocks were each described as "metadata", which invited writing the
+report-metadata table beneath the title during initialization. The active wording uses the
+distinct block names defined in the schema. Sequence and behavior are otherwise unchanged.
+-->
 
 Use the schema-required invisible markers before each top-level section and detailed finding.
 
