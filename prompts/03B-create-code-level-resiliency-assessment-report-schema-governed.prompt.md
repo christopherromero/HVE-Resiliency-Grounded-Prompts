@@ -271,7 +271,25 @@ Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the rep
 
 Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
 
-When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied, render only applicable approved entries. When absent, render the schema-required no-registry statement. Never source customer-specific references from hardcoded prompt or schema content.
+Render the shared-service reference-architecture table from the schema's required Albertsons Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
+
+When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied and publishes reference-architecture links, add or override entries from it, because a supplied registry is the more current customer source. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow the table. When the schema carries no table and no registry is supplied, render the schema-required no-registry statement.
+
+Never invent a reference-architecture URL that appears in neither the schema nor a supplied registry.
+
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+  When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied, render only applicable approved
+  entries. When absent, render the schema-required no-registry statement. Never source
+  customer-specific references from hardcoded prompt or schema content.
+
+Reason: this rule narrowed the table to evidenced services only, and its final sentence
+forbade the schema table that is the sole source of the approved reference-architecture
+links. The dependency-standard registry publishes no links, so applying the rule both
+dropped required rows and contradicted itself. The active rules render the schema table
+in full with an applicability column.
+-->
 
 ### Schema-driven report rendering
 
@@ -669,9 +687,21 @@ Example non-Git rendering:
 **Snapshot provenance:** Workspace generated
 
 **Original assessed lines (advisory):** 142-156
-
-**Repository evidence:** `EV-F-001-01`
 ```
+
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+The example rendering above previously ended with this final line:
+
+  **Repository evidence:** `EV-F-001-01`
+
+Reason: evidence IDs embed the Step 2 finding ID, so the internal-identifier-suppression
+rule excludes them from sections 1 through 7. Repository path, symbol, exact excerpt, and
+source fingerprint remain the primary evidence locators in the body, and the evidence ID
+resolves through the Step 2 artifact. Restore this line if identifier suppression is
+withdrawn.
+-->
 
 Show a Git commit SHA only for `git_revision`. Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
 
@@ -698,10 +728,21 @@ Before creating the report:
 6. Append the Full Finding Matrix.
 7. Append Standards Alignment.
 8. Append the Implementation Roadmap.
-9. Append final schema and assembly conformance metadata.
-10. Reopen and validate the completed file.
+9. Append Appendix A: Traceability.
+10. Append final schema and assembly conformance metadata.
+11. Reopen and validate the completed file.
 
 Use the schema-required invisible markers before each top-level section and detailed finding.
+
+### Internal identifier suppression
+
+Sections 1 through 7 are customer-facing narrative and must not contain internal workflow identifiers. Follow the schema's internal-identifier-suppression rule exactly.
+
+Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, priority rule IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs in body content. Reference findings, dependencies, and consolidation through display IDs. State test obligations, open questions, evidence gaps, and discovery items in prose. Omit the `Cross-refs` notes sub-bullet.
+
+Carry every suppressed identifier into Appendix A so nothing is lost. Suppression and appendix placement are presentation-only and must not change findings, priorities, severity, status, evidence, control mappings, change mappings, or validation obligations.
+
+Hidden governance, manifest, and conformance comment blocks retain full identifiers and are exempt.
 
 ### Finding write unit
 

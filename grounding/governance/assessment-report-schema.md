@@ -29,6 +29,9 @@ This governance document defines the required structure and content of the custo
 5. Full Finding Matrix
 6. Standards Alignment
 7. Implementation Roadmap
+8. Appendix A: Traceability
+
+Sections 1 through 7 are readable customer-facing content. Section 8 is the traceability appendix and must be rendered last.
 
 ## Required report metadata
 
@@ -47,11 +50,19 @@ Use `Not provided` when required metadata is unavailable.
 
 - Application and repository overview
 - Assessment themes with finding references
-- Approved shared-service/reference-architecture table or no-registry statement
+- Approved shared-service/reference-architecture table, rendered in full per the rule below, or the no-registry statement when no table and no registry are available
 - Summary findings table
 - Illustrative-code notice
 
 ## Required Albertsons Azure Services Reference Architectures
+
+Render this table in full in every report. Do not drop rows for services the assessed repository does not use, because readers rely on the report to reach any approved reference architecture.
+
+Add an Applicability column and populate it only from authoritative Step 1 and Step 2 facts, using terms such as confirmed dependency, declared-only, repository-observed, declared by supplied context only, or not evidenced within the enabled assessment domains. Applicability is descriptive presentation. It must not create, remove, or reclassify a finding.
+
+When a service is unevidenced, say it was not evidenced within the enabled assessment domains. Never imply the service is absent from the deployed environment, because disabled domains are not assessed.
+
+A supplied reference-architecture registry may add or override entries when it publishes reference-architecture links. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow this table. Never invent a link that appears in neither this table nor a supplied registry.
 
 | Azure Shared Service                | Link to Reference Architecture                |
 | ----------------------------------- | --------------------------------------------- |
@@ -84,7 +95,7 @@ Every detailed finding must include:
 
 1. Finding ID and title
 2. Priority
-3. Priority policy ID, version, and rule ID
+3. Priority policy ID and version. The rule ID resolves in Appendix A.
 4. Severity
 5. Resiliency relationship
 6. Finding status
@@ -100,6 +111,17 @@ Every detailed finding must include:
 16. Dependencies
 17. Notes
 18. Standards reference, when supported
+
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+  3. Priority policy ID, version, and rule ID
+
+Reason: the internal-identifier-suppression rule moves priority rule IDs out of
+sections 1 through 7. The policy ID and version remain in the finding, and the rule
+ID is preserved in Appendix A, so no traceability is lost. Restore this line if
+identifier suppression is withdrawn.
+-->
 
 Group findings primarily by governance priority.
 
@@ -176,12 +198,50 @@ Emit fields in this order:
 - `**File:** {path}:{startLine}-{endLine}`
 - a `// before` fenced code block showing current state
 - `**Fix:**` then one or more fenced code blocks of the proposal
-- `**Notes:**` sub-bullets (`Cross-refs`, `Implementation`, `Validation`, `Guardrail`)
-- `<span style="font-size: 14px;">**MSFT Reference:** [title](url)</span>`
+- `**Notes:**` sub-bullets (`Implementation`, `Validation`, `Guardrail`)
+- `<span style="font-size: 14px;">**Standards reference:** {grounded standard name and version} — `{grounding file path}`</span>`, using `[title](url)` only when the grounded standard publishes an external URL for the cited control
+
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+  - `**Notes:**` sub-bullets (`Cross-refs`, `Implementation`, `Validation`, `Guardrail`)
+  - `<span style="font-size: 14px;">**MSFT Reference:** [title](url)</span>`
+
+Reason for the Notes change: the `Cross-refs` sub-bullet carried Step 2 finding IDs,
+change IDs, control IDs, and open-question IDs in body narrative. Its content moves to
+Appendix A under the internal-identifier-suppression rule.
+
+Reason for the reference change: the previous line required an external Microsoft Learn
+URL for every finding, but the grounded standards publish no per-control external URLs,
+and inventing one is prohibited by the required-exclusions rule. It also conflicted with
+required finding field 18, "Standards reference, when supported". The active line cites
+the grounded standard and still permits an external URL when one genuinely exists.
+
+Restore both lines if identifier suppression is withdrawn.
+-->
 
 Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority). Apply the
-same display ID everywhere, including cross-references, and keep the Step 2 source ID
-in the Full Finding Matrix "Source ID" column.
+same display ID everywhere, including cross-references.
+
+### Internal identifier suppression in report body
+
+The display ID is the only finding identifier permitted in the readable report body.
+
+Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, evidence IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs anywhere in section 1 through section 7 body content. They are internal workflow identifiers and interrupt customer-facing narrative.
+
+Apply these substitutions:
+
+- Reference another finding by its display ID, for example `Remediated together with P0-006`.
+- Express change dependencies through display IDs, for example `Depends on P0-002`.
+- State acceptance criteria and test obligations in prose rather than by test ID.
+- Describe an open question, evidence gap, or targeted-discovery item by its substance rather than its identifier.
+- Render repository evidence through its path, symbol, and exact excerpt rather than its evidence ID, because evidence IDs embed the Step 2 finding ID.
+- Cite the priority policy ID and version in the finding. Resolve the priority rule ID in Appendix A.
+- Omit the `Cross-refs` notes sub-bullet from the body. Its content belongs in Appendix A.
+
+Record every suppressed identifier in Appendix A so traceability is preserved rather than lost. Suppression is presentation-only and must not change findings, priorities, evidence, control mappings, change mappings, or validation obligations.
+
+Hidden governance and conformance comment blocks are exempt and retain full identifiers.
 
 Rules:
 - Preserve line numbers in `**File:**` when available.
@@ -296,9 +356,23 @@ Include:
 - Status
 - Category
 - Finding
-- Change ID
-- Source ID
+- Remediated with
 - Repository scope
+
+Use display IDs in the `ID` and `Remediated with` columns. `Remediated with` names the other display IDs that share a single remediation change, or `—` when the finding is remediated alone. Step 2 finding IDs and Step 3A change IDs belong in Appendix A, not in this matrix.
+
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+Previous columns included, in place of "Remediated with":
+
+  - Change ID
+  - Source ID
+
+Reason: the internal-identifier-suppression rule moves change IDs and Step 2 source
+IDs to Appendix A. "Remediated with" preserves the consolidation fact in the matrix
+using display IDs. Restore these columns if identifier suppression is withdrawn.
+-->
 
 Counts must reconcile with the Summary Findings table.
 
@@ -317,7 +391,7 @@ Required subsections:
 
 - Priority summary
 - Implementation waves
-- Change index
+- Remediation index
 - Targeted implementation discovery
 - Approval boundary
 
@@ -331,20 +405,69 @@ Priority summary columns:
 Implementation waves columns:
 
 - Wave
-- Change IDs
 - Findings addressed
 - Prerequisites
 - Validation focus
 
-Change index columns:
+Remediation index columns:
 
-- Change ID
+- Display ID
 - Priority
-- Priority rule
-- Finding IDs
 - Objective
 - Complexity
 - Wave
+- Remediated with
+
+Use display IDs throughout the roadmap. Change IDs, finding IDs, and priority rule IDs belong in Appendix A.
+
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+Implementation waves columns previously included:
+
+  - Change IDs
+
+The subsection "Remediation index" was previously named "Change index" with columns:
+
+  - Change ID
+  - Priority
+  - Priority rule
+  - Finding IDs
+  - Objective
+  - Complexity
+  - Wave
+
+Reason: the internal-identifier-suppression rule moves change IDs, finding IDs, and
+priority rule IDs to Appendix A. The roadmap keys off display IDs instead. Restore
+these if identifier suppression is withdrawn.
+-->
+
+## Appendix A: Traceability
+
+Render Appendix A as the final section, after the Implementation Roadmap. It is the single location where internal workflow identifiers appear in readable content, so that sections 1 through 7 stay free of them while traceability is fully preserved.
+
+Render one row per finding included in the report scope, ordered by display ID.
+
+Columns:
+
+- Display ID
+- Step 2 finding ID
+- Step 3A change ID
+- Priority rule
+- Proposed test IDs
+- Wave
+- Related controls
+- Open questions, evidence gaps, and targeted-discovery items
+
+Rules:
+
+- Use `—` for any cell with no applicable value.
+- When two findings share one remediation change, render the same change ID on both rows so consolidation is visible.
+- Reproduce identifiers exactly as they appear in the authoritative Step 2 and Step 3A artifacts. Do not renumber, abbreviate, or invent identifiers.
+- Include only findings within the report's selected scope. State that omitted priorities retain their identifiers in the authoritative artifacts.
+- Appendix A is presentation-only. It must not add findings or alter priority, severity, status, evidence, control mappings, or change mappings.
+
+Precede the table with the authoritative Step 2 and Step 3A artifact paths so a reader can resolve any identifier to its source.
 
 ## Required exclusions
 
@@ -363,9 +486,9 @@ The report must not:
 
 Include `[Back to Top](#top)` at the end of each numbered top-level section.
 
-## Schema-conformance metadata
+<!-- ## Schema-conformance metadata
 
-The generated report must record schema ID, schema version, schema path, and conformance status in HTML comments.
+The generated report must record schema ID, schema version, schema path, and conformance status in HTML comments. -->
 
 ## Original source requiring update
 Must contain:
@@ -416,7 +539,7 @@ Rules:
 - Filtered counts must reconcile to filtered sections and the filtered Full Finding Matrix. Do not label filtered counts as total assessment counts.
 - A filtered report must not claim full-schema coverage of omitted priorities. Schema conformance evaluates the selected report scope.
 
-Required metadata:
+<!-- Required metadata:
 ```yaml
 report_scope:
   selection_mode: priority_filter
@@ -436,7 +559,7 @@ filtered_summary_counts_reconcile: true
 filtered_matrix_reconciles: true
 filtered_roadmap_reconciles: true
 excluded_findings_renumbered: false
-```
+``` -->
 
 ### Repository-Agnostic Assessment Snapshot
 
@@ -466,7 +589,7 @@ Required Assessment Overview notice:
 
 For non-Git snapshots, render the snapshot type, identifier, provenance, and material limitations. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
 
-Add conformance checks:
+<!-- Add conformance checks:
 
 ```yaml
 repository_git_metadata_required: false
@@ -475,7 +598,7 @@ assessment_snapshot_identifier_present_or_explicitly_unavailable: true
 git_sha_shown_only_for_git_revision: true
 source_fingerprint_precedes_snapshot_and_lines: true
 line_numbers_labeled_advisory: true
-```
+``` -->
 
 ### Incremental report assembly and recoverable-write protocol
 
@@ -513,6 +636,7 @@ report_assembly_manifest:
     - full_finding_matrix
     - standards_alignment
     - implementation_roadmap
+    - appendix_traceability
   assembly_status:
     report_initialized: false
     completed_sections: []
@@ -565,7 +689,7 @@ The fenced block under `Original source requiring update` must contain only the 
 
 Do not insert `Before`, `Current`, finding IDs, evidence IDs, line comments, explanatory comments, or synthetic ellipses inside the original-source block. Place labels outside the fenced block.
 
-#### Required assembly conformance
+<!-- #### Required assembly conformance
 
 ```yaml
 report_assembly_conformance:
@@ -586,4 +710,4 @@ source_rendering_conformance:
   report_fingerprints_abbreviated: true
   original_source_blocks_unmodified: true
   comments_added_inside_original_source_blocks: false
-```
+``` -->
