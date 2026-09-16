@@ -167,15 +167,15 @@ Note that each Step uses a HVE Agent that is different
 /01-inventory runDate=2026-09-09 sourceRoot=source/customer-app taskSlug=springboot-active-active-inventory
 
 6) The output files have the todays date in the name, you must ensure the instructions are updated with todays date in the paths. For example Step 1 produces the inventory file INVENTORY_ARTIFACT=.copilot-tracking/research/2026-09-02/springboot-active-active-inventory-research.md
-7) When Step 1 Prompt is done, Click the KEEP button, run /clear, reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Reviewer , run the step 2 prompt
+7) When Step 1 Prompt is done, Click the KEEP button, run /clear (or create a new GHCP chat), reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Reviewer , run the step 2 prompt
 
 /02-findings  runDate=2026-09-09  taskSlug=springboot-active-active-inventory
 
-8) When Step 2 prompt is done, click the KEEP button, run /clear, reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Planner, run step 3A prompt
+8) When Step 2 prompt is done, click the KEEP button, run /clear (or create a new GHCP chat), reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Planner, run step 3A prompt
 
 /03A-plan runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
 
-9) When Step 3A is done, click the KEEP button, run /clear, reenable opus 5 as the model, reneable Allow ALL, leave agent to Task Planner, run step 3B prompt
+9) When Step 3A is done, click the KEEP button, run /clear (or create a new GHCP chat), reenable opus 5 as the model, reneable Allow ALL, leave agent to Task Planner, run step 3B prompt
 
 /03B-report runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
 
@@ -249,3 +249,16 @@ report_preferences:
     show_acceptance_criteria: true
     show_validation_evidence: false
     include_consolidated_validation_strategy: true
+
+## Troubleshooting 
+Please be aware that this tool is still being improved, so details related to the context files, runs, prompts, and more can and will change in the future. 
+
+The tool entirely relies on GHCP and VS Code and with that said, these tools can change. You might come across the following issues:
+
+1. After starting the run, I see that the agent I selected changed. Is that normal? 
+```
+Yes, this can occur depending on your VS code build. There is no way to verify. Please just be aware till we find provide guidance.
+```
+
+
+
