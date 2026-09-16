@@ -91,7 +91,7 @@ owner: Cloud Architecture Team
 assessment_scope:
   application_code: {status: enabled}
   application_configuration: {status: enabled}
-  container_build: {status: enabled}
+  container_build: {status: disabled}
   cicd_pipeline: {status: disabled}
   deployment_configuration: {status: disabled}
   infrastructure_as_code: {status: disabled}
@@ -129,7 +129,7 @@ report_preferences:
 
 solution-architecture-context.md - this allows you to specify the overall application architecture context across all of the microservices
 
-There is only one template for the solution architecture, so just copy it tot he application-context folder and rename it to solution-application-context.md and edit it.
+There is only one template for the solution architecture, so just copy it tot he application-context folder and rename it to solution-architecture-context.md and edit it.
 
 ### Setting the repo architecture context
 
@@ -164,7 +164,7 @@ Note that each Step uses a HVE Agent that is different
 4) If you are using MS EMU license, Enable Allow All so you do not have to approve anything (status bar under the agent selection)
 5) Paste the following prompt into the chat window and modify it to todays date
 
-/01-inventory runDate=2026-09-09 sourceroot=source/customer-app taskSlug=springboot-active-active-inventory
+/01-inventory runDate=2026-09-09 sourceRoot=source/customer-app taskSlug=springboot-active-active-inventory
 
 6) The output files have the todays date in the name, you must ensure the instructions are updated with todays date in the paths. For example Step 1 produces the inventory file INVENTORY_ARTIFACT=.copilot-tracking/research/2026-09-02/springboot-active-active-inventory-research.md
 7) When Step 1 Prompt is done, Click the KEEP button, run /clear, reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Reviewer , run the step 2 prompt
