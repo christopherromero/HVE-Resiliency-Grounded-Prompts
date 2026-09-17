@@ -17,6 +17,7 @@
 - [Full Finding Matrix](#full-finding-matrix)
 - [Standards Alignment](#standards-alignment)
 - [Implementation Roadmap](#implementation-roadmap)
+- [Appendix A: Traceability](#appendix-traceability)
 
 <!-- section:assessment-overview -->
 ## Assessment Overview
@@ -71,6 +72,14 @@
 
 <!-- content:implementation-roadmap:start -->
 <!-- content:implementation-roadmap:end -->
+
+[Back to Top](#top)
+
+<!-- section:appendix-traceability -->
+## Appendix A: Traceability
+
+<!-- content:appendix-traceability:start -->
+<!-- content:appendix-traceability:end -->
 
 [Back to Top](#top)
 

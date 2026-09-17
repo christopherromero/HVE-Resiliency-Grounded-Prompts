@@ -1,15 +1,121 @@
-schema_version: 3.1.0
+schema_version: "3.2.0"
+document_type: kafka_operating_scenario_policy
 policy_id: KAFKA-OPERATING-SCENARIO
 lifecycle_status: active
-purpose: Select and validate Confluent Kafka operating scenarios using approved external
-  architecture context when available and policy inference from repository-observed
-  production behavior when context is absent.
+owner: Cloud Architecture Team
+purpose: >-
+  Select and validate the Confluent Kafka application operating scenario using
+  the approved application architecture context when available and governed
+  repository inference when context is absent. Keep current/source state,
+  approved target state, application deployment topology, Kafka processing
+  ownership, and deployed Kafka topology distinct.
+
+context_contract:
+  document_type: application_architecture_context
+  context_root: architecture_context
+  metadata_mapping:
+    application_name: metadata.application_name
+    repository_name: metadata.repository_name
+    business_role: metadata.business_role
+    context_owner: metadata.context_owner
+    approved_by: metadata.approved_by
+    approved_at: metadata.approved_at
+    lifecycle_status: metadata.lifecycle_status
+    context_version: metadata.version
+  notes:
+    - context_id is not required because the approved context contains application_name and repository_name as its stable identity.
+    - context_version maps to architecture_context.metadata.version.
+    - processing_ownership.type is not required because ownership is represented by regional_processing_model.
+    - Kafka source and target values are nested under kafka_operating_model.source and kafka_operating_model.target.
+
+source_requirements:
+  approved_context:
+    required_document_fields:
+      - document_type
+      - lifecycle_status
+      - schema_version
+    required_context_fields:
+      - metadata.application_name
+      - metadata.repository_name
+      - metadata.context_owner
+      - metadata.lifecycle_status
+      - metadata.version
+      - deployment_evolution.source.operating_model
+      - deployment_evolution.source.traffic_model
+      - deployment_evolution.target.operating_model
+      - deployment_evolution.target.traffic_model
+      - authoritative_state.dependency
+      - kafka_operating_model.scenario_policy_id
+      - kafka_operating_model.expected_scenario_rule_id
+      - kafka_operating_model.source.scenario
+      - kafka_operating_model.source.regional_processing_model
+      - kafka_operating_model.source.cluster_model.type
+      - kafka_operating_model.source.cluster_model.stretched_cluster
+      - kafka_operating_model.source.cluster_model.cluster_per_region
+      - kafka_operating_model.target.scenario
+      - kafka_operating_model.target.regional_processing_model
+      - kafka_operating_model.target.cluster_model.type
+      - kafka_operating_model.target.cluster_model.stretched_cluster
+      - kafka_operating_model.target.cluster_model.cluster_per_region
+    optional_context_fields:
+      - external_side_effects.present
+      - external_side_effects.types
+      - direct_dependency_expectations.kafka
+      - assessment_guidance.deployment_state_interpretation.assess_code_against
+      - finding_boundary.source_target_difference_is_not_a_finding
+  repository_fallback:
+    required_evidence:
+      - effective production use rather than dependency presence alone
+      - direct database production use and role
+      - Kafka producer, consumer, or Streams processing model
+      - external side effects when no database is used
+      - Kafka-backed or local state when no database is used
+
+context_interpretation:
+  current_state:
+    application_deployment_path: deployment_evolution.source
+    kafka_model_path: kafka_operating_model.source
+    reporting_label: current
+  approved_target_state:
+    application_deployment_path: deployment_evolution.target
+    kafka_model_path: kafka_operating_model.target
+    reporting_label: approved_target
+  assessment_target:
+    default: approved_target_state
+    override_path: assessment_guidance.deployment_state_interpretation.assess_code_against
+  rules:
+    - Describe current operations only from source paths.
+    - Evaluate target-state code readiness against target paths.
+    - Do not merge source and target region lists.
+    - Do not report the approved target as currently deployed.
+    - Do not use Kafka regional_processing_model as the application deployment operating_model.
+    - Do not use the application active-active target as proof that Kafka processing is multi-active.
+    - A source-to-target difference is not a finding by itself.
+
+kafka_model_mapping:
+  scenario:
+    source_path: kafka_operating_model.source.scenario
+    target_path: kafka_operating_model.target.scenario
+  regional_processing_model:
+    source_path: kafka_operating_model.source.regional_processing_model
+    target_path: kafka_operating_model.target.regional_processing_model
+    replaces_legacy_path: kafka_operating_model.processing_ownership.type
+  cluster_type:
+    source_path: kafka_operating_model.source.cluster_model.type
+    target_path: kafka_operating_model.target.cluster_model.type
+  stretched_cluster:
+    source_path: kafka_operating_model.source.cluster_model.stretched_cluster
+    target_path: kafka_operating_model.target.cluster_model.stretched_cluster
+  cluster_per_region:
+    source_path: kafka_operating_model.source.cluster_model.cluster_per_region
+    target_path: kafka_operating_model.target.cluster_model.cluster_per_region
+
 scenario_resolution:
   preferred_sources:
-  - approved_application_architecture_context
-  - approved_solution_architecture_context
+    - approved_application_architecture_context
+    - approved_solution_architecture_context
   fallback_sources:
-  - repository_observed_production_behavior
+    - repository_observed_production_behavior
   missing_context_behavior:
     continue_assessment: true
     allow_policy_inference: true
@@ -17,128 +123,204 @@ scenario_resolution:
     deployed_topology_remains_unresolved: true
   validation_required: true
   allowed_validation_statuses:
-  - consistent
-  - inferred
-  - conditionally_inferred
-  - conflict
-  - insufficient_evidence
+    - consistent
+    - inferred
+    - conditionally_inferred
+    - conflict
+    - insufficient_evidence
   conflict_behavior:
     selected_scenario: unresolved
     common_controls_status: evaluate_when_evidence_available
     scenario_controls_status: not_assessed
     emit_code_finding: false
     create_follow_up: architecture_governance_review
-source_requirements:
-  approved_context:
-    required_fields:
-    - context_id
-    - context_version
-    - lifecycle_status
-    - context_owner
-    - kafka_operating_model.scenario
-    - kafka_operating_model.cluster_model.type
-    - kafka_operating_model.cluster_model.stretched_cluster
-    - kafka_operating_model.processing_ownership.type
-  repository_fallback:
-    required_evidence:
-    - effective production use rather than dependency presence alone
-    - direct database production use and role
-    - Kafka producer, consumer, or Streams processing model
-    - external side effects when no database is used
-    - Kafka-backed or local state when no database is used
+
+supported_scenarios:
+  - active_standby
+  - independent_regional_active_active
+  - database_independent_kafka
+  - unresolved
+
+supported_regional_processing_models:
+  - single_active
+  - multi_active
+  - unresolved
+
+supported_cluster_models:
+  - independent_regional_clusters
+  - shared_cluster
+  - unknown
+
+context_validation:
+  rules:
+    - The document lifecycle_status and architecture_context.metadata.lifecycle_status must both be approved.
+    - kafka_operating_model.scenario_policy_id must equal KAFKA-OPERATING-SCENARIO.
+    - kafka_operating_model.expected_scenario_rule_id must identify a rule present in this policy.
+    - Source and target scenario values must be supported scenarios.
+    - Source and target regional_processing_model values must be supported values.
+    - stretched_cluster must be false for supported independent regional cluster scenarios.
+    - cluster_per_region must be true when cluster_model.type is independent_regional_clusters.
+    - active_standby requires regional_processing_model single_active unless an approved exception exists.
+    - independent_regional_active_active requires regional_processing_model multi_active and independent regional clusters.
+    - Application deployment operating_model and Kafka scenario must be validated independently.
+  output_contract:
+    context_status: "<consistent|conflict|insufficient_evidence>"
+    context_version: "<metadata.version-or-not_available>"
+    selected_assessment_state: "<source|target>"
+    selected_scenario: "<active_standby|independent_regional_active_active|database_independent_kafka|unresolved>"
+    regional_processing_model: "<single_active|multi_active|unresolved>"
+    cluster_model_type: "<independent_regional_clusters|shared_cluster|unknown>"
+    stretched_cluster: false
+    cluster_per_region: true
+    architecture_confirmation_required: false
+    validation_errors: []
+
 consistency_rules:
-- rule_id: KAFKA-SCENARIO-001
-  description: Azure SQL authoritative state requires Kafka active-standby.
-  when_any:
-  - direct_authoritative_state_contains: azure_sql
-  - approved_processing_chain_authoritative_state_contains: azure_sql
-  expected_scenario: active_standby
-  repository_inference:
-    validation_status: inferred
-    architecture_confirmation_required: true
-  precedence: 1
-- rule_id: KAFKA-SCENARIO-002
-  description: Cosmos DB for MongoDB RU with no authoritative Azure SQL permits approved
-    or conditionally inferred independent regional active-active Kafka assessment.
-  when_all:
-  - authoritative_state_contains: cosmos_db
-  - cosmos_db.api: mongodb
-  - cosmos_db.throughput_model: ru
-  - authoritative_azure_sql_present: false
-  expected_scenario: independent_regional_active_active
-  confirmation_paths:
-    approved:
-      when:
-        cosmos_db.multi_region_write_evidence.status: confirmed_by_approved_context
-      validation_status: consistent
-      architecture_confirmation_required: false
-    provisional:
-      when:
-        cosmos_db.multi_region_write_evidence.status: repository_indicates_intent
-      validation_status: conditionally_inferred
+  - rule_id: KAFKA-SCENARIO-001
+    description: Azure SQL authoritative business state requires Kafka active-standby processing.
+    when_any:
+      - authoritative_state.dependency: azure_sql
+      - approved_processing_chain_authoritative_state_contains: azure_sql
+    expected_target:
+      scenario: active_standby
+      regional_processing_model: single_active
+      cluster_model:
+        type: independent_regional_clusters
+        stretched_cluster: false
+        cluster_per_region: true
+    repository_inference:
+      validation_status: inferred
       architecture_confirmation_required: true
-      required_conditions:
-      - Confirm Cosmos DB multi-region writes are enabled.
-      - Confirm Kafka uses independent regional clusters.
-      - Confirm the Kafka deployment is not a stretched cluster.
-      - Confirm each regional deployment normally uses its local Kafka cluster.
-  precedence: 2
-- rule_id: KAFKA-SCENARIO-003
-  description: Kafka used with no production application database selects database-independent
-    Kafka; regional ownership is classified separately.
-  when_all:
-  - confluent_kafka_used_by_production_code: true
-  - application_database_used_by_production_code: false
-  - approved_processing_chain_authoritative_database_state_present: false
-  expected_scenario: database_independent_kafka
-  repository_inference:
-    validation_status: inferred
-    architecture_confirmation_required: true
-  required_classification:
-    processing_model:
-    - stateless_producer
-    - stateless_consumer
-    - stream_transformer
-    - topic_bridge
-    - external_side_effect_processor
-    - stateful_stream_processor
-    - mixed
-    - unknown
-    regional_processing_model:
-    - multi_active
-    - single_active
-    - unresolved
-    external_side_effects:
-    - none
-    - idempotent_external_service
-    - non_idempotent_external_service
-    - unknown
-    kafka_backed_state:
-    - none
-    - compacted_topic
-    - kafka_streams_state_store
-    - unknown
-  precedence: 3
-- rule_id: KAFKA-SCENARIO-004
-  description: Missing, conflicting, unsupported, or insufficient evidence cannot
-    select a scenario.
-  otherwise:
-    expected_scenario: unresolved
-    assessment_status: not_assessed
-    architecture_confirmation_required: true
-  precedence: 4
+    precedence: 1
+
+  - rule_id: KAFKA-SCENARIO-002
+    description: >-
+      Cosmos DB for MongoDB RU with no authoritative Azure SQL permits approved
+      or conditionally inferred independent regional active-active Kafka assessment.
+    when_all:
+      - authoritative_state.dependency: cosmos_db
+      - cosmos_db.api: mongodb
+      - cosmos_db.throughput_model: ru
+      - authoritative_azure_sql_present: false
+    expected_target:
+      scenario: independent_regional_active_active
+      regional_processing_model: multi_active
+      cluster_model:
+        type: independent_regional_clusters
+        stretched_cluster: false
+        cluster_per_region: true
+    confirmation_paths:
+      approved:
+        when:
+          cosmos_db.multi_region_write_evidence.status: confirmed_by_approved_context
+        validation_status: consistent
+        architecture_confirmation_required: false
+      provisional:
+        when:
+          cosmos_db.multi_region_write_evidence.status: repository_indicates_intent
+        validation_status: conditionally_inferred
+        architecture_confirmation_required: true
+        required_conditions:
+          - Confirm Cosmos DB multi-region writes are enabled.
+          - Confirm Kafka uses independent regional clusters.
+          - Confirm the Kafka deployment is not a stretched cluster.
+          - Confirm each regional application deployment normally uses its local Kafka cluster.
+    precedence: 2
+
+  - rule_id: KAFKA-SCENARIO-003
+    description: >-
+      Kafka used with no production application database selects database-independent
+      Kafka; regional processing ownership is classified separately.
+    when_all:
+      - confluent_kafka_used_by_production_code: true
+      - application_database_used_by_production_code: false
+      - approved_processing_chain_authoritative_database_state_present: false
+    expected_target:
+      scenario: database_independent_kafka
+    repository_inference:
+      validation_status: inferred
+      architecture_confirmation_required: true
+    required_classification:
+      processing_model:
+        - stateless_producer
+        - stateless_consumer
+        - stream_transformer
+        - topic_bridge
+        - external_side_effect_processor
+        - stateful_stream_processor
+        - mixed
+        - unknown
+      regional_processing_model:
+        - multi_active
+        - single_active
+        - unresolved
+      external_side_effects:
+        - none
+        - idempotent_external_service
+        - non_idempotent_external_service
+        - unknown
+      kafka_backed_state:
+        - none
+        - compacted_topic
+        - kafka_streams_state_store
+        - unknown
+    precedence: 3
+
+  - rule_id: KAFKA-SCENARIO-004
+    description: Missing, conflicting, unsupported, or insufficient evidence cannot select a scenario.
+    otherwise:
+      expected_target:
+        scenario: unresolved
+        regional_processing_model: unresolved
+        cluster_model:
+          type: unknown
+      assessment_status: not_assessed
+      architecture_confirmation_required: true
+    precedence: 4
+
+application_context_example_validation:
+  context_version: "3.0.0"
+  authoritative_state_dependency: azure_sql
+  source:
+    application_operating_model: active_standby
+    kafka_scenario: active_standby
+    regional_processing_model: single_active
+    cluster_model_type: independent_regional_clusters
+    stretched_cluster: false
+    cluster_per_region: true
+  target:
+    application_operating_model: active_active
+    kafka_scenario: active_standby
+    regional_processing_model: single_active
+    cluster_model_type: independent_regional_clusters
+    stretched_cluster: false
+    cluster_per_region: true
+  expected_rule_id: KAFKA-SCENARIO-001
+  expected_validation_status: consistent
+  interpretation: >-
+    The application target may be active-active while Kafka remains active-standby
+    with single-active processing because Azure SQL remains the authoritative state.
+
 quality_rules:
-- External architecture context declares intent and policy validates consistency.
-- When context is absent, provisional scenario inference is allowed and does not assert
-  deployed topology.
-- An unresolved infrastructure fact does not automatically make the application operating-scenario
-  classification unresolved.
-- Azure SQL authoritative-state presence takes precedence over Cosmos DB.
-- Cosmos DB used only as a failure queue, cache, or optional store does not select
-  active-active.
-- Repository indications of Cosmos regional multi-write intent support conditional
-  inference, not confirmation of the deployed account setting.
-- Database-independent Kafka does not automatically mean stateless or multi-active.
-- Context and repository conflict is a governance follow-up, not automatically a code
-  finding.
-- Stretched Kafka clusters are outside the supported scenarios.
+  - External architecture context declares intent and policy validates consistency.
+  - Source describes current operation; target describes approved future operation.
+  - Application deployment topology and Kafka processing topology are separate concepts.
+  - When context is absent, provisional inference does not assert deployed topology.
+  - Azure SQL authoritative-state presence takes precedence over Cosmos DB.
+  - Cosmos DB used only as a failure queue, cache, or optional store does not select active-active.
+  - Database-independent Kafka does not automatically mean stateless or multi-active.
+  - Context and repository conflict is a governance follow-up, not automatically a code finding.
+  - Stretched Kafka clusters are outside supported scenarios.
+  - Pipe-delimited placeholders describe allowed values only; generated artifacts emit one concrete value.
+
+completion_validation:
+  - Verify all required context paths exist under architecture_context.
+  - Verify metadata.version is used as context_version.
+  - Verify no context_id is required or invented.
+  - Verify regional_processing_model replaces the obsolete processing_ownership.type requirement.
+  - Verify source and target Kafka paths are validated independently.
+  - Verify selected target scenario matches expected_scenario_rule_id.
+  - Verify the application active-active target is not interpreted as Kafka multi-active processing.
+  - Verify source and target region or topology values are not merged.
+  - Verify source-target differences do not create code findings by themselves.
+  - Verify missing deployed topology remains an evidence gap.

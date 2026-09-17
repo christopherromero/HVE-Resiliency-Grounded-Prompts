@@ -23,17 +23,19 @@ scope_rules:
   pcf_findings_allowed: false
 report_preferences:
   finding_selection:
-    mode: priority_filter
+    mode: all_priorities
     include_priorities:
       - P0
       - P1
+      - P2
+      - P3
     include_conditional_findings: true
     include_verified_controls: false
     include_evidence_gaps: true
     excluded_priority_behavior: omit_from_filtered_report
   testing_output:
     mode: hidden
-    show_test_findings: false
+    show_test_findings: true
     show_test_code: false
     show_validation_commands: false
     show_acceptance_criteria: false

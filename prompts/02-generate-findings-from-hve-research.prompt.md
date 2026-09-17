@@ -149,7 +149,7 @@ dependency_context:
   context_id: <id-or-not_applicable>
   context_version: <version-or-not_applicable>
   scenario_policy_id: KAFKA-OPERATING-SCENARIO
-  scenario_policy_version: "3.1.0"
+  scenario_policy_version: "3.2.0"
   scenario_rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004
   scenario_validation_status: consistent|inferred|conditionally_inferred|conflict|insufficient_evidence
   architecture_confirmation_required: true|false
