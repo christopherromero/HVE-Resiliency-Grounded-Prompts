@@ -1,0 +1,175 @@
+---
+schema_version: "3.0.0"
+document_type: application_architecture_context
+lifecycle_status: approved  #Must match the Architecture context lifecycle status
+---
+# Template for a repo with CosmosDB as the authoritative state with no SQL
+architecture_context:
+  metadata:
+    application_name: Ecommerce Platform  #update the application name
+    repository_name: Inventory Service  #update the repository name
+    business_role: Inventory tracking  #update the business role
+    context_owner: Albertsons Ecommerce  #update the context owner
+    approved_by: Albertsons  #update the approver
+    approved_at: 2026-01-01  #update the approval date
+    lifecycle_status: approved
+    version: "3.0.0"
+
+# This section defines the deployment evolution of the application across different regions and states.
+  deployment_evolution:
+    source:
+      state_label: current_deployment
+      lifecycle_status: current
+      operating_model: active_standby
+      traffic_model: single_active
+      primary_region: westus
+      disaster_recovery_region: eastus
+      regions:
+        - region: westus
+          role: primary
+          processing_state: active
+        - region: eastus
+          role: disaster_recovery
+          processing_state: standby
+      same_application_artifact_across_regions: true
+      description: West US is the active production region and East US is reserved for disaster recovery.
+
+    target:
+      state_label: approved_target_deployment
+      lifecycle_status: approved_target
+      operating_model: active_active
+      traffic_model: multi_active
+      regions:
+        - region: westus2
+          role: active
+          processing_state: active
+        - region: westus
+          role: active
+          processing_state: active
+      same_application_artifact_across_regions: true
+      description: The approved target runs the same application artifact actively in West US 2 and West US.
+
+    transition:
+      transition_type: source_to_target
+      source_to_target_assessment: true
+      assessment_focus: target_state_code_readiness
+      source_state_used_for:
+        - current_state_description
+        - migration_context
+        - existing_behavior_baseline
+      target_state_used_for:
+        - resiliency_control_applicability
+        - gap_assessment
+        - remediation_planning
+        - implementation_target
+        - implementation_review
+      target_state_must_not_be_reported_as_current: true
+      source_and_target_regions_must_not_be_merged: true
+      source_target_difference_is_not_a_finding: true
+
+# The authoritative state section defines the source of truth for the application's database deployment model, independent of the current or target states.
+# This follows the rules for database to kafka
+#       If CosmosDB is used in the repo and no SQL, then COSMOSDB is active-active and Kafka is Active-Active
+#       If SQL is used in the repo and no CosmosDB, then SQL is active-standby and Kafka is active-standby 
+#       If both CosmosDB and SQL are used, then CosmosDB follows active-active and SQL follows active-standby, with Kafka follows SQL as Active-Standby. 
+#       If no database but Kafka is used, then Kafka is active-standby  
+# Example:
+#       CosmosDB only -> Kafka active-active
+#       SQL only -> Kafka active-standby
+#       CosmosDB + SQL -> Kafka follows SQL as active-standby 
+#       No database but Kafka used -> Kafka active-standby
+# The above rules help determine the appropriate operating model for Kafka based on the database deployment model.  
+
+  authoritative_state:
+    dependency: cosmos_db
+    role: authoritative_business_state
+    source:
+      lifecycle_status: current
+      operating_model: active_dr_standby
+      primary_region: westus
+      disaster_recovery_region: eastus
+    target:
+      lifecycle_status: approved_target
+      operating_model: active_active
+      primary_region: westus2
+      standby_region: westus
+    reporting_rule: Report the application deployment model separately from the CosmosDB authoritative-state model.
+
+  # The Kafka operating model section defines the expected deployment and processing model for Kafka clusters, independent of the application's database authoritative state.
+  # The scenario rule must align with the definitions in kafka operational policy
+  kafka_operating_model:
+    scenario_policy_id: KAFKA-OPERATING-SCENARIO
+    expected_scenario_rule_id: KAFKA-SCENARIO-002
+    source:
+      lifecycle_status: current
+      scenario: active_standby
+      regional_processing_model: single_active
+      cluster_model:
+        type: single_regional_cluster
+        stretched_cluster: false
+        cluster_per_region: false
+    target:
+      lifecycle_status: approved_target
+      scenario: active_active
+      regional_processing_model: multi_active
+      cluster_model:
+        type: independent_regional_clusters
+        stretched_cluster: false
+        cluster_per_region: true
+    reporting_rule: Do not describe Kafka active-active processing as the application deployment model.
+
+  external_side_effects:
+    present: false
+    types: []
+
+  # define the direct dependency expectations for the application
+  # true indicates a required dependency, false indicates an optional or non-existent dependency
+  direct_dependency_expectations:
+    kafka: true
+    azure_sql: false
+    cosmos_db: true
+    redis: true       # Update based on the application's caching in use
+    key_vault: true   # Update based on the application's secret management in use
+
+  # assessment_guidance provides instructions on how to interpret the application context and deployment evolution information.
+  # It helps ensure consistent evaluation of the application's current and target deployment states.
+  # This guidance should be followed by architects and reviewers when assessing the application's architecture.
+  assessment_guidance:
+    application_context_is_primary_architecture_authority: true
+    solution_context_required: false
+    repository_evidence_must_validate_implementation: true
+    conflicts_route_to_architecture_review: true
+    deployment_state_interpretation:
+      source_is_current_state: true
+      target_is_approved_future_state: true
+      assess_code_against: target
+      describe_current_deployment_from: source
+      describe_target_deployment_from: target
+      do_not_merge_source_and_target_regions: true
+      do_not_report_target_as_current: true
+      do_not_report_source_as_target: true
+      do_not_use_dependency_topology_as_application_topology: true
+      do_not_create_findings_from_migration_delta_alone: true
+
+  reporting_contract:
+    required_fields:
+      current_deployment:
+        source: architecture_context.deployment_evolution.source
+        label: Current deployment
+      approved_target_deployment:
+        source: architecture_context.deployment_evolution.target
+        label: Approved target deployment
+      migration_context:
+        source: architecture_context.deployment_evolution.transition
+        label: Migration context
+    prohibited_collapsing:
+      - Do not reduce source and target to a single ambiguous Deployment model field.
+      - Do not combine West US/East US source regions with West US 2/West US target regions.
+      - Do not describe the approved target as already deployed.
+
+  finding_boundary:
+    source_target_difference_is_not_a_finding: true
+    finding_requires_repository_evidence: true
+    missing_deployed_target_infrastructure_is_evidence_gap: true
+    architecture_context_conflict_is_not_a_code_finding: true
+    infrastructure_findings_allowed: false
