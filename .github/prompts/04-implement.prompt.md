@@ -2,7 +2,7 @@
 name: 04-implement
 description: Implement the approved remediation scope from the Step 3A plan
 argument-hint: "runDate=YYYY-MM-DD taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan priorities=P0,P1 waves= changeIds= commitMode=none"
-agent: agent
+agent: Task Implementor
 ---
 
 # Step 4: Implement Approved Remediation
@@ -30,7 +30,7 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
-Run the `/rpi-implement` workflow and use the Task Implementor behavior defined by `AUTHORITATIVE_PROMPT`.
+Use the Task Implementor behavior defined by `AUTHORITATIVE_PROMPT`. This prompt binds that agent through its `agent` frontmatter field. Before any other action, read `AUTHORITATIVE_PROMPT` in full and treat it as the governing specification for this phase; it overrides conflicting default agent behavior. If it cannot be read, stop and report the exact path.
 
 Resolve implementation scope from `PLAN_ARTIFACT` using the supplied approved selectors, then freeze the exact change-ID set before editing. If all selectors are empty, stop and request an explicit approval selector. Do not derive implementation scope from the assessment report.
 
@@ -49,6 +49,14 @@ For `per_change`, require an existing Git repository and a clean starting worktr
 `PUSH_ALLOWED`, `BRANCH_CREATION_ALLOWED`, and `PULL_REQUEST_CREATION_ALLOWED` remain `false`. Do not push, create a branch, create a pull request, execute a live deployment, or modify deployed infrastructure.
 
 Write the authoritative implementation record in the agent-authorized changes area and create the compact Step 4 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report exact paths.
+
+## Next phase
+
+End the response with the exact next command, substituting resolved values and the actual implementation record path:
+
+`/05-review runDate=${RUN_DATE} taskSlug=${TASK_SLUG} planSlug=${PLAN_SLUG} implementationArtifact=<exact-path>`
+
+Step 5 runs as `Task Reviewer` in a new conversation.
 
 ## Repository-agnostic snapshot rule
 

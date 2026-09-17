@@ -69,6 +69,30 @@ Rules:
 - A source-to-target difference is not a finding by itself. A finding requires repository evidence against an applicable target-state control.
 - Missing target infrastructure is an evidence gap, not application noncompliance.
 
+### Report metadata placement and visibility
+
+Render report metadata as a hidden HTML comment block between the `report-metadata` markers at the end of the report, after Appendix A and before the schema-conformance block. It is provenance rather than narrative, so it must not open the document.
+
+Follow the marker pattern already used by the governance block. The `report-metadata:start` and `report-metadata:end` markers are separate comments, and the metadata itself is one comment block between them. Never nest a comment inside another comment.
+
+Because the metadata is hidden, the readable title and its summary line carry document identification. They must state the application, and when the report is a priority-filtered view, they must state that and name the included priorities. This satisfies the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
+
+Metadata placement and visibility are presentation-only. Every required field is still rendered, and no field may be dropped.
+
+<!--
+Superseded 2026-09-16. Retained for reference. Not active.
+
+Report metadata was previously rendered as a visible table immediately below the H1
+title, using `report-metadata` markers positioned there in the report template.
+
+Reason: the metadata is provenance for the reader, and no downstream phase consumes it.
+Step 4 resolves scope from the Step 3A plan and is explicitly prohibited from deriving
+scope from the assessment report, and Step 5 reviews against Steps 2, 3A, and the Step 4
+implementation record. A ten-row table ahead of all narrative reduced readability without
+serving a consumer. Restore the original placement by moving the `report-metadata`
+markers back beneath the H1 in the template and rendering the block visibly.
+-->
+
 ## Required Assessment Overview content
 
 - Application and repository overview
@@ -196,38 +220,75 @@ Priority
     Category
         Finding
 
+### Report title
+
+The report title is H1 and precedes section 1. The template carries a generic default title.
+
+When the report is a priority-filtered view, replace the default with a title that identifies the filtered scope, then follow it with a one-line summary naming the application, stating that the document is a priority-filtered view, and listing the included priorities.
+
+The title and that summary line are the readable identification of the document, because report metadata is rendered as a hidden block at the end. Together they satisfy the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
+
+### Heading hierarchy
+
+Use native Markdown headings at every level so the document outlines, folds, and anchors correctly.
+
+| Level | Content | Form |
+|---|---|---|
+| H1 | Numbered top-level section | `# 2. Resiliency-Focused Recommendations` |
+| H2 | Priority group with finding count | `## P0 — Critical Resiliency Risks (9)` |
+| H3 | Repository-specific category | `### Traffic Eligibility and Health` |
+| H4 | Detailed finding | `#### P0-001: {title}` |
+
+The report title is also H1 and precedes section 1.
+
+Number top-level sections in schema order. Derive table-of-contents anchors from the rendered heading text, so `# 2. Resiliency-Focused Recommendations` is linked as `#2-resiliency-focused-recommendations`.
+
+State the finding count in each priority heading so the reader can scan volume without counting.
+
+Do not use HTML headings. An HTML heading is absent from editor outlines and breadcrumbs, generates no anchor, does not fold, and carries styling that can clash with dark mode and PDF export.
+
 ### Category heading rendering
 
-Within each priority section, repository-specific categories must be
-rendered as visually distinct grouping headers.
+Within each priority section, repository-specific categories are rendered as native H3 headings, one level below the priority group and one level above each finding.
 
-Render categories using HTML:
-
-```html
-<h3 style="color:#0F6CBD;">
-{Category Name}
-</h3>
+```markdown
+### {Category Name}
 ```
 
 Examples:
 
-```html
-<h3 style="color:#0F6CBD;">
-Regional Data-Path Affinity
-</h3>
+```markdown
+### Regional Data-Path Affinity
 ```
 
-```html
-<h3 style="color:#0F6CBD;">
-Traffic Eligibility and Health
-</h3>
+```markdown
+### Traffic Eligibility and Health
 ```
 
-```html
-<h3 style="color:#0F6CBD;">
-Authoritative Data Correctness
-</h3>
+```markdown
+### Authoritative Data Correctness
 ```
+
+<!--
+Superseded 2026-09-16. Retained for reference. Not active.
+
+  Within each priority section, repository-specific categories must be
+  rendered as visually distinct grouping headers.
+
+  Render categories using HTML:
+
+      <h3 style="color:#0F6CBD;">
+      {Category Name}
+      </h3>
+
+Reason: the title occupied H1 and top-level sections occupied H2, which left only H3 and
+H4 for the four semantic levels of priority group, category, and finding. The styled HTML
+heading was used to invent the missing level, but it rendered at the same level as the
+priority group rather than beneath it, so categories appeared as siblings of the group
+that contained them. Promoting sections to numbered H1 frees a level and allows native
+headings throughout. Restore the HTML form only if the heading hierarchy above is
+withdrawn.
+-->
 
 Rules:
 
@@ -604,7 +665,7 @@ Rules:
 - Cross-references to excluded findings must remain identifiable as omitted references and must not be silently renumbered or reassigned.
 - Display IDs must remain deterministic from the complete authoritative finding set. Do not renumber selected findings merely because other priorities are omitted.
 - Evidence gaps and verified controls follow their independent inclusion preferences. They are not selected by remediation priority unless an authoritative priority exists.
-- The report title and metadata must identify the document as a filtered view.
+- The report title and metadata must identify the document as a filtered view. Because report metadata is rendered as a hidden block at the end, the readable title and its summary line must carry this identification.
 - Assessment Overview must list included priorities, omitted priorities, context path/version, and the authoritative Step 2 and Step 3A artifact paths.
 - Filtering must not remove or alter the separate Current deployment, Approved target deployment, and Migration context fields.
 - The report must state that omitted priorities remain in the authoritative assessment and remediation plan.
@@ -680,13 +741,46 @@ Large reports must be assembled in bounded units rather than through one unbound
 
 1. Read and validate all authoritative inputs.
 2. Freeze report scope, selected findings, display IDs, categories, and change mappings.
-3. Create a report assembly manifest.
-4. Initialize the final report with governance metadata, title, and table of contents.
+3. Create the assembly manifest.
+4. Initialize the final report with the governance block, the assembly manifest, the title, and the table of contents.
 5. Append top-level sections in schema order.
 6. Append one complete detailed finding at a time.
 7. Append the Full Finding Matrix, Standards Alignment, and Implementation Roadmap.
-8. Append final conformance metadata.
-9. Reopen and validate the completed report.
+8. Append Appendix A: Traceability.
+9. Append the hidden report-metadata block.
+10. Append the final conformance block.
+11. Reopen and validate the completed report.
+
+<!--
+Superseded 2026-09-16. Retained for reference. Not active.
+
+  1. Read and validate all authoritative inputs.
+  2. Freeze report scope, selected findings, display IDs, categories, and change mappings.
+  3. Create a report assembly manifest.
+  4. Initialize the final report with governance metadata, title, and table of contents.
+  5. Append top-level sections in schema order.
+  6. Append one complete detailed finding at a time.
+  7. Append the Full Finding Matrix, Standards Alignment, and Implementation Roadmap.
+  8. Append final conformance metadata.
+  9. Reopen and validate the completed report.
+
+Reason: this order predated Appendix A and the hidden report-metadata block, so an agent
+following it would omit both. Step 4 also did not state that the assembly manifest is
+written into the report, although recovery depends on finding it there. The active order
+adds the two missing append steps, records the manifest in the initialize step, and uses
+the distinct block names defined below.
+-->
+
+#### Assembly block names
+
+The report carries four separate machine-readable blocks. Use these names exactly and do not merge them, because each has a different purpose and position.
+
+- **Governance block** — schema ID, version, path, and validation status. Written at the top during initialization.
+- **Assembly manifest** — frozen scope, display-ID map, and mutable assembly progress. Written at the top during initialization and required for recovery.
+- **Report-metadata block** — the required report metadata fields. Hidden, written near the end after Appendix A.
+- **Conformance block** — schema, assembly, and source-rendering conformance. Written last.
+
+Only the assembly manifest's `assembly_status` changes during writing. Everything frozen in the assembly order remains fixed.
 
 The final deliverable remains one Markdown report. Temporary fragments are non-authoritative and must not replace the final report.
 

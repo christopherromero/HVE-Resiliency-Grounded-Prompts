@@ -2,7 +2,7 @@
 name: 05-review
 description: Review the frozen Step 4 remediation implementation and determine finding closure
 argument-hint: "runDate=YYYY-MM-DD taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan implementationArtifact=.copilot-tracking/changes/.../implementation-record.md"
-agent: agent
+agent: Task Reviewer
 ---
 
 # Step 5: Review Implemented Remediation
@@ -25,7 +25,7 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
-Run the `/rpi-review` workflow and use the Task Reviewer behavior defined by `AUTHORITATIVE_PROMPT`.
+Use the Task Reviewer behavior defined by `AUTHORITATIVE_PROMPT`. This prompt binds that agent through its `agent` frontmatter field. Before any other action, read `AUTHORITATIVE_PROMPT` in full and treat it as the governing specification for this phase; it overrides conflicting default agent behavior. If it cannot be read, stop and report the exact path.
 
 Read `IMPLEMENTATION_ARTIFACT` and use its frozen `resolved_change_ids`. Do not recompute selectors. Review only that frozen scope against Step 2 findings, Step 3A acceptance and validation requirements, Step 4 implementation evidence, and the current repository state.
 

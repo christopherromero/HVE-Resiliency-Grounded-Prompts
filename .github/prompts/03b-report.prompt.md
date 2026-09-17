@@ -2,7 +2,7 @@
 name: 03b-report
 description: Generate the schema-governed priority-filtered resiliency assessment report
 argument-hint: "runDate=YYYY-MM-DD taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan"
-agent: agent
+agent: Task Planner
 ---
 
 # Step 3B: Assessment Report
@@ -32,7 +32,9 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
-Use the Task Planner reporting behavior defined by `AUTHORITATIVE_PROMPT`.
+Use the Task Planner reporting behavior defined by `AUTHORITATIVE_PROMPT`. This prompt binds that agent through its `agent` frontmatter field. Before any other action, read `AUTHORITATIVE_PROMPT` in full and treat it as the governing specification for this phase; it overrides conflicting default agent behavior. If it cannot be read, stop and report the exact path.
+
+Step 3B generates the report directly. Do not delegate report generation to Task Implementor.
 
 Read and validate `REPORT_SCHEMA` and `ASSESSMENT_SCOPE_CONTEXT`. Read the three authoritative phase artifacts before rendering. Apply `report_preferences.finding_selection` and `report_preferences.testing_output` exactly.
 
@@ -51,3 +53,13 @@ Use the incremental assembly and recoverable-write protocol in the authoritative
 Freeze the report manifest before writing. Append bounded sections and one complete finding at a time. Use stable invisible markers and resume after the last verified completed unit following a recoverable request error. Do not restart report planning, duplicate completed content, or change IDs, counts, priorities, categories, or scope.
 
 Abbreviate source fingerprints in the customer report. Preserve exact Step 2 source excerpts without adding comments or labels inside original-source code blocks. Reopen and validate the final report before claiming completion.
+
+## Next phase
+
+Step 4 requires explicit human approval of remediation scope. Do not choose that scope.
+
+Present the available priorities, waves, and change IDs from the Step 3A plan, then end the response with the command template for the user to complete:
+
+`/04-implement runDate=${RUN_DATE} taskSlug=${TASK_SLUG} planSlug=${PLAN_SLUG} priorities=<approved> waves=<approved> changeIds=<approved> commitMode=none`
+
+Step 4 runs as `Task Implementor` in a new conversation.

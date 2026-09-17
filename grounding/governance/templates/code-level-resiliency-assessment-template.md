@@ -5,9 +5,6 @@
 
 # Code-Level Resiliency Assessment
 
-<!-- report-metadata:start -->
-<!-- report-metadata:end -->
-
 ## Table of Contents
 
 - [Assessment Overview](#assessment-overview)
@@ -82,6 +79,9 @@
 <!-- content:appendix-traceability:end -->
 
 [Back to Top](#top)
+
+<!-- report-metadata:start -->
+<!-- report-metadata:end -->
 
 <!-- schema-conformance:start -->
 <!-- schema-conformance:end -->
