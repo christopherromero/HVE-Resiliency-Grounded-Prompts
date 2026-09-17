@@ -79,20 +79,6 @@ Because the metadata is hidden, the readable title and its summary line carry do
 
 Metadata placement and visibility are presentation-only. Every required field is still rendered, and no field may be dropped.
 
-<!--
-Superseded 2026-09-16. Retained for reference. Not active.
-
-Report metadata was previously rendered as a visible table immediately below the H1
-title, using `report-metadata` markers positioned there in the report template.
-
-Reason: the metadata is provenance for the reader, and no downstream phase consumes it.
-Step 4 resolves scope from the Step 3A plan and is explicitly prohibited from deriving
-scope from the assessment report, and Step 5 reviews against Steps 2, 3A, and the Step 4
-implementation record. A ten-row table ahead of all narrative reduced readability without
-serving a consumer. Restore the original placement by moving the `report-metadata`
-markers back beneath the H1 in the template and rendering the block visibly.
--->
-
 ## Required Assessment Overview content
 
 - Application and repository overview
@@ -192,16 +178,6 @@ Every detailed finding must include:
 17. Notes
 18. Standards reference, when supported
 
-<!--
-Superseded 2026-09-15. Retained for reference. Not active.
-
-  3. Priority policy ID, version, and rule ID
-
-Reason: the internal-identifier-suppression rule moves priority rule IDs out of
-sections 1 through 7. The policy ID and version remain in the finding, and the rule
-ID is preserved in Appendix A, so no traceability is lost. Restore this line if
-identifier suppression is withdrawn.
--->
 Group findings primarily by governance priority.
 
 Priority order:
@@ -269,27 +245,6 @@ Examples:
 ### Authoritative Data Correctness
 ```
 
-<!--
-Superseded 2026-09-16. Retained for reference. Not active.
-
-  Within each priority section, repository-specific categories must be
-  rendered as visually distinct grouping headers.
-
-  Render categories using HTML:
-
-      <h3 style="color:#0F6CBD;">
-      {Category Name}
-      </h3>
-
-Reason: the title occupied H1 and top-level sections occupied H2, which left only H3 and
-H4 for the four semantic levels of priority group, category, and finding. The styled HTML
-heading was used to invent the missing level, but it rendered at the same level as the
-priority group rather than beneath it, so categories appeared as siblings of the group
-that contained them. Promoting sections to numbered H1 frees a level and allows native
-headings throughout. Restore the HTML form only if the heading hierarchy above is
-withdrawn.
--->
-
 Rules:
 
 - Category headers appear once per category.
@@ -316,25 +271,6 @@ Emit fields in this order:
 - `**Fix:**` then one or more fenced code blocks of the proposal
 - `**Notes:**` sub-bullets (`Implementation`, `Validation`, `Guardrail`)
 - `<span style="font-size: 14px;">**Standards reference:** {grounded standard name and version} — `{grounding file path}`</span>`, using `[title](url)` only when the grounded standard publishes an external URL for the cited control
-
-<!--
-Superseded 2026-09-15. Retained for reference. Not active.
-
-  - `**Notes:**` sub-bullets (`Cross-refs`, `Implementation`, `Validation`, `Guardrail`)
-  - `<span style="font-size: 14px;">**MSFT Reference:** [title](url)</span>`
-
-Reason for the Notes change: the `Cross-refs` sub-bullet carried Step 2 finding IDs,
-change IDs, control IDs, and open-question IDs in body narrative. Its content moves to
-Appendix A under the internal-identifier-suppression rule.
-
-Reason for the reference change: the previous line required an external Microsoft Learn
-URL for every finding, but the grounded standards publish no per-control external URLs,
-and inventing one is prohibited by the required-exclusions rule. It also conflicted with
-required finding field 18, "Standards reference, when supported". The active line cites
-the grounded standard and still permits an external URL when one genuinely exists.
-
-Restore both lines if identifier suppression is withdrawn.
--->
 
 Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority). Apply the
 same display ID everywhere, including cross-references.
@@ -476,19 +412,6 @@ Include:
 
 Use display IDs in the `ID` and `Remediated with` columns. `Remediated with` names the other display IDs that share a single remediation change, or `—` when the finding is remediated alone. Step 2 finding IDs and Step 3A change IDs belong in Appendix A, not in this matrix.
 
-<!--
-Superseded 2026-09-15. Retained for reference. Not active.
-
-Previous columns included, in place of "Remediated with":
-
-  - Change ID
-  - Source ID
-
-Reason: the internal-identifier-suppression rule moves change IDs and Step 2 source
-IDs to Appendix A. "Remediated with" preserves the consolidation fact in the matrix
-using display IDs. Restore these columns if identifier suppression is withdrawn.
--->
-
 Counts must reconcile with the Summary Findings table.
 
 ## Standards Alignment columns
@@ -534,28 +457,6 @@ Remediation index columns:
 - Remediated with
 
 Use display IDs throughout the roadmap. Change IDs, finding IDs, and priority rule IDs belong in Appendix A.
-
-<!--
-Superseded 2026-09-15. Retained for reference. Not active.
-
-Implementation waves columns previously included:
-
-  - Change IDs
-
-The subsection "Remediation index" was previously named "Change index" with columns:
-
-  - Change ID
-  - Priority
-  - Priority rule
-  - Finding IDs
-  - Objective
-  - Complexity
-  - Wave
-
-Reason: the internal-identifier-suppression rule moves change IDs, finding IDs, and
-priority rule IDs to Appendix A. The roadmap keys off display IDs instead. Restore
-these if identifier suppression is withdrawn.
--->
 
 ## Appendix A: Traceability
 
@@ -750,26 +651,6 @@ Large reports must be assembled in bounded units rather than through one unbound
 9. Append the hidden report-metadata block.
 10. Append the final conformance block.
 11. Reopen and validate the completed report.
-
-<!--
-Superseded 2026-09-16. Retained for reference. Not active.
-
-  1. Read and validate all authoritative inputs.
-  2. Freeze report scope, selected findings, display IDs, categories, and change mappings.
-  3. Create a report assembly manifest.
-  4. Initialize the final report with governance metadata, title, and table of contents.
-  5. Append top-level sections in schema order.
-  6. Append one complete detailed finding at a time.
-  7. Append the Full Finding Matrix, Standards Alignment, and Implementation Roadmap.
-  8. Append final conformance metadata.
-  9. Reopen and validate the completed report.
-
-Reason: this order predated Appendix A and the hidden report-metadata block, so an agent
-following it would omit both. Step 4 also did not state that the assembly manifest is
-written into the report, although recovery depends on finding it there. The active order
-adds the two missing append steps, records the manifest in the initialize step, and uses
-the distinct block names defined below.
--->
 
 #### Assembly block names
 

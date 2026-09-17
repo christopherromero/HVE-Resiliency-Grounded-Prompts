@@ -271,39 +271,11 @@ Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the rep
 
 Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged, except for the H1 title, which the schema's report-title rule governs when the report is a filtered view. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
 
-<!--
-Superseded 2026-09-16. Retained for reference. Not active.
-
-  Validate the seven required section headings ...
-  Preserve fixed headings, table-of-contents links, section markers, and back-to-top
-  links unchanged.
-
-Reason: the report now has eight top-level sections because Appendix A was added, so
-"seven" was stale. The blanket instruction to preserve fixed headings also conflicted
-with the priority-filtered reporting rule that the title must identify a filtered view,
-which the template's generic H1 does not do. The active wording states the section count
-and names the single authorized exception.
--->
-
 Render the shared-service reference-architecture table from the schema's required Albertsons Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
 
 When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied and publishes reference-architecture links, add or override entries from it, because a supplied registry is the more current customer source. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow the table. When the schema carries no table and no registry is supplied, render the schema-required no-registry statement.
 
 Never invent a reference-architecture URL that appears in neither the schema nor a supplied registry.
-
-<!--
-Superseded 2026-09-15. Retained for reference. Not active.
-
-  When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied, render only applicable approved
-  entries. When absent, render the schema-required no-registry statement. Never source
-  customer-specific references from hardcoded prompt or schema content.
-
-Reason: this rule narrowed the table to evidenced services only, and its final sentence
-forbade the schema table that is the sole source of the approved reference-architecture
-links. The dependency-standard registry publishes no links, so applying the rule both
-dropped required rows and contradicted itself. The active rules render the schema table
-in full with an applicability column.
--->
 
 ### Schema-driven report rendering
 
@@ -703,20 +675,6 @@ Example non-Git rendering:
 **Original assessed lines (advisory):** 142-156
 ```
 
-<!--
-Superseded 2026-09-15. Retained for reference. Not active.
-
-The example rendering above previously ended with this final line:
-
-  **Repository evidence:** `EV-F-001-01`
-
-Reason: evidence IDs embed the Step 2 finding ID, so the internal-identifier-suppression
-rule excludes them from sections 1 through 7. Repository path, symbol, exact excerpt, and
-source fingerprint remain the primary evidence locators in the body, and the evidence ID
-resolves through the Step 2 artifact. Restore this line if identifier suppression is
-withdrawn.
--->
-
 Show a Git commit SHA only for `git_revision`. Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
 
 ## Incremental Report Assembly and Recovery
@@ -750,17 +708,6 @@ Freezing applies to scope, identifiers, counts, and mappings. The assembly manif
 12. Reopen and validate the completed file.
 
 Use the schema's assembly block names. The governance block, assembly manifest, report-metadata block, and conformance block are four separate blocks in three positions, and none substitutes for another. The report-metadata block is the required report metadata fields, is hidden, and belongs after Appendix A rather than beneath the title.
-
-<!--
-Superseded 2026-09-16. Retained for reference. Not active.
-
-  1. Initialize the final report with governance metadata, title, table of contents, and the frozen manifest metadata.
-  11. Append final schema and assembly conformance metadata.
-
-Reason: four different blocks were each described as "metadata", which invited writing the
-report-metadata table beneath the title during initialization. The active wording uses the
-distinct block names defined in the schema. Sequence and behavior are otherwise unchanged.
--->
 
 Use the schema-required invisible markers before each top-level section and detailed finding.
 
