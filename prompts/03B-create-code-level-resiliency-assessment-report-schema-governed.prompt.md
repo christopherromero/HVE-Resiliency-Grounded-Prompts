@@ -36,10 +36,14 @@ APPLICATION_CONTEXT=<optional application-context file path>
 REFERENCE_ARCHITECTURE_REGISTRY=<optional approved reference-architecture registry path>
 REPORT_SCHEMA=grounding/governance/assessment-report-schema.md
 REPORT_TEMPLATE=grounding/governance/templates/code-level-resiliency-assessment-template.md
-REPORT_OUTPUT_PATH=<optional; defaults to .copilot-tracking/plans/reports/code-level-resiliency-assessment.md>
+MICROSERVICE_SLUG=<optional; defaults to TASK_SLUG lowercased with a trailing `-inventory` suffix removed>
+RUN_DATE=<assessment run date in YYYY-MM-DD, used to derive the report filename prefix>
+REPORT_OUTPUT_PATH=<optional; defaults to the generated path in Preferred report path>
 ```
 
 `REPORT_SCHEMA` is normally fixed and must not be changed per application unless an approved schema version is intentionally selected.
+
+Derive `MICROSERVICE_SLUG` and `REPORT_DATE` rather than asking for them. State both derived values in the completion report.
 
 ## Mandatory inputs to read
 
@@ -232,8 +236,16 @@ PCF references must be informational only and excluded from findings, priorities
 Attempt to create the complete report at:
 
 ```text
-.copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+.copilot-tracking/plans/reports/{{REPORT_DATE}}-{{MICROSERVICE_SLUG}}-code-level-resiliency-assessment.md
 ```
+
+Resolve the filename prefix as follows:
+
+* `REPORT_DATE` is the assessment run date rewritten to `MM-DD-YYYY`. Rewrite the run date supplied in `YYYY-MM-DD` form rather than reading the current system date, so the report matches the run it reports on.
+* `MICROSERVICE_SLUG` is the assessed microservice name in lowercase kebab-case, containing only letters, digits, and single hyphens. Derive it from the Step 1 and Step 2 task slug by lowercasing it and removing a trailing `-inventory` suffix.
+* The `-code-level-resiliency-assessment.md` suffix is fixed. Do not translate, abbreviate, or reorder the filename parts.
+
+Use `REPORT_OUTPUT_PATH` instead when the caller supplies it explicitly. One run produces exactly one report file. Overwrite the resolved path when regenerating a report for the same run and microservice rather than creating a numbered or suffixed variant.
 
 Do not stop, delegate the report to Task Implementor, or request implementation merely because the preferred output path is unavailable.
 
@@ -267,11 +279,15 @@ report_governance:
 
 #### Canonical template rendering contract
 
-Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the seven required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
+Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the eight required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
 
-Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
+Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged, except for the H1 title, which the schema's report-title rule governs when the report is a filtered view. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
 
-When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied, render only applicable approved entries. When absent, render the schema-required no-registry statement. Never source customer-specific references from hardcoded prompt or schema content.
+Render the shared-service reference-architecture table from the schema's required Albertsons Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
+
+When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied and publishes reference-architecture links, add or override entries from it, because a supplied registry is the more current customer source. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow the table. When the schema carries no table and no registry is supplied, render the schema-required no-registry statement.
+
+Never invent a reference-architecture URL that appears in neither the schema nor a supplied registry.
 
 ### Schema-driven report rendering
 
@@ -669,8 +685,6 @@ Example non-Git rendering:
 **Snapshot provenance:** Workspace generated
 
 **Original assessed lines (advisory):** 142-156
-
-**Repository evidence:** `EV-F-001-01`
 ```
 
 Show a Git commit SHA only for `git_revision`. Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
@@ -688,9 +702,11 @@ Before creating the report:
 3. Create the schema-required `report_assembly_manifest`.
 4. Do not reconsider these values during writing or recovery.
 
+Freezing applies to scope, identifiers, counts, and mappings. The assembly manifest's `assembly_status` is progress tracking and is expected to change as sections and findings are appended.
+
 ### Bounded write sequence
 
-1. Initialize the final report with governance metadata, title, table of contents, and the frozen manifest metadata.
+1. Initialize the final report with the governance block, the assembly manifest, the title, and the table of contents.
 2. Append Assessment Overview.
 3. Append detailed recommendations one complete finding at a time.
 4. Append Non-Resiliency Recommendations.
@@ -698,10 +714,24 @@ Before creating the report:
 6. Append the Full Finding Matrix.
 7. Append Standards Alignment.
 8. Append the Implementation Roadmap.
-9. Append final schema and assembly conformance metadata.
-10. Reopen and validate the completed file.
+9. Append Appendix A: Traceability.
+10. Append the hidden report-metadata block.
+11. Append the final conformance block.
+12. Reopen and validate the completed file.
+
+Use the schema's assembly block names. The governance block, assembly manifest, report-metadata block, and conformance block are four separate blocks in three positions, and none substitutes for another. The report-metadata block is the required report metadata fields, is hidden, and belongs after Appendix A rather than beneath the title.
 
 Use the schema-required invisible markers before each top-level section and detailed finding.
+
+### Internal identifier suppression
+
+Sections 1 through 7 are customer-facing narrative and must not contain internal workflow identifiers. Follow the schema's internal-identifier-suppression rule exactly.
+
+Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, priority rule IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs in body content. Reference findings, dependencies, and consolidation through display IDs. State test obligations, open questions, evidence gaps, and discovery items in prose. Omit the `Cross-refs` notes sub-bullet.
+
+Carry every suppressed identifier into Appendix A so nothing is lost. Suppression and appendix placement are presentation-only and must not change findings, priorities, severity, status, evidence, control mappings, change mappings, or validation obligations.
+
+Hidden governance, manifest, and conformance comment blocks retain full identifiers and are exempt.
 
 ### Finding write unit
 

@@ -91,7 +91,7 @@ owner: Cloud Architecture Team
 assessment_scope:
   application_code: {status: enabled}
   application_configuration: {status: enabled}
-  container_build: {status: enabled}
+  container_build: {status: disabled}
   cicd_pipeline: {status: disabled}
   deployment_configuration: {status: disabled}
   infrastructure_as_code: {status: disabled}
@@ -129,7 +129,7 @@ report_preferences:
 
 solution-architecture-context.md - this allows you to specify the overall application architecture context across all of the microservices
 
-There is only one template for the solution architecture, so just copy it tot he application-context folder and rename it to solution-application-context.md and edit it.
+There is only one template for the solution architecture, so just copy it tot he application-context folder and rename it to solution-architecture-context.md and edit it.
 
 ### Setting the repo architecture context
 
@@ -164,28 +164,28 @@ Note that each Step uses a HVE Agent that is different
 4) If you are using MS EMU license, Enable Allow All so you do not have to approve anything (status bar under the agent selection)
 5) Paste the following prompt into the chat window and modify it to todays date
 
-/01-inventory runDate=2026-09-09 sourceroot=source/customer-app taskSlug=springboot-active-active-inventory
+/01-inventory runDate=2026-09-09 sourceRoot=source/customer-app taskSlug=springboot-active-active-inventory
 
 6) The output files have the todays date in the name, you must ensure the instructions are updated with todays date in the paths. For example Step 1 produces the inventory file INVENTORY_ARTIFACT=.copilot-tracking/research/2026-09-02/springboot-active-active-inventory-research.md
-7) When Step 1 Prompt is done, Click the KEEP button, run /clear, reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Reviewer , run the step 2 prompt
+7) When Step 1 Prompt is done, Click the KEEP button, run /clear (or create a new GHCP chat), reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Reviewer , run the step 2 prompt
 
 /02-findings  runDate=2026-09-09  taskSlug=springboot-active-active-inventory
 
-8) When Step 2 prompt is done, click the KEEP button, run /clear, reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Planner, run step 3A prompt
+8) When Step 2 prompt is done, click the KEEP button, run /clear (or create a new GHCP chat), reenable opus 5 as the model, reenable Allow ALL, Change agent to Task Planner, run step 3A prompt
 
 /03A-plan runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
 
-9) When Step 3A is done, click the KEEP button, run /clear, reenable opus 5 as the model, reneable Allow ALL, leave agent to Task Planner, run step 3B prompt
+9) When Step 3A is done, click the KEEP button, run /clear (or create a new GHCP chat), reenable opus 5 as the model, reneable Allow ALL, leave agent to Task Planner, run step 3B prompt
 
 /03B-report runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
 
-10) When step 3B is done, the assessment report should be created. Assessment report will be created under .copilot-tracking/plans/reports and have the name code-level-resiliency-assessment.md
+10) When step 3B is done, the assessment report should be created. Assessment report will be created under .copilot-tracking/plans/reports and be named `<MM-DD-YYYY>-<microservice-slug>-code-level-resiliency-assessment.md`, where the date is the run date and the slug is the assessed microservice, for example 09-09-2026-abc-microservice-code-level-resiliency-assessment.md
 
 Summary of each step work will also be created and stored in the handoffs subfolder of each agent folder, but full details are in the normal locations
 
 Run `py tools/validate_assessment_report.py <generated-report-path>` after Step 3B to validate the report matches the template, should get a PASSED
 
-py tools/validate_assessment_report.py .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+py tools/validate_assessment_report.py .copilot-tracking/plans/reports/09-09-2026-abc-microservice-code-level-resiliency-assessment.md
 
 ## Prompt Approach/Assumptions
 
@@ -249,3 +249,16 @@ report_preferences:
     show_acceptance_criteria: true
     show_validation_evidence: false
     include_consolidated_validation_strategy: true
+
+## Troubleshooting 
+Please be aware that this tool is still being improved, so details related to the context files, runs, prompts, and more can and will change in the future. 
+
+The tool entirely relies on GHCP and VS Code and with that said, these tools can change. You might come across the following issues:
+
+1. After starting the run, I see that the agent I selected changed. Is that normal? 
+```
+Yes, this can occur depending on your VS code build. There is no way to verify. Please just be aware till we find provide guidance.
+```
+
+
+

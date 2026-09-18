@@ -1,31 +1,182 @@
 # Dependency Standard Registry
-schema_version: "2.0"
+schema_version: "2.1"
 registry_type: dependency_standard_registry
 
+# Version policy
+#   Dependency standards updated with business-logic risk classification are 2.1.0.
+#   Standards not yet updated remain at their current version.
+#   Every entry declares an explicit standard.path and standard.version.
+
 standards:
+
   keyvault:
     display_name: Azure Key Vault
     grounding_file: grounding/dependencies/springboot-keyvault.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - keyvault
+        - azure-keyvault
+      repository_patterns:
+        - SecretClient
+        - CertificateClient
+        - KeyClient
+        - spring.cloud.azure.keyvault
+        - AZURE_KEYVAULT_URI
+    standard:
+      path: grounding/dependencies/springboot-keyvault.md
+      version: "2.0.0"
 
   cosmosdb:
     display_name: Azure Cosmos DB
     grounding_file: grounding/dependencies/springboot-cosmosdb.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - cosmosdb
+        - azure-cosmos
+      repository_patterns:
+        - CosmosClientBuilder
+        - CosmosAsyncClient
+        - spring.cloud.azure.cosmos
+        - ChangeFeedProcessor
+    standard:
+      path: grounding/dependencies/springboot-cosmosdb.md
+      version: "2.1.0"
+      business_logic_risk_classification: true
 
   eventhubs:
     display_name: Azure Event Hubs
     grounding_file: grounding/dependencies/springboot-eventhubs.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - eventhubs
+        - azure-messaging-eventhubs
+      repository_patterns:
+        - EventHubProducerClient
+        - EventHubClientBuilder
+        - EventProcessorClient
+        - spring.cloud.azure.eventhubs
+        - BlobCheckpointStore
+    standard:
+      path: grounding/dependencies/springboot-eventhubs.md
+      version: "2.1.0"
+      business_logic_risk_classification: true
 
   storage-blob:
     display_name: Azure Blob Storage
     grounding_file: grounding/dependencies/springboot-storage-blob.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - storage-blob
+        - azure-storage-blob
+      repository_patterns:
+        - BlobServiceClientBuilder
+        - BlobContainerClient
+        - BlobClient
+        - spring.cloud.azure.storage
+    standard:
+      path: grounding/dependencies/springboot-storage-blob.md
+      version: "2.1.0"
+      business_logic_risk_classification: true
 
   azure-sql:
     display_name: Azure SQL
     grounding_file: grounding/dependencies/springboot-azure-sql.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - azure-sql
+        - mssql-jdbc
+        - r2dbc-mssql
+      repository_patterns:
+        - jdbc:sqlserver
+        - r2dbc:mssql
+        - SQLServerDataSource
+        - spring.datasource.url
+    standard:
+      path: grounding/dependencies/springboot-azure-sql.md
+      version: "2.0.0"
 
   postgresql:
     display_name: PostgreSQL
     grounding_file: grounding/dependencies/springboot-postgresql.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - postgresql
+        - postgres
+      repository_patterns:
+        - jdbc:postgresql
+        - r2dbc:postgresql
+        - PGSimpleDataSource
+        - spring.datasource.url
+        - PGHOST
+    standard:
+      path: grounding/dependencies/springboot-postgresql.md
+      version: "2.1.0"
+      business_logic_risk_classification: true
+
+  apim:
+    display_name: Azure API Management Client Behavior
+    grounding_file: grounding/dependencies/springboot-apim.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_dependencies:
+        - apim
+        - azure-api-management
+      repository_patterns:
+        - Ocp-Apim-Subscription-Key
+        - azure-api.net
+        - WebClient.Builder
+        - RestClient.Builder
+        - FeignClient
+    standard:
+      path: grounding/dependencies/springboot-apim.md
+      version: "2.1.0"
+      business_logic_risk_classification: true
+
+  appgateway-glb:
+    display_name: Application Gateway and Global Load Balancer Behavior
+    grounding_file: grounding/dependencies/springboot-appgateway-glb.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_capabilities:
+        - ingress: application_gateway
+        - ingress: global_load_balancer
+      repository_patterns:
+        - server.forward-headers-strategy
+        - ForwardedHeaderFilter
+        - X-Forwarded-For
+        - actuator/health/readiness
+        - actuator/health/liveness
+    standard:
+      path: grounding/dependencies/springboot-appgateway-glb.md
+      version: "2.1.0"
+      business_logic_risk_classification: true
+
+  http-client:
+    display_name: HTTP Client Behavior
+    grounding_file: grounding/dependencies/springboot-http-client.md
+    type: cross_cutting_client_standard
+    activate_when_any:
+      inventory_dependencies:
+        - spring-web
+        - spring-webflux
+        - apache-httpclient
+        - okhttp
+        - openfeign
+      repository_patterns:
+        - WebClient
+        - RestClient
+        - RestTemplate
+        - HttpClient
+        - FeignClient
+    standard:
+      path: grounding/dependencies/springboot-http-client.md
+      version: "1.0.0"
 
   confluent-kafka:
     display_name: Confluent Kafka
@@ -49,7 +200,6 @@ standards:
     context_sources:
       preferred:
         - application-context/application-architecture-context.yml
-        - application-context/solution-architecture-context.yml
       fallback:
         - repository_observed_dependency_roles
 
@@ -59,37 +209,28 @@ standards:
     type: scenario_aware_dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - confluent-kafka
-        - spring-kafka
+        - dse-cassandra
       repository_patterns:
-        - KafkaTemplate
-        - KafkaListener
-        - spring.kafka.bootstrap-servers
-        - schema.registry.url
+        - DseSession
+        - DseCluster
+        - spring.data.cassandra
+        - cassandra.contact-points
     standard:
       path: grounding/dependencies/springboot-dse-cassandra.md
       version: "2.0.0"
     scenario_policy:
-      path: grounding/governance/kafka-operating-scenario-policy.yml
+      path: grounding/governance/dse-cassandra-operating-scenario-policy.yml
       version: "2.0.0"
+    context_sources:
+      preferred:
+        - application-context/application-architecture-context.yml
+      fallback:
+        - repository_observed_dependency_roles
 
-  apim:
-    display_name: Azure API Management Client Behavior
-    grounding_file: grounding/dependencies/springboot-apim.md
-
-  appgateway-glb:
-    display_name: Application Gateway and Global Load Balancer Behavior
-    grounding_file: grounding/dependencies/springboot-appgateway-glb.md
-
-  http-client:
-    display_name: HTTP Client Behavior
-    grounding_file: grounding/dependencies/springboot-http-client.md
-
-  azure_managed_redis:
+  azure-managed-redis:
     display_name: Azure Managed Redis
     grounding_file: grounding/dependencies/springboot-azure-managed-redis.md
     type: dependency_standard
-
     activate_when_any:
       inventory_dependencies:
         - azure-managed-redis
@@ -103,23 +244,18 @@ standards:
         - RedissonClient
         - spring.data.redis
         - spring.session.store-type=redis
-
     standard:
       path: grounding/dependencies/springboot-azure-managed-redis.md
       version: "2.0.0"
 
-
-  aks_istio:
+  aks-istio:
     display_name: Azure AKS with Istio
     grounding_file: grounding/dependencies/springboot-aks-istio.md
     type: dependency_standard
-
     activate_when_any:
-
       inventory_capabilities:
         - runtime_platform: aks
         - service_mesh: istio
-
       repository_patterns:
         - VirtualService
         - DestinationRule
@@ -127,21 +263,17 @@ standards:
         - sidecar.istio.io
         - proxy.istio.io
         - istio-injection
-
     standard:
       path: grounding/dependencies/springboot-aks-istio.md
       version: "2.0.0"
 
-  azure_functions:
+  azure-functions:
     display_name: Azure Function
     grounding_file: grounding/dependencies/springboot-azure-function.md
     type: dependency_standard
-
     activate_when_any:
-
       inventory_capabilities:
         - runtime_platform: azure-function
-
       repository_patterns:
         - host.json
         - function.json
@@ -153,15 +285,41 @@ standards:
         - EventHubTrigger
         - BlobTrigger
         - DurableOrchestrationContext
-
     standard:
       path: grounding/dependencies/springboot-azure-function.md
       version: "2.0.0"
 
-# Assessment Domain Standard Registry Additions
-# Merge this block at the top level of grounding/registry/dependency-standard-registry.yml.
+  jvm-runtime:
+    display_name: JVM Runtime Resiliency
+    grounding_file: grounding/dependencies/jvm-runtime-resiliency.md
+    type: dependency_standard
+    activate_when_any:
+      inventory_capabilities:
+        - runtime: jvm
+        - language: java
+        - framework: spring-boot
+      repository_patterns:
+        - pom.xml
+        - build.gradle
+        - build.gradle.kts
+        - JAVA_TOOL_OPTIONS
+        - JAVA_OPTS
+        - JDK_JAVA_OPTIONS
+        - -Xmx
+        - -XX:MaxRAMPercentage
+        - spring.threads.virtual.enabled
+        - spring.lifecycle.timeout-per-shutdown-phase
+    standard:
+      path: grounding/dependencies/jvm-runtime-resiliency.md
+      version: "1.0.0"
+
+# Optional assessment-domain standards.
+# These activate only when the matching domain is enabled in
+# application-context/assessment-scope-context.yml and repository-owned
+# artifacts are present. They are not runtime application dependencies.
 
 assessment_domain_standards:
+
   cicd-pipeline-resiliency:
     display_name: CI/CD Pipeline Resiliency
     grounding_file: grounding/dependencies/cicd-pipeline-resiliency.md
@@ -229,3 +387,15 @@ assessment_domain_standards:
       - kustomization.yaml
       - overlays/**/*.yml
       - overlays/**/*.yaml
+
+# Registry governance rules.
+
+registry_rules:
+  single_authority: true
+  invent_grounding_paths: false
+  substitute_missing_standard: false
+  missing_entry_behavior: record_dependency_standard_gap
+  disabled_domain_behavior: not_applicable
+  unknown_ownership_behavior: not_assessed
+  duplicate_standard_loading_prohibited: true
+  risk_classification_propagates_to_findings: true

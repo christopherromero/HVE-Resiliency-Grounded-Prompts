@@ -351,7 +351,7 @@ kafka_operating_scenario:
 
   policy_validation:
     policy_id: KAFKA-OPERATING-SCENARIO
-    policy_version: "3.1.0"
+    policy_version: "3.2.0"
     rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004
     status: consistent|inferred|conditionally_inferred|conflict|insufficient_evidence
 

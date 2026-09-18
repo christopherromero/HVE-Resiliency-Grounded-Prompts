@@ -5,9 +5,6 @@
 
 # Code-Level Resiliency Assessment
 
-<!-- report-metadata:start -->
-<!-- report-metadata:end -->
-
 ## Table of Contents
 
 - [Assessment Overview](#assessment-overview)
@@ -17,6 +14,7 @@
 - [Full Finding Matrix](#full-finding-matrix)
 - [Standards Alignment](#standards-alignment)
 - [Implementation Roadmap](#implementation-roadmap)
+- [Appendix A: Traceability](#appendix-traceability)
 
 <!-- section:assessment-overview -->
 ## Assessment Overview
@@ -73,6 +71,17 @@
 <!-- content:implementation-roadmap:end -->
 
 [Back to Top](#top)
+
+<!-- section:appendix-traceability -->
+## Appendix A: Traceability
+
+<!-- content:appendix-traceability:start -->
+<!-- content:appendix-traceability:end -->
+
+[Back to Top](#top)
+
+<!-- report-metadata:start -->
+<!-- report-metadata:end -->
 
 <!-- schema-conformance:start -->
 <!-- schema-conformance:end -->
