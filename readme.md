@@ -179,13 +179,13 @@ Note that each Step uses a HVE Agent that is different
 
 /03B-report runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
 
-10) When step 3B is done, the assessment report should be created. Assessment report will be created under .copilot-tracking/plans/reports and have the name code-level-resiliency-assessment.md
+10) When step 3B is done, the assessment report should be created. Assessment report will be created under .copilot-tracking/plans/reports and be named `<MM-DD-YYYY>-<microservice-slug>-code-level-resiliency-assessment.md`, where the date is the run date and the slug is the assessed microservice, for example 09-09-2026-abc-microservice-code-level-resiliency-assessment.md
 
 Summary of each step work will also be created and stored in the handoffs subfolder of each agent folder, but full details are in the normal locations
 
 Run `py tools/validate_assessment_report.py <generated-report-path>` after Step 3B to validate the report matches the template, should get a PASSED
 
-py tools/validate_assessment_report.py .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+py tools/validate_assessment_report.py .copilot-tracking/plans/reports/09-09-2026-abc-microservice-code-level-resiliency-assessment.md
 
 ## Prompt Approach/Assumptions
 

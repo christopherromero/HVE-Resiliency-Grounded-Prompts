@@ -12,6 +12,8 @@ agent: Task Planner
 RUN_DATE=${input:runDate:Assessment run date used by Steps 1 through 3A}
 TASK_SLUG=${input:taskSlug:Task slug used by Steps 1 and 2}
 PLAN_SLUG=${input:planSlug:Plan slug used by Step 3A}
+MICROSERVICE_SLUG=TASK_SLUG lowercased, with a trailing `-inventory` suffix removed
+REPORT_DATE=RUN_DATE rewritten from YYYY-MM-DD to MM-DD-YYYY
 
 AUTHORITATIVE_PROMPT=prompts/03B-create-code-level-resiliency-assessment-report-schema-governed.prompt.md
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
@@ -25,6 +27,7 @@ SOLUTION_ARCHITECTURE_CONTEXT=application-context/solution-architecture-context.
 REFERENCE_ARCHITECTURE_REGISTRY=application-context/reference-architecture-registry.yml
 ASSESSMENT_SCOPE_CONTEXT=application-context/assessment-scope-context.yml
 ASSESSMENT_SCOPE_SCHEMA=grounding/governance/assessment-scope-schema.yml
+REPORT_ARTIFACT=.copilot-tracking/plans/reports/${REPORT_DATE}-${MICROSERVICE_SLUG}-code-level-resiliency-assessment.md
 EXPECTED_HANDOFF_ARTIFACT=.copilot-tracking/plans/handoffs/03B-report-summary.yml
 PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
@@ -35,6 +38,8 @@ All paths are workspace-relative. Do not guess alternate artifact paths. If a re
 Use the Task Planner reporting behavior defined by `AUTHORITATIVE_PROMPT`. This prompt binds that agent through its `agent` frontmatter field. Before any other action, read `AUTHORITATIVE_PROMPT` in full and treat it as the governing specification for this phase; it overrides conflicting default agent behavior. If it cannot be read, stop and report the exact path.
 
 Step 3B generates the report directly. Do not delegate report generation to Task Implementor.
+
+Write the report to `REPORT_ARTIFACT`. Create the `.copilot-tracking/plans/reports/` folder when it does not exist. Supply `REPORT_ARTIFACT` to the authoritative prompt as `REPORT_OUTPUT_PATH`, and report the exact resolved path on completion. Do not write the report to an unprefixed filename and do not create a second copy at any other path.
 
 Read and validate `REPORT_SCHEMA` and `ASSESSMENT_SCOPE_CONTEXT`. Read the three authoritative phase artifacts before rendering. Apply `report_preferences.finding_selection` and `report_preferences.testing_output` exactly.
 

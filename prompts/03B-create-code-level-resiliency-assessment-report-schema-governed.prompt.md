@@ -36,10 +36,14 @@ APPLICATION_CONTEXT=<optional application-context file path>
 REFERENCE_ARCHITECTURE_REGISTRY=<optional approved reference-architecture registry path>
 REPORT_SCHEMA=grounding/governance/assessment-report-schema.md
 REPORT_TEMPLATE=grounding/governance/templates/code-level-resiliency-assessment-template.md
-REPORT_OUTPUT_PATH=<optional; defaults to .copilot-tracking/plans/reports/code-level-resiliency-assessment.md>
+MICROSERVICE_SLUG=<optional; defaults to TASK_SLUG lowercased with a trailing `-inventory` suffix removed>
+RUN_DATE=<assessment run date in YYYY-MM-DD, used to derive the report filename prefix>
+REPORT_OUTPUT_PATH=<optional; defaults to the generated path in Preferred report path>
 ```
 
 `REPORT_SCHEMA` is normally fixed and must not be changed per application unless an approved schema version is intentionally selected.
+
+Derive `MICROSERVICE_SLUG` and `REPORT_DATE` rather than asking for them. State both derived values in the completion report.
 
 ## Mandatory inputs to read
 
@@ -232,8 +236,16 @@ PCF references must be informational only and excluded from findings, priorities
 Attempt to create the complete report at:
 
 ```text
-.copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+.copilot-tracking/plans/reports/{{REPORT_DATE}}-{{MICROSERVICE_SLUG}}-code-level-resiliency-assessment.md
 ```
+
+Resolve the filename prefix as follows:
+
+* `REPORT_DATE` is the assessment run date rewritten to `MM-DD-YYYY`. Rewrite the run date supplied in `YYYY-MM-DD` form rather than reading the current system date, so the report matches the run it reports on.
+* `MICROSERVICE_SLUG` is the assessed microservice name in lowercase kebab-case, containing only letters, digits, and single hyphens. Derive it from the Step 1 and Step 2 task slug by lowercasing it and removing a trailing `-inventory` suffix.
+* The `-code-level-resiliency-assessment.md` suffix is fixed. Do not translate, abbreviate, or reorder the filename parts.
+
+Use `REPORT_OUTPUT_PATH` instead when the caller supplies it explicitly. One run produces exactly one report file. Overwrite the resolved path when regenerating a report for the same run and microservice rather than creating a numbered or suffixed variant.
 
 Do not stop, delegate the report to Task Implementor, or request implementation merely because the preferred output path is unavailable.
 

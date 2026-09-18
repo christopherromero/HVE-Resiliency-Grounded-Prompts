@@ -66,7 +66,9 @@ A step's authoritative prompt does not always declare a concrete output path. Re
 
 This order locates artifacts only. It never changes an artifact's role, required structure, validation, or completion criteria, which remain governed by the authoritative prompt.
 
-Some declared paths are not run-scoped, including handoff summaries and the Step 3B report default. Never infer run identity from a non-run-scoped path. Resolve run identity from run-scoped artifact folders, from declared run defaults, or from the user.
+Some declared paths are not run-scoped, including handoff summaries. Never infer run identity from a non-run-scoped path. Resolve run identity from run-scoped artifact folders, from declared run defaults, or from the user.
+
+The Step 3B report filename carries an `MM-DD-YYYY` prefix derived from the resolved run date. That prefix is a naming convention, not a run-scoped folder, so it records run identity rather than establishing it. Resolve run identity first, then build the report filename from it.
 
 ## Required procedure
 

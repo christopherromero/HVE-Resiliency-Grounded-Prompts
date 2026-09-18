@@ -669,7 +669,7 @@ The final deliverable remains one Markdown report. Temporary fragments are non-a
 
 ```yaml
 report_assembly_manifest:
-  report_path: .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+  report_path: .copilot-tracking/plans/reports/09-09-2026-abc-microservice-code-level-resiliency-assessment.md
   selected_priorities: []
   omitted_priorities: []
   selected_finding_ids: []

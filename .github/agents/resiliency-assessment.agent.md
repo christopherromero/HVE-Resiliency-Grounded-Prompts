@@ -50,6 +50,8 @@ This repository assesses one microservice, so run identity is derivable. Apply t
 * SOURCE_ROOT defaults to the single application folder under `source/`. Ask the user to choose when `source/` holds more than one folder, and stop when it holds none.
 * TASK_SLUG defaults to the final path segment of SOURCE_ROOT. It is a filename prefix only, used for the Step 1 and Step 2 artifacts.
 * PLAN_SLUG defaults to TASK_SLUG suffixed with `-remediation-plan`. It is a filename prefix only, used for the Step 3A artifact.
+* MICROSERVICE_SLUG is derived, never asked for. Take TASK_SLUG, lowercase it, and remove a trailing `-inventory` suffix. It names the assessed microservice in the Step 3B report filename.
+* REPORT_DATE is RUN_DATE rewritten from `YYYY-MM-DD` to `MM-DD-YYYY`. It is derived, never asked for, and always matches RUN_DATE rather than the current date when resuming an earlier run.
 * SUBAGENT_MODEL defaults to `claude-opus-5`. Every delegated step runs on this model. Change this single value to move all steps to a different model, and state the resolved model before delegating anything.
 
 Resuming a run overrides the RUN_DATE default. List the dated folders under `.copilot-tracking/research/`, then confirm which run the user means. Never start a new dated folder for work that already exists. Ask when more than one candidate run is present.
@@ -99,7 +101,7 @@ Each step has an invocation wrapper, an authoritative prompt, and an output arti
    * Wrapper: `.github/prompts/03b-report.prompt.md`
    * Authority: `prompts/03B-create-code-level-resiliency-assessment-report-schema-governed.prompt.md`
    * Inputs: RUN_DATE, TASK_SLUG, PLAN_SLUG
-   * Output: the report path the wrapper and authoritative prompt resolve
+   * Output: `.copilot-tracking/plans/reports/{{REPORT_DATE}}-{{MICROSERVICE_SLUG}}-code-level-resiliency-assessment.md`
 5. Step 4 Implement, owned by Task Implementor
    * Wrapper: `.github/prompts/04-implement.prompt.md`
    * Authority: `prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md`
@@ -129,7 +131,7 @@ Do not summarize, paraphrase, or substitute for the wrapper and authoritative pr
 
 Steps 1 through 3B produce the remediation plan and assessment report. No source code changes occur.
 
-1. Resolve RUN_DATE, SOURCE_ROOT, TASK_SLUG, and PLAN_SLUG from Run Defaults and state the resolved values.
+1. Resolve RUN_DATE, SOURCE_ROOT, TASK_SLUG, PLAN_SLUG, and MICROSERVICE_SLUG from Run Defaults and state the resolved values.
 2. Resolve the current step from artifacts on disk, then run the remaining Phase 1 steps in order: Step 1, Step 2, Step 3A, Step 3B.
 3. Validate each step's output artifact before starting the next step.
 4. Report the plan path, the report path, and every unresolved item when Phase 1 completes.
