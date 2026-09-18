@@ -50,6 +50,7 @@ This repository assesses one microservice, so run identity is derivable. Apply t
 * SOURCE_ROOT defaults to the single application folder under `source/`. Ask the user to choose when `source/` holds more than one folder, and stop when it holds none.
 * TASK_SLUG defaults to the final path segment of SOURCE_ROOT. It is a filename prefix only, used for the Step 1 and Step 2 artifacts.
 * PLAN_SLUG defaults to TASK_SLUG suffixed with `-remediation-plan`. It is a filename prefix only, used for the Step 3A artifact.
+* SUBAGENT_MODEL defaults to `claude-opus-5`. Every delegated step runs on this model. Change this single value to move all steps to a different model, and state the resolved model before delegating anything.
 
 Resuming a run overrides the RUN_DATE default. List the dated folders under `.copilot-tracking/research/`, then confirm which run the user means. Never start a new dated folder for work that already exists. Ask when more than one candidate run is present.
 
@@ -63,7 +64,7 @@ Run each resolved step as a subagent using the owning agent from the step map. A
 
 1. Resolve every input the remaining steps require. Apply Run Defaults, then ask the user for each value that has no default and wait for the answer.
 2. Validate that the target step's prerequisite artifacts exist at their exact declared paths. Stop and report the exact missing path when one is absent.
-3. Delegate the step to its owning agent using the task prompt in Delegation Format.
+3. Delegate the step to its owning agent using the task prompt in Delegation Format. Set the subagent model override to SUBAGENT_MODEL on every delegation.
 4. Read the artifact the subagent reports and confirm it exists and is complete per the authoritative prompt. Treat a missing, partial, or blocked artifact as a stop condition.
 5. Announce the completed step and its exact output paths, then continue to the next step in the same phase.
 
@@ -72,6 +73,8 @@ Stop the chain and return to the user when a subagent reports a blocker, when an
 ### Handoff mode
 
 Present the step's handoff button and state the exact argument values to paste in.
+
+SUBAGENT_MODEL does not apply in handoff mode, because a handoff runs in the user's own chat session. State the SUBAGENT_MODEL value and tell the user to select it in the model picker before sending the handoff.
 
 ## Step map
 
@@ -115,6 +118,8 @@ Delegate to the owning agent with a task prompt containing exactly these element
 1. The instruction to read the step's wrapper and authoritative prompt in full before any other action, and to treat the authoritative prompt as the governing specification.
 2. Every input the wrapper declares, supplied as a literal resolved value rather than a placeholder.
 3. The instruction to report exact output paths, and to stop and report the exact missing path rather than guessing an alternate location.
+
+Set the delegation's model parameter to the resolved SUBAGENT_MODEL value on every step. Never fall back to the harness default model, and never mix models across steps in a single run. Stop and report when the configured model is unavailable rather than silently substituting another one.
 
 Do not summarize, paraphrase, or substitute for the wrapper and authoritative prompt. The subagent reads them directly.
 
