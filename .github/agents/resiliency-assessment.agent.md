@@ -2,7 +2,7 @@
 name: Resiliency Assessment
 description: 'Orchestrates the governed resiliency assessment. Resolves the current step from tracking artifacts and runs each step as a subagent under its owning agent - Assessment covers Steps 1 through 3B, Remediation covers Steps 4 and 5, separated by a human approval gate.'
 disable-model-invocation: true
-tools: ['agent', 'read', 'search']
+tools: [vscode, execute, read, agent, edit, search, web, browser, todo]
 agents:
   - Task Researcher
   - Task Reviewer
