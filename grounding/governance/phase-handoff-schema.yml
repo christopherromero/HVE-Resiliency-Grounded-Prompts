@@ -177,3 +177,19 @@ priority_filtered_reporting:
     - recalculate_priorities_for_filtered_view
     - renumber_findings_for_filtered_view
     - imply_omitted_findings_do_not_exist
+
+resiliency_qualification_handoff:
+  preserve:
+    - qualification_policy_id_and_version
+    - finding_classification_type
+    - qualification_status_and_rationale
+    - resiliency_domains
+    - failure_scenario
+    - target_architecture_element
+    - causal_mechanism
+    - material_impact
+    - non_resiliency_category
+    - counts_by_class_and_priority
+  prohibited_behavior:
+    - suppress_non_resiliency_findings
+    - reclassify_findings_in_handoff

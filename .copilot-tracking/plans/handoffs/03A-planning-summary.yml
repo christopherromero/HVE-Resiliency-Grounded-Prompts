@@ -1,0 +1,449 @@
+---
+phase_metadata:
+  schema_id: ASSESSMENT-PHASE-HANDOFF
+  schema_version: "1.2.0"
+  phase: remediation_planning
+  phase_order: "03A"
+  assessment_run_id: inventory-service-2026-09-18-001
+  generated_at: "2026-09-18T00:00:00Z"
+  generation_status: complete
+
+authority:
+  summary_role: non_authoritative_phase_index
+  authoritative_source_artifacts:
+    - .copilot-tracking/plans/2026-09-18/inventory-service-remediation-plan.instructions.md
+  source_of_truth: authoritative_remediation_plan
+  conflict_behavior: use_authoritative_artifact_and_record_handoff_exception
+
+input_artifacts:
+  authoritative_prompt: prompts/03A-create-authoritative-remediation-plan.prompt.md
+  execution_wrapper: .github/prompts/03a-plan.prompt.md
+  inventory_artifact: .copilot-tracking/research/2026-09-18/inventory-service-inventory-research.md
+  review_artifact: .copilot-tracking/reviews/2026-09-18/inventory-service-inventory-research-review.md
+  inventory_handoff: .copilot-tracking/research/handoffs/01-inventory-summary.yml
+  assessment_handoff: .copilot-tracking/reviews/handoffs/02-assessment-summary.yml
+  prioritization_policy: grounding/governance/remediation-prioritization.md
+  approved_libraries: grounding/governance/approved-libraries.yml
+  resiliency_qualification_policy: grounding/governance/resiliency-finding-qualification-policy.yml
+  kafka_scenario_policy: grounding/governance/kafka-operating-scenario-policy.yml
+  assessment_scope_context: application-context/assessment-scope-context.yml
+  application_architecture_context: application-context/application-architecture-context.yml
+  solution_architecture_context: not_provided
+  phase_handoff_schema: grounding/governance/phase-handoff-schema.yml
+
+output_artifacts:
+  remediation_plan_artifact: .copilot-tracking/plans/2026-09-18/inventory-service-remediation-plan.instructions.md
+  handoff_summary: .copilot-tracking/plans/handoffs/03A-planning-summary.yml
+
+prioritization_policy_applied:
+  policy_id: AA-REMEDIATION-PRIORITY
+  policy_version: "1.0.0"
+  lifecycle_status: active
+  priority_derived_from_severity: false
+  overrides_applied: 0
+  governance_blocked_changes: 0
+
+change_summary:
+  total_changes: 24
+  changes_with_primary_finding: 24
+  findings_mapped: 29
+  findings_unmapped: 0
+  findings_consolidated_under_another_change: 5
+  consolidated_finding_ids: [F-006, F-010, F-011, F-017, F-018]
+  new_findings_created: 0
+  control_status_changes: 0
+  severity_changes: 0
+  classification_changes: 0
+  source_code_modified: false
+  change_ids:
+    - CHANGE-AA-001
+    - CHANGE-AA-002
+    - CHANGE-AA-003
+    - CHANGE-AA-004
+    - CHANGE-AA-005
+    - CHANGE-AA-006
+    - CHANGE-AA-007
+    - CHANGE-AA-008
+    - CHANGE-AA-009
+    - CHANGE-AA-010
+    - CHANGE-AA-011
+    - CHANGE-AA-012
+    - CHANGE-AA-013
+    - CHANGE-AA-014
+    - CHANGE-AA-015
+    - CHANGE-AA-016
+    - CHANGE-AA-017
+    - CHANGE-AA-018
+    - CHANGE-AA-019
+    - CHANGE-AA-020
+    - CHANGE-AA-021
+    - CHANGE-AA-022
+    - CHANGE-AA-023
+    - CHANGE-AA-024
+  finding_to_change:
+    F-001: CHANGE-AA-018
+    F-002: CHANGE-AA-021
+    F-003: CHANGE-AA-008
+    F-004: CHANGE-AA-007
+    F-005: CHANGE-AA-019
+    F-006: CHANGE-AA-019
+    F-007: CHANGE-AA-022
+    F-008: CHANGE-AA-001
+    F-009: CHANGE-AA-009
+    F-010: CHANGE-AA-009
+    F-011: CHANGE-AA-009
+    F-012: CHANGE-AA-010
+    F-013: CHANGE-AA-011
+    F-014: CHANGE-AA-012
+    F-015: CHANGE-AA-013
+    F-016: CHANGE-AA-014
+    F-017: CHANGE-AA-015
+    F-018: CHANGE-AA-015
+    F-019: CHANGE-AA-016
+    F-020: CHANGE-AA-023
+    F-021: CHANGE-AA-004
+    F-022: CHANGE-AA-003
+    F-023: CHANGE-AA-020
+    F-024: CHANGE-AA-002
+    F-025: CHANGE-AA-017
+    F-026: CHANGE-AA-005
+    F-027: CHANGE-AA-006
+    F-028: CHANGE-AA-024
+    F-029: CHANGE-AA-015
+  change_to_priority_rule:
+    CHANGE-AA-001: P0-AA-004
+    CHANGE-AA-002: P0-AA-001
+    CHANGE-AA-003: P0-AA-009
+    CHANGE-AA-004: P0-AA-014
+    CHANGE-AA-005: P0-AA-013
+    CHANGE-AA-006: P0-AA-013
+    CHANGE-AA-007: P0-AA-006
+    CHANGE-AA-008: P0-AA-012
+    CHANGE-AA-009: P1-RCV-006
+    CHANGE-AA-010: P1-RCV-001
+    CHANGE-AA-011: P1-RCV-001
+    CHANGE-AA-012: P1-RCV-005
+    CHANGE-AA-013: P1-RCV-008
+    CHANGE-AA-014: P1-RCV-011
+    CHANGE-AA-015: P1-RCV-011
+    CHANGE-AA-016: P1-RCV-008
+    CHANGE-AA-017: P1-RCV-008
+    CHANGE-AA-018: P1-RCV-005
+    CHANGE-AA-019: P1-RCV-007
+    CHANGE-AA-020: P1-RCV-009
+    CHANGE-AA-021: P2-DATA-002
+    CHANGE-AA-022: P2-DATA-007
+    CHANGE-AA-023: P2-DATA-010
+    CHANGE-AA-024: P0-AA-013
+
+priority_distribution:
+  frozen: true
+  recalculated_in_handoff: false
+  counts: {P0: 9, P1: 12, P2: 3, P3: 0}
+  by_priority:
+    P0:
+      - CHANGE-AA-001
+      - CHANGE-AA-002
+      - CHANGE-AA-003
+      - CHANGE-AA-004
+      - CHANGE-AA-005
+      - CHANGE-AA-006
+      - CHANGE-AA-007
+      - CHANGE-AA-008
+      - CHANGE-AA-024
+    P1:
+      - CHANGE-AA-009
+      - CHANGE-AA-010
+      - CHANGE-AA-011
+      - CHANGE-AA-012
+      - CHANGE-AA-013
+      - CHANGE-AA-014
+      - CHANGE-AA-015
+      - CHANGE-AA-016
+      - CHANGE-AA-017
+      - CHANGE-AA-018
+      - CHANGE-AA-019
+      - CHANGE-AA-020
+    P2:
+      - CHANGE-AA-021
+      - CHANGE-AA-022
+      - CHANGE-AA-023
+    P3: []
+  p0_elevation_evaluations_recorded: 7
+  p0_elevations_applied: 0
+  severity_to_priority_divergences:
+    - {finding_id: F-026, severity: medium, priority: P0, rule_id: P0-AA-013}
+    - {finding_id: F-002, severity: critical, priority: P2, rule_id: P2-DATA-002}
+    - {finding_id: F-020, severity: critical, priority: P2, rule_id: P2-DATA-010}
+
+wave_distribution:
+  frozen: true
+  recalculated_in_handoff: false
+  counts: {"1": 6, "2": 2, "3": 12, "4": 4}
+  by_wave:
+    "1": [CHANGE-AA-001, CHANGE-AA-002, CHANGE-AA-003, CHANGE-AA-004, CHANGE-AA-005, CHANGE-AA-006]
+    "2": [CHANGE-AA-007, CHANGE-AA-008]
+    "3":
+      - CHANGE-AA-009
+      - CHANGE-AA-010
+      - CHANGE-AA-011
+      - CHANGE-AA-012
+      - CHANGE-AA-013
+      - CHANGE-AA-014
+      - CHANGE-AA-015
+      - CHANGE-AA-016
+      - CHANGE-AA-017
+      - CHANGE-AA-018
+      - CHANGE-AA-019
+      - CHANGE-AA-020
+    "4": [CHANGE-AA-021, CHANGE-AA-022, CHANGE-AA-023, CHANGE-AA-024]
+  prerequisites_in_earlier_or_equal_wave: true
+  cross_wave_violations: 0
+  circular_dependencies: 0
+
+illustrative_code_summary:
+  targets_requiring_illustrative_code: 89
+  targets_with_generated_code: 86
+  targets_with_targeted_discovery_required: 3
+  targets_not_applicable: 0
+  narrative_only_generated_proposals: 0
+  coverage_complete: true
+  source_or_configuration_targets: 57
+  test_targets: 32
+  hardcoded_regions_endpoints_or_credentials: 0
+  all_proposals_labeled_non_authoritative: true
+
+targeted_discovery_summary:
+  count: 3
+  changes_marked_entirely_discovery_required: 0
+  items:
+    - block_id: ICB-002-03
+      change_id: CHANGE-AA-002
+      target: versioned migration runner dependency
+      blocking_fact: No approved schema-migration library exists in governance and no repository evidence establishes an organizational choice.
+      open_question: OQ-002
+      partial_proposal_delivered: true
+    - block_id: ICB-007-03
+      change_id: CHANGE-AA-007
+      target: self-enforced single-active ownership lease
+      blocking_fact: No approved ownership or fencing mechanism exists; EG-010 leaves current standby prevention unconfirmed.
+      open_question: OQ-007
+      partial_proposal_delivered: true
+    - block_id: ICB-020-03
+      change_id: CHANGE-AA-020
+      target: Redis client re-initialization on credential rotation
+      blocking_fact: EG-003 leaves Redis authentication mode inside an externally supplied connection string.
+      open_question: OQ-020
+      partial_proposal_delivered: true
+
+approval_required_targets:
+  count: 6
+  items:
+    - {target_id: rest_idempotency_key_contract, change_id: CHANGE-AA-008, owner: product_and_api_contract_owner, open_question: OQ-010, implementation_allowed: false}
+    - {target_id: conflict_http_status_mapping, change_id: CHANGE-AA-011, owner: api_contract_owner, open_question: OQ-013, implementation_allowed: false}
+    - {target_id: dependency_failure_status_contract, change_id: CHANGE-AA-012, owner: api_contract_owner, open_question: OQ-014, implementation_allowed: false}
+    - {target_id: list_endpoint_response_contract, change_id: CHANGE-AA-017, owner: api_contract_owner, open_question: OQ-017, implementation_allowed: false}
+    - {target_id: publication_timing_and_delivery_semantics, change_id: CHANGE-AA-021, owner: architecture_and_event_contract_owner, open_question: OQ-021, implementation_allowed: false}
+    - {target_id: published_event_envelope_contract, change_id: CHANGE-AA-022, owner: event_contract_owner, open_question: OQ-023, implementation_allowed: false}
+
+approved_library_resolution:
+  governance_path: grounding/governance/approved-libraries.yml
+  lifecycle_status: approved
+  resiliency_library: resilience4j
+  capabilities_used: [retry, circuit_breaker, bulkhead]
+  repository_availability: dependency_change_required
+  version_source: not_specified
+  version_source_unresolved: true
+  substitution_proposed: false
+  testing_library: testcontainers
+  testing_library_availability: available
+  api_mocking_library: wiremock
+  api_mocking_applicability: not_required_no_outbound_http
+  exceptions:
+    - id: LIBEX-001
+      area: schema_migration
+      detail: No approved migration library exists in governance; the vendor-specific target is held as ICB-002-03.
+    - id: LIBEX-002
+      area: resilience4j_version_source
+      detail: library_rules.version_source is not_specified and the Spring Boot parent does not manage Resilience4j versions.
+
+scenario_summary:
+  kafka:
+    carried_from_step_2: true
+    recalculated: false
+    redesigned_during_planning: false
+    value: active_standby
+    source: approved_application_architecture_context
+    context_version: "3.0.0"
+    policy_id: KAFKA-OPERATING-SCENARIO
+    policy_version: "3.2.0"
+    rule_id: KAFKA-SCENARIO-001
+    validation_status: consistent
+    architecture_confirmation_required: false
+    processing_model: mixed
+    regional_processing_model: single_active
+    external_side_effects: none
+    kafka_backed_state: none
+    cluster_model_type: independent_regional_clusters
+  architecture:
+    current_deployment_operating_model: active_standby
+    approved_target_deployment_operating_model: active_active
+    assessment_target_state: approved_target
+    authoritative_state_dependency: azure-sql
+  new_datastore_introduced_by_remediation: false
+
+assessment_snapshot:
+  carried_from_step_2: true
+  type: workspace_snapshot
+  identifier: inventory-service-workspace-2026-09-18
+  provenance: workspace_generated
+  git_commit_sha: not_applicable
+  line_numbers_authoritative: false
+  targeting_precedence: [repository_path, symbol, original_source_excerpt, source_fingerprint, assessment_snapshot, original_line_range]
+
+assessment_scope_resolution:
+  carried_from_step_2: true
+  recalculated: false
+  enabled_domains: [application_code, application_configuration]
+  disabled_domains: [container_build, cicd_pipeline, deployment_configuration, infrastructure_as_code, deployed_infrastructure]
+  infrastructure_remediation_added: false
+  pcf_remediation_added: false
+  report_preferences:
+    finding_selection_mode: all_priorities
+    included_priorities: [P0, P1, P2, P3]
+    testing_output_mode: hidden
+    testing_authority_note: Report rendering only; all tests and validation obligations remain binding.
+
+resiliency_qualification_handoff:
+  qualification_policy_id: RESILIENCY-FINDING-QUALIFICATION
+  qualification_policy_version: "1.0.0"
+  classification_preserved: true
+  non_resiliency_findings_suppressed: 0
+  reclassified_in_handoff: 0
+  counts_by_class:
+    resiliency: 26
+    non_resiliency: 3
+  non_resiliency_findings:
+    F-018: {category: contract, change_id: CHANGE-AA-015, priority: P1}
+    F-020: {category: correctness, change_id: CHANGE-AA-023, priority: P2}
+    F-029: {category: compatibility, change_id: CHANGE-AA-015, priority: P1}
+  mixed_classification_changes:
+    - {change_id: CHANGE-AA-015, contains: [F-017 resiliency, F-018 non_resiliency, F-029 non_resiliency]}
+
+key_decisions:
+  - id: KD-P-001
+    decision: >-
+      Twenty-nine findings were consolidated into 24 root-cause changes. Five findings were consolidated
+      under another change because they share one implementation surface: F-006 with F-005, F-010 and
+      F-011 with F-009, and F-017 and F-018 with F-029. No finding was dropped or reclassified.
+  - id: KD-P-002
+    decision: >-
+      Priority was assigned exclusively through AA-REMEDIATION-PRIORITY 1.0.0 by selecting the highest
+      applicable rule. Severity was never used as a priority source, which produced three deliberate
+      divergences: F-026 at P0 despite medium severity, and F-002 and F-020 at P2 despite critical
+      severity.
+  - id: KD-P-003
+    decision: >-
+      Seven P2 candidates were evaluated for P0 elevation and none were elevated. Each evaluation and its
+      rationale is recorded on the change.
+  - id: KD-P-004
+    decision: >-
+      Waves are dependency-ordered, not priority-ordered. CHANGE-AA-024 is P0 but sits in Wave 4 because
+      the consolidated regression suite depends on every other change; per-change tests land in their own
+      waves.
+  - id: KD-P-005
+    decision: >-
+      Six targets that change externally observable behaviour were isolated inside their changes and held
+      at implementation_allowed false pending approval, so the surrounding resiliency mechanisms are not
+      blocked.
+  - id: KD-P-006
+    decision: >-
+      Three targets were marked targeted_discovery_required. In every case the surrounding change still
+      delivers concrete code for its unblocked targets, so no change is entirely discovery-required.
+  - id: KD-P-007
+    decision: >-
+      Both new tables proposed by the plan, the processed-operation deduplication table and the outbox
+      table, reside in the Azure SQL authoritative store the approved architecture already declares. No
+      new datastore is introduced and the Kafka operating scenario was not redesigned.
+  - id: KD-P-008
+    decision: >-
+      Every numeric budget, threshold, window, TTL, and page size is expressed as an externalized
+      placeholder because no approved value exists in the supplied context and EG-006 leaves the gateway
+      budgets unresolved.
+  - id: KD-P-009
+    decision: >-
+      Evidence gaps EG-001 through EG-011 and control coverage gaps CCG-001 through CCG-004 were carried
+      forward unchanged and were not converted into remediation work.
+
+unresolved_items:
+  - {id: OQ-001, change_id: CHANGE-AA-001, route_to: architecture_governance_review, blocking: false}
+  - {id: OQ-002, change_id: CHANGE-AA-002, route_to: architecture_governance_review, blocking: true, blocks_targets: [ICB-002-03]}
+  - {id: OQ-003, change_id: CHANGE-AA-003, route_to: platform_evidence_request, blocking: false}
+  - {id: OQ-004, change_id: CHANGE-AA-004, route_to: policy_governance, blocking: false}
+  - {id: OQ-005, change_id: CHANGE-AA-004, route_to: platform_evidence_request, blocking: false, related_evidence_gap: EG-005}
+  - {id: OQ-006, change_id: CHANGE-AA-005, route_to: platform_evidence_request, blocking: false}
+  - {id: OQ-007, change_id: CHANGE-AA-007, route_to: architecture_governance_review, blocking: true, blocks_targets: [ICB-007-03]}
+  - {id: OQ-008, change_id: CHANGE-AA-007, route_to: architecture_governance_review, blocking: false, related_evidence_gap: EG-010}
+  - {id: OQ-009, change_id: CHANGE-AA-008, route_to: architecture_governance_review, blocking: false}
+  - {id: OQ-010, change_id: CHANGE-AA-008, route_to: product_and_api_contract_approval, blocking: true}
+  - {id: OQ-011, change_id: CHANGE-AA-009, route_to: platform_evidence_request, blocking: false, related_evidence_gap: EG-006}
+  - {id: OQ-012, change_id: CHANGE-AA-010, route_to: platform_governance, blocking: false}
+  - {id: OQ-013, change_id: CHANGE-AA-011, route_to: product_and_api_contract_approval, blocking: true}
+  - {id: OQ-014, change_id: CHANGE-AA-012, route_to: product_and_api_contract_approval, blocking: true}
+  - {id: OQ-015, change_id: CHANGE-AA-013, route_to: architecture_governance_review, blocking: false}
+  - {id: OQ-016, change_id: CHANGE-AA-015, route_to: architecture_governance_review, blocking: false}
+  - {id: OQ-017, change_id: CHANGE-AA-017, route_to: product_and_api_contract_approval, blocking: true}
+  - {id: OQ-018, change_id: CHANGE-AA-018, route_to: platform_evidence_request, blocking: false, related_evidence_gap: EG-002}
+  - {id: OQ-019, change_id: CHANGE-AA-019, route_to: platform_evidence_request, blocking: false}
+  - {id: OQ-020, change_id: CHANGE-AA-020, route_to: platform_evidence_request, blocking: true, blocks_targets: [ICB-020-03], related_evidence_gap: EG-003}
+  - {id: OQ-021, change_id: CHANGE-AA-021, route_to: architecture_governance_review, blocking: true}
+  - {id: OQ-022, change_id: CHANGE-AA-021, route_to: architecture_governance_review, blocking: false}
+  - {id: OQ-023, change_id: CHANGE-AA-022, route_to: architecture_governance_review, blocking: true, related_evidence_gap: EG-011}
+  - {id: OQ-024, change_id: CHANGE-AA-023, route_to: policy_governance, blocking: false}
+  - {id: OQ-025, change_id: CHANGE-AA-024, route_to: platform_evidence_request, blocking: false}
+
+carried_forward_unresolved_from_step_2:
+  evidence_gaps: [EG-001, EG-002, EG-003, EG-004, EG-005, EG-006, EG-007, EG-008, EG-009, EG-010, EG-011]
+  control_coverage_gaps: [CCG-001, CCG-002, CCG-003, CCG-004]
+  inventory_exceptions: [EXC-A-001, EXC-001, EXC-002, EXC-003, EXC-004]
+  converted_to_remediation: 0
+
+governance_observations:
+  - {id: GOV-001, area: prioritization_policy, detail: "Rule heading P0-AA-014 conflicts with embedded rule_id P0-RCV-014.", open_question: OQ-004}
+  - {id: GOV-002, area: prioritization_policy, detail: "P2 elevation rule references undefined rule P0-AA-011; the defined data-integrity rule is P0-AA-012.", open_question: OQ-004}
+  - {id: GOV-003, area: prioritization_policy, detail: "No rule addresses a normal-operation data-correctness defect outside the active-active frame.", open_question: OQ-024}
+
+counts:
+  changes: 24
+  findings_mapped: 29
+  illustrative_code_targets: 89
+  generated_code_targets: 86
+  targeted_discovery_targets: 3
+  approval_required_targets: 6
+  open_questions: 25
+  evidence_gaps_carried_forward: 11
+  control_coverage_gaps_carried_forward: 4
+  governance_blocked_changes: 0
+  priority_overrides: 0
+  repository_files_modified: 0
+
+handoff_exceptions: []
+
+next_phase:
+  phase: assessment_report_generation
+  phase_order: "03B"
+  next_agent: task-planner
+  authoritative_prompt: prompts/03B-create-code-level-resiliency-assessment-report-schema-governed.prompt.md
+  required_authoritative_inputs:
+    - .copilot-tracking/research/2026-09-18/inventory-service-inventory-research.md
+    - .copilot-tracking/reviews/2026-09-18/inventory-service-inventory-research-review.md
+    - .copilot-tracking/plans/2026-09-18/inventory-service-remediation-plan.instructions.md
+  handoff_summary_path: .copilot-tracking/plans/handoffs/03A-planning-summary.yml
+  subsequent_phase:
+    phase: implementation
+    phase_order: "04"
+    next_agent: task-implementor
+    authoritative_prompt: prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md
+    required_authoritative_inputs:
+      - .copilot-tracking/plans/2026-09-18/inventory-service-remediation-plan.instructions.md
+    selector_support: [priorities, waves, change_ids]

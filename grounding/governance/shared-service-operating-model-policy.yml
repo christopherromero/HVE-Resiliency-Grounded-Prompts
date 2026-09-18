@@ -1,0 +1,35 @@
+schema_version: "1.1.0"
+document_type: shared_service_operating_model_policy
+policy_id: SHARED-SERVICE-OPERATING-MODEL
+lifecycle_status: active
+authoritative_context_path: architecture_context.shared_service_operating_models.services
+operating_model_context_path: architecture_context.shared_service_operating_models.services
+connectivity_context_path: architecture_context.shared_service_connectivity_contracts.services
+assessment_state: target
+allowed_operating_models: [active_active, active_standby, single_region, externally_managed, not_applicable, unresolved]
+rules:
+  - Dependency grounding defines how to assess a service, not which topology this application selected.
+  - Resolve each service model from the application context target entry.
+  - Evaluate common controls for present dependencies regardless of model.
+  - Evaluate operating-model-specific controls only for the resolved target model.
+  - Mark a dependency not_applicable when target operating_model is not_applicable and repository production use is absent.
+  - If repository production use conflicts with not_applicable, set context_status conflict and route to architecture review.
+  - Missing or unresolved target model makes model-specific controls not_assessed.
+  - Findings require repository-owned evidence of incompatibility with an applicable target control.
+  - Do not infer deployed shared-service topology from source code or grounding titles.
+  - Resolve operating model and connectivity model independently from application context.
+  - Active-standby does not itself identify the application endpoint.
+  - For Azure SQL failover_group_listener, read-write traffic must use the approved FOG read-write listener.
+  - Direct regional logical-server endpoints are incompatible with listener-directed failover unless an approved exception exists.
+  - Read-only listener use requires an explicitly read-only workload and approved staleness behavior.
+  - Listener DNS and deployed failover-group membership are external evidence.
+  - Repository hardcoding of a regional server when listener use is required is a code finding.
+  - Source-target differences are migration context, not findings by themselves.
+output_contract:
+  dependency_standard_id: "<registry-key>"
+  context_service_key: "<service-key>"
+  source_operating_model: "<allowed-value>"
+  target_operating_model: "<allowed-value>"
+  assessment_operating_model: "<allowed-value>"
+  context_status: "<consistent|conflict|insufficient_evidence|not_applicable>"
+  model_specific_controls_status: "<evaluate|not_assessed|not_applicable>"

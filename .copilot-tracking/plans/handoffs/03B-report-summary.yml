@@ -1,0 +1,332 @@
+---
+phase_metadata:
+  schema_id: ASSESSMENT-PHASE-HANDOFF
+  schema_version: "1.2.0"
+  phase: assessment_report
+  phase_order: "03B"
+  assessment_run_id: inventory-service-2026-09-18-001
+  generated_at: "2026-09-18T00:00:00Z"
+  generation_status: complete
+
+authority:
+  summary_role: non_authoritative_phase_index
+  authoritative_source_artifacts:
+    - .copilot-tracking/research/2026-09-18/inventory-service-inventory-research.md
+    - .copilot-tracking/reviews/2026-09-18/inventory-service-inventory-research-review.md
+    - .copilot-tracking/plans/2026-09-18/inventory-service-remediation-plan.instructions.md
+  source_of_truth: authoritative_assessment_review_and_remediation_plan
+  conflict_behavior: use_authoritative_artifact_and_record_handoff_exception
+
+input_artifacts:
+  authoritative_prompt: prompts/03B-create-code-level-resiliency-assessment-report-schema-governed.prompt.md
+  execution_wrapper: .github/prompts/03b-report.prompt.md
+  inventory_artifact: .copilot-tracking/research/2026-09-18/inventory-service-inventory-research.md
+  review_artifact: .copilot-tracking/reviews/2026-09-18/inventory-service-inventory-research-review.md
+  plan_artifact: .copilot-tracking/plans/2026-09-18/inventory-service-remediation-plan.instructions.md
+  report_schema: grounding/governance/assessment-report-schema.md
+  report_template: grounding/governance/templates/code-level-resiliency-assessment-template.md
+  assessment_scope_context: application-context/assessment-scope-context.yml
+  assessment_scope_schema: grounding/governance/assessment-scope-schema.yml
+  application_architecture_context: application-context/application-architecture-context.yml
+  solution_architecture_context: not_provided
+  reference_architecture_registry: application-context/reference-architecture-registry.yml
+  prioritization_policy: grounding/governance/remediation-prioritization.md
+  resiliency_qualification_policy: grounding/governance/resiliency-finding-qualification-policy.yml
+  phase_handoff_schema: grounding/governance/phase-handoff-schema.yml
+
+output_artifacts:
+  assessment_report: .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+  handoff_summary: .copilot-tracking/plans/handoffs/03B-report-summary.yml
+
+report_summary:
+  report_path: .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+  preferred_path_used: true
+  report_schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
+  report_schema_version: "1.11.0"
+  report_schema_lifecycle_status: active
+  report_schema_validation: passed
+  template_used: grounding/governance/templates/code-level-resiliency-assessment-template.md
+  template_validation_command: "py tools/validate_assessment_report.py .copilot-tracking/plans/reports/code-level-resiliency-assessment.md"
+  template_validation_result: PASSED
+  generated_by_phase: Step 3B
+  generated_by_agent: task-planner
+  delegated_to_task_implementor: false
+  application_name: Ecommerce Platform - Inventory Service
+  repository_scope: source/inventory-service
+  assessment_date: "2026-09-18"
+  current_deployment: active_standby_westus_active_eastus_dr
+  approved_target_deployment: active_active_westus2_and_westus
+  required_sections_present: 8
+  required_section_order_valid: true
+  back_to_top_links: 8
+  source_code_modified: false
+  configuration_modified: false
+  tests_modified: false
+  deployment_or_infrastructure_modified: false
+
+finding_rendering_summary:
+  selection_mode: all_priorities
+  included_priorities: [P0, P1, P2, P3]
+  omitted_priorities: []
+  filtered_view: false
+  selection_frozen: true
+  authoritative_findings_changed: false
+  priorities_recalculated: false
+  findings_rendered: 29
+  findings_omitted: 0
+  by_priority: {P0: 9, P1: 17, P2: 3, P3: 0}
+  by_status: {verified: 29, conditional: 0, evidence_required: 0, verified_controls_rendered: 0, non_finding_observations: 0}
+  by_classification: {resiliency: 26, non_resiliency: 3}
+  by_class_and_priority:
+    resiliency: {P0: 9, P1: 15, P2: 2, P3: 0}
+    non_resiliency: {P0: 0, P1: 2, P2: 1, P3: 0}
+  finding_markers_present: 29
+  duplicate_finding_markers: 0
+  missing_finding_markers: 0
+  unexpected_finding_markers: 0
+  display_id_map:
+    P0-001: F-003
+    P0-002: F-004
+    P0-003: F-008
+    P0-004: F-021
+    P0-005: F-022
+    P0-006: F-024
+    P0-007: F-026
+    P0-008: F-027
+    P0-009: F-028
+    P1-001: F-001
+    P1-002: F-005
+    P1-003: F-006
+    P1-004: F-009
+    P1-005: F-010
+    P1-006: F-011
+    P1-007: F-012
+    P1-008: F-013
+    P1-009: F-014
+    P1-010: F-015
+    P1-011: F-016
+    P1-012: F-017
+    P1-013: F-018
+    P1-014: F-019
+    P1-015: F-023
+    P1-016: F-025
+    P1-017: F-029
+    P2-001: F-002
+    P2-002: F-007
+    P2-003: F-020
+  shared_remediation_groups:
+    - {change_id: CHANGE-AA-019, display_ids: [P1-002, P1-003]}
+    - {change_id: CHANGE-AA-009, display_ids: [P1-004, P1-005, P1-006]}
+    - {change_id: CHANGE-AA-015, display_ids: [P1-012, P1-013, P1-017]}
+  source_excerpts_rendered: 39
+  evidence_absence_records_rendered: 1
+  original_source_labels_rendered: 40
+  original_source_blocks_match_step_2: true
+  comments_added_inside_original_source_blocks: false
+  fingerprints_abbreviated_in_report: true
+  verified_controls_rendered: false
+  evidence_gaps_rendered: true
+  evidence_gap_items_rendered: 11
+  control_coverage_gaps_rendered: 4
+  infrastructure_findings_created: 0
+  pcf_findings_created: 0
+
+illustrative_code_summary:
+  applicable_targets: 57
+  generated_code_blocks_rendered: 51
+  shared_remediation_verbatim_excerpt_blocks_rendered: 4
+  targeted_discovery_targets_rendered: 3
+  not_applicable_targets: 0
+  invalid_generated_proposals: 0
+  narrative_only_code_blocks_rendered: 0
+  all_proposals_labeled_non_authoritative: true
+  illustrative_code_notice_present: true
+  targeted_discovery_items:
+    - {block_id: ICB-002-03, change_id: CHANGE-AA-002, display_id: P0-006, target: versioned migration runner dependency, open_question: OQ-002}
+    - {block_id: ICB-007-03, change_id: CHANGE-AA-007, display_id: P0-002, target: self-enforced single-active ownership lease, open_question: OQ-007}
+    - {block_id: ICB-020-03, change_id: CHANGE-AA-020, display_id: P1-015, target: Redis client re-initialization on credential rotation, open_question: OQ-020}
+  testing_output:
+    mode: hidden
+    show_test_findings: true
+    show_test_code: false
+    show_validation_commands: false
+    show_acceptance_criteria: false
+    show_validation_evidence: false
+    include_consolidated_validation_strategy: false
+    test_targets_suppressed: 32
+    authority_note: >-
+      Hidden testing output affects report rendering only. F-028 remains a reported finding rendered as
+      P0-009 and CHANGE-AA-024 remains a reported P0 change. Every test and validation obligation in the
+      authoritative plan remains binding on Step 4 and Step 5.
+
+scenario_summary:
+  kafka:
+    carried_from_step_3a: true
+    recalculated: false
+    value: active_standby
+    source: approved_application_architecture_context
+    context_version: "3.0.0"
+    policy_id: KAFKA-OPERATING-SCENARIO
+    policy_version: "3.2.0"
+    rule_id: KAFKA-SCENARIO-001
+    validation_status: consistent
+    architecture_confirmation_required: false
+    processing_model: mixed
+    regional_processing_model: single_active
+    external_side_effects: none
+    kafka_backed_state: none
+    cluster_model_type: independent_regional_clusters
+    rendered_in_assessment_overview: true
+  architecture:
+    current_deployment_operating_model: active_standby
+    approved_target_deployment_operating_model: active_active
+    deployment_source_and_target_separated_in_report: true
+    migration_context_rendered: true
+    authoritative_state_dependency: azure-sql
+
+assessment_snapshot:
+  carried_from_step_3a: true
+  type: workspace_snapshot
+  identifier: inventory-service-workspace-2026-09-18
+  provenance: workspace_generated
+  git_commit_sha: not_applicable
+  line_numbers_authoritative: false
+  advisory_line_notice_rendered: true
+
+reference_architecture_rendering:
+  registry_supplied: true
+  registry_path: application-context/reference-architecture-registry.yml
+  registry_lifecycle_status: approved
+  table_rendered: true
+  column_order_valid: true
+  no_registry_statement_used: false
+  invented_reference_links: 0
+  entries_rendered: 6
+  entry_ids: [ARCH-APPGW-001, ARCH-KEYVAULT-001, ARCH-AKS-001, ARCH-REDIS-001, ARCH-SQL-001, ARCH-KAFKA-001]
+  selection_basis: applicable_when_matched_confirmed_dependencies_and_runtime_platform
+
+schema_conformance_summary:
+  schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
+  schema_version: "1.11.0"
+  status: passed
+  failed_checks: []
+
+report_assembly_conformance:
+  incremental_assembly_used: true
+  report_manifest_frozen: true
+  selected_findings_written_once: true
+  required_sections_written_once: true
+  duplicate_section_markers: 0
+  duplicate_finding_markers: 0
+  report_reopened_after_write: true
+  final_report_parse_complete: true
+  recovery_count: 0
+
+key_decisions:
+  - id: KD-R-001
+    decision: >-
+      Display identifiers were derived deterministically from the complete authoritative finding set as
+      priority plus sequence within priority, ordered by Step 2 finding identifier. The map is frozen and
+      recorded in this handoff and in the report manifest so Step 4 and Step 5 can resolve any display
+      identifier without recomputation.
+  - id: KD-R-002
+    decision: >-
+      Sections 1 through 7 carry display identifiers only. Every Step 2 finding identifier, Step 3A change
+      identifier, control identifier, evidence identifier, priority rule identifier, proposed test
+      identifier, open question, evidence gap, and targeted-discovery identifier is resolved in Appendix A,
+      so suppression is presentation-only and no traceability is lost.
+  - id: KD-R-003
+    decision: >-
+      Findings that share one remediation change render that change's illustrative code exactly once under
+      the lowest display identifier in the group. The remaining findings in the group render the verbatim
+      contiguous portion of the shared proposal that pertains to them and cross-reference the full proposal
+      by display identifier. No code was invented, reordered, or duplicated.
+  - id: KD-R-004
+    decision: >-
+      P0-009 is remediated entirely by test source. Because the configured testing-output preference is
+      hidden with test code suppressed, its proposed implementation is rendered as prose with an explicit
+      suppression statement. The finding, its priority, and its binding validation obligations are
+      unchanged.
+  - id: KD-R-005
+    decision: >-
+      The Standards Alignment section names control areas descriptively rather than by control identifier,
+      because control identifiers are suppressed from sections 1 through 7. Primary control identifiers for
+      every finding are preserved in Appendix A.
+  - id: KD-R-006
+    decision: >-
+      Six reference-architecture entries were rendered because their applicable_when conditions matched a
+      Step 1 confirmed dependency or the confirmed runtime platform. Document status is rendered alongside
+      approval status so a proposal or document library is not presented as a final approved design.
+  - id: KD-R-007
+    decision: >-
+      The report was assembled incrementally against frozen scope, with one complete finding written at a
+      time and stable invisible markers before each section and finding. The completed file was reopened
+      and validated, and the template validator returned PASSED.
+
+handoff_exceptions:
+  - id: HEX-R-001
+    area: illustrative_code_verbatim_copy
+    detail: >-
+      One illustrative code block carried forward from the authoritative plan contains an internal block
+      identifier inside a source comment. The exact-copy requirement for illustrative code was treated as
+      governing over identifier suppression for fenced content. No body text outside a code fence contains
+      an internal identifier.
+    downstream_action: informational_only
+  - id: HEX-R-002
+    area: evidence_absence_record
+    detail: >-
+      One evidence item recorded by Step 2 has no excerpt, fingerprint, or line range. It is rendered as a
+      plain statement outside any code fence rather than as an empty original-source block.
+    downstream_action: informational_only
+
+unresolved_items:
+  note: >-
+    Carried forward unchanged from Step 2 and Step 3A. Step 3B created no new unresolved item and converted
+    none into remediation work.
+  open_questions: [OQ-001, OQ-002, OQ-003, OQ-004, OQ-005, OQ-006, OQ-007, OQ-008, OQ-009, OQ-010, OQ-011, OQ-012, OQ-013, OQ-014, OQ-015, OQ-016, OQ-017, OQ-018, OQ-019, OQ-020, OQ-021, OQ-022, OQ-023, OQ-024, OQ-025]
+  blocking_open_questions: [OQ-002, OQ-007, OQ-010, OQ-013, OQ-014, OQ-017, OQ-020, OQ-021, OQ-023]
+  evidence_gaps: [EG-001, EG-002, EG-003, EG-004, EG-005, EG-006, EG-007, EG-008, EG-009, EG-010, EG-011]
+  control_coverage_gaps: [CCG-001, CCG-002, CCG-003, CCG-004]
+  inventory_exceptions: [EXC-A-001, EXC-001, EXC-002, EXC-003, EXC-004]
+  approval_required_targets:
+    - {target_id: rest_idempotency_key_contract, change_id: CHANGE-AA-008, display_id: P0-001, implementation_allowed: false}
+    - {target_id: conflict_http_status_mapping, change_id: CHANGE-AA-011, display_id: P1-008, implementation_allowed: false}
+    - {target_id: dependency_failure_status_contract, change_id: CHANGE-AA-012, display_id: P1-009, implementation_allowed: false}
+    - {target_id: list_endpoint_response_contract, change_id: CHANGE-AA-017, display_id: P1-016, implementation_allowed: false}
+    - {target_id: publication_timing_and_delivery_semantics, change_id: CHANGE-AA-021, display_id: P2-001, implementation_allowed: false}
+    - {target_id: published_event_envelope_contract, change_id: CHANGE-AA-022, display_id: P2-002, implementation_allowed: false}
+  governance_observations: [GOV-001, GOV-002, GOV-003]
+
+counts:
+  findings_rendered: 29
+  changes_referenced: 24
+  source_excerpts_rendered: 39
+  generated_illustrative_code_blocks: 51
+  targeted_discovery_records: 3
+  approval_required_targets: 6
+  evidence_gaps_rendered: 11
+  control_coverage_gaps_rendered: 4
+  reference_architecture_entries_rendered: 6
+  required_sections_rendered: 8
+  report_generation_exceptions: 2
+
+next_phase:
+  phase: implementation
+  phase_order: "04"
+  next_agent: task-implementor
+  authoritative_prompt: prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md
+  authorization_note: >-
+    This handoff is informational and does not authorize Step 4. Step 4 is governed exclusively by the
+    authoritative Step 3A remediation plan and by explicit approval selectors supplied by the user.
+  required_authoritative_inputs:
+    - .copilot-tracking/plans/2026-09-18/inventory-service-remediation-plan.instructions.md
+    - .copilot-tracking/reviews/2026-09-18/inventory-service-inventory-research-review.md
+    - application-context/assessment-scope-context.yml
+    - grounding/governance/approved-libraries.yml
+  approved_change_selectors_supported: [priorities, waves, change_ids]
+  implementation_gates:
+    - approval_required_targets
+    - targeted_discovery_targets
+    - dependency_ordering
+    - externalized_values
+  handoff_summary_path: .copilot-tracking/plans/handoffs/03B-report-summary.yml

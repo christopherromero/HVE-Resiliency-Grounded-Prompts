@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.10.0"
+  schema_version: "1.11.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -783,3 +783,22 @@ source_rendering_conformance:
   original_source_blocks_unmodified: true
   comments_added_inside_original_source_blocks: false
 ``` -->
+
+
+## Finding-class ordering and inclusion contract
+Both qualified resiliency findings and retained non-resiliency findings are authoritative Step 2 findings. Render sections in this fixed order:
+1. Resiliency-Focused Recommendations
+2. Non-Resiliency-Focused Recommendations
+
+Within each section, render priority groups in this fixed order: P0, P1, P2, P3. Omit an empty priority heading only when no finding in that class has that priority. Do not mix finding classes. Both classes participate in Summary Findings, Full Finding Matrix, Standards Alignment, Implementation Roadmap, and Appendix A. Counts must reconcile by class and priority. Replace the legacy `Resiliency Related: Yes|No` derivation with the authoritative Step 2 `finding_classification.type`, rendered as Yes for `resiliency` and No for `non_resiliency`. Non-resiliency findings remain findings and receive Step 3A priority; they are not downgraded to observations.
+
+schema_conformance_additions:
+  qualification_policy_id: RESILIENCY-FINDING-QUALIFICATION
+  qualification_policy_version: "1.0.0"
+  every_finding_has_classification: true
+  resiliency_findings_have_complete_impact_chain: true
+  non_resiliency_findings_retained: true
+  resiliency_section_precedes_non_resiliency_section: true
+  priority_order_within_each_class: [P0, P1, P2, P3]
+  classes_not_intermixed: true
+  class_priority_counts_reconcile: true

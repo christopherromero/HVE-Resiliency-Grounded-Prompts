@@ -12,19 +12,19 @@ applies_to:
 assessment_scope: application_code_only
 priority_levels:
   P0:
-    name: Active-active deployment or traffic-eligibility blocker
+    name: Blocking/Critical Risk
     target_start: immediate
     target_completion: before_active_active_release
   P1:
-    name: Failure-amplification or recovery blocker
+    name: High Priority
     target_start: current_remediation_wave
     target_completion: before_failover_certification
   P2:
-    name: Data-correctness or processing-resilience gap
+    name: Non-blocking Improvement/Best Practice
     target_start: planned_remediation
     target_completion: before_full_active_active_enablement
   P3:
-    name: Operational-maturity or verification gap
+    name: Non-Blocking Code Consistency (Best Practices / Maintainability)
     target_start: planned_backlog
     target_completion: before_operational_acceptance
 default_rules:
@@ -71,41 +71,63 @@ Task Planner must:
 
 # Priority levels and decision rules
 
-## P0: Active-active deployment or traffic-eligibility blocker
+## P0: Blocking/Critical Risk
+
+**Definition**: Code or configuration changes required for the application to start and operate without crashing in both regions or for the global load balancer to determine regional health accurately.
 
 Assign P0 when at least one P0 rule applies.
 
-### Rule P0-AA-001: Same artifact cannot operate in both regions
+### Rule P0-AA-001: Application code prevents startup or cause crashes
+
+Apply when application code or configuration prevents successful startup or causes crashes in either region.
+
+### Rule P0-AA-002: Region specific configuration values issue
+
+Apply when Region-specific configuration values must be added, changed, or externalized.
+
+### Rule P0-AA-003: Health endpoint missing
+
+Apply when a health endpoint must be created because none exists.
+
+### Rule P0-AA-004: Existing Health probe missing dependencies
+
+Apply when an existing health probe does not include all critical application dependencies.
+
+### Rule P0-AA-005: Align prerequisite priorities
+
+Apply when prerequisites for other P0 resiliency fixes: if fixing A is required before fixing B, and B is P0, then A is also P0.
+
+### Rule P0-AA-006: Same artifact cannot operate in both regions
 
 Apply when region-specific code, builds, artifacts, profiles, or hardcoded endpoints prevent the same immutable application artifact from operating correctly in both regions.
 
-### Rule P0-AA-002: Local-region affinity is violated
+### Rule P0-AA-007: Local-region affinity is violated
 
 Apply when a normally operating application deployment can use a remote-region dependency instead of its local regional dependency, contrary to the approved target behavior.
 
-### Rule P0-AA-003: Failed regional deployment remains eligible for traffic
+### Rule P0-AA-008: Failed regional deployment remains eligible for traffic
 
 Apply when sustained failure of a critical local dependency does not cause the application to become not ready, allowing the failed deployment or region to remain eligible for traffic.
 
-### Rule P0-AA-004: External failure creates liveness restart loops
+### Rule P0-AA-009: External failure creates liveness restart loops
 
 Apply when an external dependency failure causes liveness failure, repeated pod restarts, or a startup/restart loop that cannot restore service.
 
-### Rule P0-AA-005: Local state prevents regional traffic movement
+### Rule P0-AA-010: Local state prevents regional traffic movement
 
 Apply when required session, workflow, transaction, or business state exists only in pod-local or region-local volatile storage and requests cannot safely move to the other region.
 
-### Rule P0-AA-006: Active-active operation creates immediate material data-integrity risk
+### Rule P0-AA-012: Active-active operation creates immediate material data-integrity risk
 
 Apply when duplicate execution, unsafe transaction retry, concurrency conflict, or replay behavior would make a critical business transaction unsafe when both regions are active.
 
-### Rule P0-AA-007: Defect blocks meaningful regional failure testing
+### Rule P0-AA-013: Defect blocks meaningful regional failure testing
 
 Apply when the defect prevents the team from executing or interpreting active-active regional failure tests.
 
-### Rule P0-AA-008: Missing graceful shutdown for authoritative processing
+### Rule P0-AA-014: Missing graceful shutdown for authoritative processing
 
-- rule_id: P0-RCV-008
+- rule_id: P0-RCV-014
 
   title: Missing graceful shutdown for authoritative processing
 
@@ -165,37 +187,59 @@ Apply when the defect prevents the team from executing or interpreting active-ac
 
     - Order fulfillment processing
 
-## P1: Failure-amplification or recovery blocker
+## P1: High Priority
+
+**Definition**: Generic, region-agnostic resiliency changes required to preserve current production behavior after multi-region deployment.
 
 Assign P1 when no P0 rule applies and at least one P1 rule applies.
 
-### Rule P1-RCV-001: Calls can exceed the failure-detection budget
+### Rule P1-RCV-001: Retry logic or circuit breakers are required
+
+Apply when retry logic or circuit breakers are required.
+
+### Rule P1-RCV-002: Timeout tuning is required
+
+Apply when timeout tuning is required.
+
+### Rule P1-RCV-003: Local caching must be replaced with distributed caching
+
+Apply when local caching must be replaced with distributed caching.
+
+### Rule P1-RCV-004: Idempotency controls are required
+
+Idempotency controls are required.
+
+### Rule P1-RCV-005: Latency, processing, logging, or exception handling must change
+
+Apply when without the change, requests may still succeed, but latency, processing, logging, or exception handling could differ from current production behavior.
+
+### Rule P1-RCV-006: Calls can exceed the failure-detection budget
 
 Apply when missing or excessive timeouts can delay health transition, consume request capacity, or prevent traffic draining within the required budget.
 
-### Rule P1-RCV-002: Retry behavior amplifies failure
+### Rule P1-RCV-007: Retry behavior amplifies failure
 
 Apply when retries are unbounded, immediate, unsafe, or likely to cause retry storms, duplicate side effects, or dependency overload.
 
-### Rule P1-RCV-003: Failure is not isolated
+### Rule P1-RCV-008: Failure is not isolated
 
 Apply when a missing circuit breaker, bulkhead, or equivalent isolation mechanism can exhaust shared threads, sockets, connection pools, or other application resources.
 
-### Rule P1-RCV-004: Application cannot recover without restart
+### Rule P1-RCV-009: Application cannot recover without restart
 
 Apply when the application cannot reconnect, refresh credentials, recreate clients, or return to readiness after dependency restoration without restarting the process or pod.
 
-### Rule P1-RCV-005: Temporary dependency loss creates startup failure
+### Rule P1-RCV-010: Temporary dependency loss creates startup failure
 
 Apply when temporary startup-time dependency unavailability causes permanent startup failure or crash looping.
 
-### Rule P1-RCV-006: Safe degraded operation is unavailable
+### Rule P1-RCV-011: Safe degraded operation is unavailable
 
 Apply when an optional or partially available dependency unnecessarily prevents safe degraded operation.
 
-### Rule P1-RCV-007: Graceful shutdown implementation absent
+### Rule P1-RCV-012: Graceful shutdown implementation absent
 
-- rule_id: P1-RCV-007
+- rule_id: P1-RCV-012
 
   title: Graceful shutdown implementation absent
 
@@ -236,33 +280,57 @@ Apply when an optional or partially available dependency unnecessarily prevents 
 
     - Executor shutdown and await termination
 
-## P2: Data-correctness or processing-resilience gap
+## P2: Non-blocking Improvement/Best Practice
+
+**Definition**: A new architectural pattern, component, or redesign that improves resiliency but is not required to preserve current production behavior or enable multi-region deployment.
+
+**Important**: These findings should still be reported. But they do **not** belong in the resiliency bucket and should not be prioritized above P0/P1 resiliency items. Frame them as code-quality recommendations, not resiliency risks.
 
 Assign P2 when no P0 or P1 rule applies and at least one P2 rule applies.
 
-### Rule P2-DATA-001: Idempotency is incomplete
+### Rule P2-DATA-001: Dead-letter queue implementation is required
+
+Apply when Dead-letter queue implementation is required.
+
+### Rule P2-DATA-002: Saga or outbox pattern is required
+
+Apply when Saga or outbox pattern adoption is required.
+
+### Rule P2-DATA-003: Event-sourcing is required
+
+Apply when event-sourcing introduction is required.
+
+### Rule P2-DATA-004: Replication redesign is required
+
+Apply when replication redesign is required.
+
+### Rule P2-DATA-005: Architecture-level change is required
+
+Apply when any comparable architecture-level change is required.
+
+### Rule P2-DATA-006: Idempotency is incomplete
 
 Apply when duplicate requests, retries, or event replay can repeat a business effect, but the issue does not meet P0-AA-006.
 
-### Rule P2-DATA-002: Duplicate and replay handling is incomplete
+### Rule P2-DATA-007: Duplicate and replay handling is incomplete
 
 Apply when messaging or workflow code lacks reliable duplicate detection, replay handling, or checkpoint recovery.
 
-### Rule P2-DATA-003: Transaction retry is unsafe or ambiguous
+### Rule P2-DATA-008: Transaction retry is unsafe or ambiguous
 
 Apply when transaction retry can repeat an operation, mishandle an unknown commit outcome, or cross an unsafe transaction boundary.
 
-### Rule P2-DATA-004: Concurrency conflicts are not controlled
+### Rule P2-DATA-009: Concurrency conflicts are not controlled
 
 Apply when multi-region writes can silently overwrite one another or when optimistic or equivalent concurrency handling is absent.
 
-### Rule P2-DATA-005: Ordering or consistency assumption is unsupported
+### Rule P2-DATA-010: Ordering or consistency assumption is unsupported
 
 Apply when code relies on global ordering, immediate read-after-write consistency, or another guarantee not established by the approved application behavior.
 
 ### P2 elevation rule
 
-Elevate a P2 candidate to P0 under `P0-AA-006` when the condition makes a critical production transaction materially unsafe during active-active operation.
+Elevate a P2 candidate to P0 under `P0-AA-011` when the condition makes a critical production transaction materially unsafe during active-active operation.
 
 
 
@@ -320,27 +388,49 @@ applies_when:
       regulated_data
       
 
-## P3: Operational-maturity or verification gap
+## P3: Non-Blocking Code Consistency (Best Practices / Maintainability)
+
+**Definition**: A best-practice, hardening, maintainability, readability, duplication, or consistency improvement that is not required to preserve current production behavior or enable multi-region deployment.
 
 Assign P3 only when no P0, P1, or P2 rule applies.
 
-### Rule P3-OPS-001: Regional telemetry is incomplete
+### Rule P3-OPS-001: Maintainability or readability improvements
+
+Apply when maintainability or readability improvements are required.
+
+### Rule P3-OPS-002: Duplicate code needs to be removed
+
+Apply when duplicate-code removal is required.
+
+### Rule P3-OPS-003: Naming, formatting, or pattern consistency
+
+Apply when Naming, formatting, or pattern consistency exists.
+
+### Rule P3-OPS-004: Non-blocking hardening improvements
+
+Apply when Non-blocking hardening improvements are required.
+
+### Rule P3-OPS-005: Findings that do not match P0, P1, or P2
+
+Apply when findings that do not match P0, P1, or P2.
+
+### Rule P3-OPS-006: Regional telemetry is incomplete
 
 Apply when logs, metrics, traces, or health events do not identify the serving region or dependency context.
 
-### Rule P3-OPS-002: Actionable failure signals are incomplete
+### Rule P3-OPS-007: Actionable failure signals are incomplete
 
 Apply when retry exhaustion, circuit state, dependency degradation, or recovery lacks useful telemetry but runtime behavior remains otherwise correct.
 
-### Rule P3-OPS-003: Supplemental failure testing is missing
+### Rule P3-OPS-008: Supplemental failure testing is missing
 
 Apply when additional automated failure tests are desirable but are not the sole proof required for a P0, P1, or P2 behavior.
 
-### Rule P3-OPS-004: Graceful-shutdown verification is incomplete
+### Rule P3-OPS-009: Graceful-shutdown verification is incomplete
 
 Apply when the shutdown design exists but automated verification or supporting operational evidence is incomplete.
 
-### Rule P3-OPS-005: Documentation or diagnostics need improvement
+### Rule P3-OPS-010: Documentation or diagnostics need improvement
 
 Apply when the remaining gap primarily affects operational understanding rather than active-active correctness.
 

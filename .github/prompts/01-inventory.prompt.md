@@ -40,3 +40,7 @@ Create the compact Step 1 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted 
 ## Repository-agnostic snapshot rule
 
 Capture an assessment snapshot classification. Git revision is optional; workspace snapshots, uploaded archives, source drops, and unknown-with-limitations are supported.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.

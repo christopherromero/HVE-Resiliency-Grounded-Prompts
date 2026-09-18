@@ -1,5 +1,5 @@
 ---
-schema_version: 1.0.0
+schema_version: 2.2.0
 document_type: dependency_behavior
 service: dse-cassandra
 service_name: DSE Cassandra
@@ -102,11 +102,30 @@ controls:
   emit_on_failure: true
 ---
 
-# DSE Cassandra Active-Active Application Behavior Standard
+# DSE Cassandra Target-State Application Behavior Standard
+
+### Shared-service operating-model contract
+
+This standard does not select the application's shared-service topology. Resolve the operating model from:
+
+```text
+architecture_context.shared_service_operating_models.services.dse_cassandra
+```
+
+Use `source.operating_model` only to describe current state. Use `target.operating_model` for control applicability and target-state code-readiness assessment.
+
+- Evaluate common client controls whenever production use is confirmed.
+- Evaluate model-specific controls only for the resolved target operating model.
+- `not_applicable` plus no repository production use makes this standard not applicable.
+- `not_applicable` plus confirmed repository production use is a context conflict, not an automatic code finding.
+- Missing, unresolved, or conflicting target model makes model-specific controls `not_assessed` and routes to architecture review.
+- A source-target difference is migration context, not a finding by itself.
+- Findings require repository-owned evidence that the application is incompatible with an applicable target-state control.
+- Do not infer deployed topology from this standard's title, examples, or assumptions.
 
 ## Purpose
 
-This dependency-specific standard assesses how a Spring Boot microservice uses DSE Cassandra when deployed to two active Azure regions. The local regional service endpoint is assumed to exist and be reachable through the approved private networking design.
+This dependency-specific standard assesses how a Spring Boot microservice uses DSE Cassandra when evaluated for the approved target operating model supplied by application architecture context. The local regional service endpoint is assumed to exist and be reachable through the approved private networking design.
 
 ## Scope boundary
 

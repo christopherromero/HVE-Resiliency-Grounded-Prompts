@@ -1,5 +1,5 @@
 ---
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: assessment_domain_standard
 standard_id: KUBERNETES-DEPLOYMENT-RESILIENCY
 version: "1.0.0"
@@ -134,4 +134,8 @@ Evaluate repository-owned Kubernetes workload configuration for compatibility wi
 - Validate manifests against observed application ports, health paths, and lifecycle behavior.
 - Missing externally owned workload settings are evidence gaps, not findings.
 - Do not infer actual scheduling, traffic, or rollout state.
-- Deduplicate lifecycle and health findings with the application master controls.
+- Deduplicate lifecycle and health findings with the application master controls.### Architecture operating-model contract
+
+Use `architecture_context.deployment_evolution.target` for the application deployment target and `architecture_context.shared_service_operating_models.services` for dependency-specific target models. Application active-active does not imply every consumer, scheduler, database, or shared service is multi-active. K8S-DEPLOY-008 must use each workload's approved processing or service model. Source-target differences are not findings without repository evidence.
+
+

@@ -51,3 +51,7 @@ Use the incremental assembly and recoverable-write protocol in the authoritative
 Freeze the report manifest before writing. Append bounded sections and one complete finding at a time. Use stable invisible markers and resume after the last verified completed unit following a recoverable request error. Do not restart report planning, duplicate completed content, or change IDs, counts, priorities, categories, or scope.
 
 Abbreviate source fingerprints in the customer report. Preserve exact Step 2 source excerpts without adding comments or labels inside original-source code blocks. Reopen and validate the final report before claiming completion.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
