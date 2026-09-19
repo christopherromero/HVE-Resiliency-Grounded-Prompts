@@ -69,6 +69,134 @@ Task Planner must:
 7. Never derive priority from severity alone.
 8. Never assign remediation work to PCF exclusions or infrastructure-only observations.
 
+priority_determination_rules:
+
+  priority_must_be_based_on:
+    - resiliency_impact
+    - failure_severity
+    - recoverability_impact
+    - regional_operation_impact
+
+  priority_must_not_be_based_on:
+    - remediation_owner
+    - implementation_team
+    - implementation_effort
+    - estimated_story_points
+    - funding_status
+
+control_boundary:
+
+  allowed_values:
+    - application
+    - platform
+    - shared_service
+    - deployment
+    - operational
+    - external_vendor
+
+  rules:
+    - Control boundary identifies remediation ownership.
+    - Control boundary does not affect priority.
+
+confidence:
+
+  allowed_values:
+    - high
+    - medium
+    - low
+
+  rules:
+    - Confidence records evidence quality.
+    - Confidence does not lower or raise priority.
+
+regional_survival_rules:
+
+  P0_conditions:
+
+    - prevents_independent_regional_operation
+
+    - prevents_regional_failover
+
+    - prevents_regional_recovery
+
+    - creates_single_region_dependency
+
+accepted_work_loss_rules:
+
+  P0:
+    - accepted_work_can_be_lost
+
+  P1:
+    - accepted_work_can_be_delayed
+
+  P2:
+    - accepted_work_visibility_reduced
+``
+false_acknowledgement_rules:
+
+  P0_conditions:
+
+    - http_success_before_durable_commit
+
+    - accepted_before_durable_enqueue
+
+    - acknowledged_before_authoritative_state_written
+
+idempotency_rules:
+
+  P1:
+    - duplicate_processing_possible_during_failover
+
+  P2:
+    - duplicate_processing_possible_but_topology_independent
+
+  non_resiliency:
+    - no_demonstrated_duplicate_failure_scenario
+
+configuration_bootstrap_rules:
+
+  P0:
+    - application_cannot_start_in_target_region
+
+  P1:
+    - startup_degraded_but_possible
+
+  P2:
+    - bootstrap_observability_gap
+
+observability_rules:
+
+  P0:
+    - cannot_detect_service_failure
+
+  P1:
+    - cannot_verify_recovery
+
+  P2:
+    - cannot_diagnose_root_cause
+
+  P3:
+    - operational_visibility_reduced_only
+
+priority_precedence_rules:
+
+  precedence_order:
+
+    P0:
+      - regional_survival
+      - accepted_work_loss
+      - false_acknowledgement
+
+    P1:
+      - failover_degradation
+      - duplicate_processing
+
+    P2:
+      - recovery_visibility
+
+    P3:
+      - operational_efficiency
+
 # Priority levels and decision rules
 
 ## P0: Blocking/Critical Risk
@@ -495,3 +623,11 @@ Before completing a plan, verify:
 5. Every override is complete and auditable.
 6. No priority was assigned solely from finding severity.
 7. No work was created for excluded statuses, infrastructure deployment, or PCF.
+8. Priority was not reduced due to remediation ownership.
+9. Confidence was not used as a priority modifier.
+10. Regional-survival rules were evaluated before all lower-priority rules.
+11. Accepted-work-loss and false-acknowledgement scenarios were evaluated before generic resiliency rules.
+12. Idempotency findings were classified using the idempotency framework.
+13. Observability findings were classified using the observability framework.
+14. Bootstrap failures were classified using the configuration-bootstrap framework.
+15. Multiple matching rules were resolved using the precedence order.
