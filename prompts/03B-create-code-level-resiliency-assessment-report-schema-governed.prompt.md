@@ -751,3 +751,10 @@ After writing, reopen the report and verify:
 - Final schema and assembly conformance are passed.
 
 Successful Step 3B completion requires a complete validated final report, not a partial file or report text that exists only in chat.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Phase-specific rule
+Render Resiliency-Focused Recommendations first and Non-Resiliency-Focused Recommendations second. Within each section render P0, P1, P2, P3. Include both classes in counts, matrix, roadmap, and traceability.

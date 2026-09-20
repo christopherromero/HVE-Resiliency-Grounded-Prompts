@@ -1026,3 +1026,10 @@ Before completing library resolution, verify:
 - Technology-neutral contracts and tests were still generated when evidence supported them.
 - No unmanaged version, unsupported API, or unapproved product substitution was invented.
 - Step 3A did not create a new finding solely because the approved-library file was absent or draft.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Phase-specific rule
+Assign governed priority to both finding classes. Within each class preserve P0 through P3 ordering and preserve classification traceability on each change.

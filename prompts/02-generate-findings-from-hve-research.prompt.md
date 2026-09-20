@@ -436,3 +436,9 @@ Before completing:
 - Verify no source code or repository configuration was modified.
 - Verify one compact Step 2 handoff exists when agent write permissions permit it.
 - Report exact output paths, standards loaded by class, findings by severity and status, not-assessed count, registry gaps, inventory exceptions, architecture conflicts, and confirmation that no re-inventory occurred.
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Phase-specific rule
+For every emitted finding, populate the complete finding_classification contract. Retain not-qualified violations as non_resiliency findings.

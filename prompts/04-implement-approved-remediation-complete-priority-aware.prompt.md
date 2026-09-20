@@ -647,3 +647,10 @@ Rules:
 - Non-Git snapshot types do not block implementation.
 - `unknown` snapshot type requires an explicit limitation, but implementation may continue when the approved target is otherwise unambiguous.
 - Line drift alone never blocks implementation.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Phase-specific rule
+Implementation selectors may include either class. Do not reinterpret classification during implementation.
