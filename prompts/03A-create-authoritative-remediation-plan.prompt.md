@@ -105,7 +105,7 @@ Use:
 priority:
   value: P0
   policy_id: AA-REMEDIATION-PRIORITY
-  policy_version: "1.0.0"
+  policy_version: "1.1.0"
   rule_id: P0-AA-003
   rationale: >
     Evidence-based explanation of why the governance rule applies.
@@ -158,7 +158,7 @@ resiliency_related: true
 priority:
   value: P0
   policy_id: AA-REMEDIATION-PRIORITY
-  policy_version: "1.0.0"
+  policy_version: "1.1.0"
   rule_id: P0-AA-003
   rationale: ""
   calculated_priority: P0
@@ -625,7 +625,7 @@ planning:
   prioritization_policy:
     path: grounding/governance/remediation-prioritization.md
     policy_id: AA-REMEDIATION-PRIORITY
-    policy_version: "1.0.0"
+    policy_version: "1.1.0"
 ```
 
 ## Priority and wave summaries
