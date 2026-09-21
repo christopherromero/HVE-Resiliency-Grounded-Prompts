@@ -60,7 +60,7 @@ source_requirements:
     optional_context_fields:
       - external_side_effects.present
       - external_side_effects.types
-      - direct_dependency_expectations.kafka
+      - dependency_expectations.confluent-kafka
       - assessment_guidance.deployment_state_interpretation.assess_code_against
       - finding_boundary.source_target_difference_is_not_a_finding
   repository_fallback:
@@ -179,8 +179,8 @@ consistency_rules:
   - rule_id: KAFKA-SCENARIO-001
     description: Azure SQL authoritative business state requires Kafka active-standby processing.
     when_any:
-      - authoritative_state.dependency: azure_sql
-      - approved_processing_chain_authoritative_state_contains: azure_sql
+      - authoritative_state.dependency: azure-sql
+      - approved_processing_chain_authoritative_state_contains: azure-sql
     expected_target:
       scenario: active_standby
       regional_processing_model: single_active
@@ -198,10 +198,10 @@ consistency_rules:
       Cosmos DB for MongoDB RU with no authoritative Azure SQL permits approved
       or conditionally inferred independent regional active-active Kafka assessment.
     when_all:
-      - authoritative_state.dependency: cosmos_db
-      - cosmos_db.api: mongodb
-      - cosmos_db.throughput_model: ru
-      - authoritative_azure_sql_present: false
+      - authoritative_state.dependency: cosmosdb
+      - cosmosdb.api: mongodb
+      - cosmosdb.throughput_model: ru
+      - authoritative_azure-sql_present: false
     expected_target:
       scenario: independent_regional_active_active
       regional_processing_model: multi_active
@@ -212,12 +212,12 @@ consistency_rules:
     confirmation_paths:
       approved:
         when:
-          cosmos_db.multi_region_write_evidence.status: confirmed_by_approved_context
+          cosmosdb.multi_region_write_evidence.status: confirmed_by_approved_context
         validation_status: consistent
         architecture_confirmation_required: false
       provisional:
         when:
-          cosmos_db.multi_region_write_evidence.status: repository_indicates_intent
+          cosmosdb.multi_region_write_evidence.status: repository_indicates_intent
         validation_status: conditionally_inferred
         architecture_confirmation_required: true
         required_conditions:
@@ -280,7 +280,7 @@ consistency_rules:
 
 application_context_example_validation:
   context_version: "3.0.0"
-  authoritative_state_dependency: azure_sql
+  authoritative_state_dependency: azure-sql
   source:
     application_operating_model: active_standby
     kafka_scenario: active_standby
@@ -324,3 +324,6 @@ completion_validation:
   - Verify source and target region or topology values are not merged.
   - Verify source-target differences do not create code findings by themselves.
   - Verify missing deployed topology remains an evidence gap.
+
+
+finding_qualification_policy: {policy_id: RESILIENCY-FINDING-QUALIFICATION, version: "1.0.0"}

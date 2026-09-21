@@ -66,3 +66,7 @@ Resolve source drift without requiring Git. Compare path, symbol, excerpt, and f
 ### Commit-mode handoff requirements
 
 Record `commit_mode`, commit status by change ID, commit SHA and subject when created, validation status, and whether push, branch creation, or pull-request creation occurred. Do not claim a commit exists unless Git confirms the SHA. If `per_change` is selected in a non-Git workspace, do not initialize Git; record `skipped_non_git_workspace` and follow the authoritative Prompt 4 rules for whether uncommitted implementation may continue.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.

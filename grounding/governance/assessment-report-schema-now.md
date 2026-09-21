@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.12.0"
+  schema_version: "1.7.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -39,54 +39,16 @@ Sections 1 through 7 are readable customer-facing content. Section 8 is the trac
 - Assessment date
 - Repository scope
 - Current deployment
-- Approved target deployment
-<!-- - Migration context (retired in 1.11.0; the compact report header block renders current and target deployment only) -->
+- Target deployment
 - Language and framework
 - Runtime platform
 - Report version
 
 Use `Not provided` when required metadata is unavailable.
 
-Application, assessment date, repository scope, current deployment, and approved target deployment are also rendered as visible one-line fields in the report header block. The remaining fields stay in the hidden metadata block.
-
-### Deployment-state metadata contract
-
-Resolve deployment metadata from the approved application architecture context:
-
-```yaml
-deployment_metadata_resolution:
-  current_deployment_source: architecture_context.deployment_evolution.source
-  approved_target_deployment_source: architecture_context.deployment_evolution.target
-  # Retired in 1.11.0. Superseded by the report header block. Do not reintroduce.
-  # migration_context_source: architecture_context.deployment_evolution.transition
-```
-
-Rules:
-
-- `Current deployment` is the source state marked `lifecycle_status: current`.
-- `Approved target deployment` is the future state marked `lifecycle_status: approved_target`.
-- Render both fields separately. Do not collapse them into one ambiguous deployment-model field.
-- Render each as a single line. Do not expand either field into a narrative paragraph.
-- Do not merge source and target region lists.
-- Do not report the target as current or the source as target.
-- Do not substitute Azure SQL, Kafka, or another dependency topology for the application deployment topology.
-- A source-to-target difference is not a finding by itself. A finding requires repository evidence against an applicable target-state control.
-- Missing target infrastructure is an evidence gap, not application noncompliance.
-
-### Report metadata placement and visibility
-
-Render report metadata as a hidden HTML comment block between the `report-metadata` markers at the end of the report, after Appendix A and before the schema-conformance block. It is provenance rather than narrative, so it must not open the document.
-
-Follow the marker pattern already used by the governance block. The `report-metadata:start` and `report-metadata:end` markers are separate comments, and the metadata itself is one comment block between them. Never nest a comment inside another comment.
-
-Because the metadata is hidden, the readable title, the report header block, and the filtered-view summary line carry document identification. They must state the application, and when the report is a priority-filtered view, they must state that and name the included priorities. This satisfies the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
-
-Metadata placement and visibility are presentation-only. Every required field is still rendered, and no field may be dropped.
-
 ## Required Assessment Overview content
 
 - Application and repository overview
-<!-- - Current deployment, approved target deployment, and migration-context summary (retired in 1.11.0; rendered in the report header block) -->
 - Assessment themes with finding references
 - Approved Azure Shared Services reference-architecture table, rendered from
   REFERENCE_ARCHITECTURE_REGISTRY, or the no-registry statement when no approved
@@ -132,67 +94,6 @@ infrastructure is deployed correctly and must never be used as repository source
 evidence for a finding.
 ```
 
-## Report header block rendering contract
-
-The report header block is the compact identification block rendered immediately after the H1 title and before the table of contents. It replaces the former narrative Deployment Evolution subsection in Assessment Overview.
-
-Render these lines in order, each as its own bold line separated by a blank line:
-
-```markdown
-# Code-Level Resiliency Assessment
-
-**{Application}**
-
-**Assessment Date:** {YYYY-MM-DD}
-
-**Repo Scope:** {repository scope}
-
-**Current Deployment:** {one line from architecture_context.deployment_evolution.source}
-
-**Target Deployment:** {one line from architecture_context.deployment_evolution.target}
-```
-
-Rules:
-
-- Keep every field to one line. Do not render a paragraph, bullet list, or table in the header block.
-- **Current Deployment** uses only `architecture_context.deployment_evolution.source`.
-- **Target Deployment** uses only `architecture_context.deployment_evolution.target`.
-- Use `Not provided` when a field is unavailable.
-- Do not add fields to the header block. Language, framework, runtime platform, and report version stay in the hidden report-metadata block.
-- Assessment Overview must not repeat Application or Repository scope, because the header block carries them. The remaining overview attributes are unaffected.
-- Assessment Overview must not render a Deployment Evolution subsection.
-- Wording may be polished, but state, region, and lifecycle meaning must not change. If source or target is missing or conflicting, state the limitation in the Assessment Overview and route it to architecture review.
-- Do not infer deployment state from repository configuration or dependency topology.
-
-Expected semantic rendering for this application:
-
-```text
-**Current Deployment:** Active-standby; West US active, East US reserved for disaster recovery.
-**Target Deployment:** Active-active across West US 2 and West US using the same application artifact.
-```
-
-<!-- Retired in 1.11.0; superseded by the report header block rendering contract.
-
-## Deployment evolution rendering contract
-
-Assessment Overview must render these items in order:
-
-1. **Current deployment:** Use only `architecture_context.deployment_evolution.source`.
-2. **Approved target deployment:** Use only `architecture_context.deployment_evolution.target`.
-3. **Migration context:** State that the assessment evaluates target-state code readiness and does not claim the target is already deployed.
-
-Expected semantic rendering for this application:
-
-```text
-Current deployment: West US is active, with East US reserved for disaster recovery.
-Approved target deployment: Active-active across West US 2 and West US using the same application artifact.
-Migration context: The assessment evaluates application code readiness for the approved target while preserving existing business behavior.
-```
-
-Wording may be polished, but state, region, and lifecycle meaning must not change. If source or target is missing or conflicting, state the limitation and route it to architecture review. Do not infer deployment state from repository configuration or dependency topology.
-
--->
-
 ## Summary findings table columns
 
 - Priority
@@ -225,6 +126,17 @@ Every detailed finding must include:
 17. Notes
 18. Standards reference, when supported
 
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+  3. Priority policy ID, version, and rule ID
+
+Reason: the internal-identifier-suppression rule moves priority rule IDs out of
+sections 1 through 7. The policy ID and version remain in the finding, and the rule
+ID is preserved in Appendix A, so no traceability is lost. Restore this line if
+identifier suppression is withdrawn.
+-->
+
 Group findings primarily by governance priority.
 
 Priority order:
@@ -243,53 +155,37 @@ Priority
     Category
         Finding
 
-### Report title
-
-The report title is H1 and precedes section 1. The template carries a generic default title. The report header block is rendered immediately after the title.
-
-When the report is a priority-filtered view, replace the default with a title that identifies the filtered scope, then follow the header block with a one-line summary naming the application, stating that the document is a priority-filtered view, and listing the included priorities.
-
-The title, the header block, and that summary line are the readable identification of the document, because report metadata is rendered as a hidden block at the end. Together they satisfy the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
-
-### Heading hierarchy
-
-Use native Markdown headings at every level so the document outlines, folds, and anchors correctly.
-
-| Level | Content | Form |
-|---|---|---|
-| H1 | Numbered top-level section | `# 2. Resiliency-Focused Recommendations` |
-| H2 | Priority group with finding count | `## P0 — Critical Resiliency Risks (9)` |
-| H3 | Repository-specific category | `### Traffic Eligibility and Health` |
-| H4 | Detailed finding | `#### P0-001: {title}` |
-
-The report title is also H1 and precedes section 1.
-
-Number top-level sections in schema order. Derive table-of-contents anchors from the rendered heading text, so `# 2. Resiliency-Focused Recommendations` is linked as `#2-resiliency-focused-recommendations`.
-
-State the finding count in each priority heading so the reader can scan volume without counting.
-
-Do not use HTML headings. An HTML heading is absent from editor outlines and breadcrumbs, generates no anchor, does not fold, and carries styling that can clash with dark mode and PDF export.
-
 ### Category heading rendering
 
-Within each priority section, repository-specific categories are rendered as native H3 headings, one level below the priority group and one level above each finding.
+Within each priority section, repository-specific categories must be
+rendered as visually distinct grouping headers.
 
-```markdown
-### {Category Name}
+Render categories using HTML:
+
+```html
+<h3 style="color:#0F6CBD;">
+{Category Name}
+</h3>
 ```
 
 Examples:
 
-```markdown
-### Regional Data-Path Affinity
+```html
+<h3 style="color:#0F6CBD;">
+Regional Data-Path Affinity
+</h3>
 ```
 
-```markdown
-### Traffic Eligibility and Health
+```html
+<h3 style="color:#0F6CBD;">
+Traffic Eligibility and Health
+</h3>
 ```
 
-```markdown
-### Authoritative Data Correctness
+```html
+<h3 style="color:#0F6CBD;">
+Authoritative Data Correctness
+</h3>
 ```
 
 Rules:
@@ -319,8 +215,28 @@ Emit fields in this order:
 - `**Notes:**` sub-bullets (`Implementation`, `Validation`, `Guardrail`)
 - `<span style="font-size: 14px;">**Standards reference:** {grounded standard name and version} — `{grounding file path}`</span>`, using `[title](url)` only when the grounded standard publishes an external URL for the cited control
 
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+  - `**Notes:**` sub-bullets (`Cross-refs`, `Implementation`, `Validation`, `Guardrail`)
+  - `<span style="font-size: 14px;">**MSFT Reference:** [title](url)</span>`
+
+Reason for the Notes change: the `Cross-refs` sub-bullet carried Step 2 finding IDs,
+change IDs, control IDs, and open-question IDs in body narrative. Its content moves to
+Appendix A under the internal-identifier-suppression rule.
+
+Reason for the reference change: the previous line required an external Microsoft Learn
+URL for every finding, but the grounded standards publish no per-control external URLs,
+and inventing one is prohibited by the required-exclusions rule. It also conflicted with
+required finding field 18, "Standards reference, when supported". The active line cites
+the grounded standard and still permits an external URL when one genuinely exists.
+
+Restore both lines if identifier suppression is withdrawn.
+-->
+
 Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority). Apply the
 same display ID everywhere, including cross-references.
+
 ### Internal identifier suppression in report body
 
 The display ID is the only finding identifier permitted in the readable report body.
@@ -459,6 +375,19 @@ Include:
 
 Use display IDs in the `ID` and `Remediated with` columns. `Remediated with` names the other display IDs that share a single remediation change, or `—` when the finding is remediated alone. Step 2 finding IDs and Step 3A change IDs belong in Appendix A, not in this matrix.
 
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+Previous columns included, in place of "Remediated with":
+
+  - Change ID
+  - Source ID
+
+Reason: the internal-identifier-suppression rule moves change IDs and Step 2 source
+IDs to Appendix A. "Remediated with" preserves the consolidation fact in the matrix
+using display IDs. Restore these columns if identifier suppression is withdrawn.
+-->
+
 Counts must reconcile with the Summary Findings table.
 
 ## Standards Alignment columns
@@ -504,6 +433,28 @@ Remediation index columns:
 - Remediated with
 
 Use display IDs throughout the roadmap. Change IDs, finding IDs, and priority rule IDs belong in Appendix A.
+
+<!--
+Superseded 2026-09-15. Retained for reference. Not active.
+
+Implementation waves columns previously included:
+
+  - Change IDs
+
+The subsection "Remediation index" was previously named "Change index" with columns:
+
+  - Change ID
+  - Priority
+  - Priority rule
+  - Finding IDs
+  - Objective
+  - Complexity
+  - Wave
+
+Reason: the internal-identifier-suppression rule moves change IDs, finding IDs, and
+priority rule IDs to Appendix A. The roadmap keys off display IDs instead. Restore
+these if identifier suppression is withdrawn.
+-->
 
 ## Appendix A: Traceability
 
@@ -587,20 +538,6 @@ schema_conformance:
   reference_architecture_column_order_valid: true
   no_registry_statement_used: false
   invented_reference_links: 0
-  deployment_source_and_target_separated: true
-  current_deployment_rendered_from_source: true
-  approved_target_deployment_rendered_from_target: true
-  report_header_block_rendered: true
-  report_header_block_fields_single_line: true
-  deployment_evolution_subsection_rendered: false
-  source_locator_notice_rendered: false
-  # Retired in 1.11.0. Superseded by report_header_block_rendered. Do not reintroduce.
-  # migration_context_rendered: true
-  target_reported_as_current: false
-  source_reported_as_target: false
-  source_and_target_regions_merged: false
-  dependency_topology_used_as_application_topology: false
-  migration_delta_reported_as_finding: false
 ```
 
 ### Kafka scenario reporting
@@ -618,9 +555,8 @@ Rules:
 - Cross-references to excluded findings must remain identifiable as omitted references and must not be silently renumbered or reassigned.
 - Display IDs must remain deterministic from the complete authoritative finding set. Do not renumber selected findings merely because other priorities are omitted.
 - Evidence gaps and verified controls follow their independent inclusion preferences. They are not selected by remediation priority unless an authoritative priority exists.
-- The report title and metadata must identify the document as a filtered view. Because report metadata is rendered as a hidden block at the end, the readable title, the report header block, and the filtered-view summary line must carry this identification.
+- The report title and metadata must identify the document as a filtered view.
 - Assessment Overview must list included priorities, omitted priorities, context path/version, and the authoritative Step 2 and Step 3A artifact paths.
-- Filtering must not remove or alter the separate Current Deployment and Target Deployment header-block fields.
 - The report must state that omitted priorities remain in the authoritative assessment and remediation plan.
 - Filtered counts must reconcile to filtered sections and the filtered Full Finding Matrix. Do not label filtered counts as total assessment counts.
 - A filtered report must not claim full-schema coverage of omitted priorities. Schema conformance evaluates the selected report scope.
@@ -669,17 +605,11 @@ Allowed snapshot types:
 - `source_drop`
 - `unknown`
 
-<!-- Retired in 1.11.0; the Assessment Overview no longer carries a Source Locator Notice subsection.
-
 Required Assessment Overview notice:
 
 > Source line numbers are advisory and identify the location observed in the assessed snapshot. Repository path, symbol, exact source excerpt, and source fingerprint are the primary evidence locators. The assessment snapshot may be a Git revision, workspace snapshot, uploaded archive, or source drop. Git metadata is optional.
 
--->
-
-Assessment Overview must not render a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative. Snapshot identity stays in the Assessment Overview attribute table, and locator semantics stay with each finding's source locator.
-
-For non-Git snapshots, render the snapshot type, identifier, and provenance in each finding's source locator, and state a material limitation only where it affects that evidence. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
+For non-Git snapshots, render the snapshot type, identifier, provenance, and material limitations. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
 
 <!-- Add conformance checks:
 
@@ -700,26 +630,13 @@ Large reports must be assembled in bounded units rather than through one unbound
 
 1. Read and validate all authoritative inputs.
 2. Freeze report scope, selected findings, display IDs, categories, and change mappings.
-3. Create the assembly manifest.
-4. Initialize the final report with the governance block, the assembly manifest, the title, the report header block, and the table of contents.
+3. Create a report assembly manifest.
+4. Initialize the final report with governance metadata, title, and table of contents.
 5. Append top-level sections in schema order.
 6. Append one complete detailed finding at a time.
 7. Append the Full Finding Matrix, Standards Alignment, and Implementation Roadmap.
-8. Append Appendix A: Traceability.
-9. Append the hidden report-metadata block.
-10. Append the final conformance block.
-11. Reopen and validate the completed report.
-
-#### Assembly block names
-
-The report carries four separate machine-readable blocks. Use these names exactly and do not merge them, because each has a different purpose and position.
-
-- **Governance block** — schema ID, version, path, and validation status. Written at the top during initialization.
-- **Assembly manifest** — frozen scope, display-ID map, and mutable assembly progress. Written at the top during initialization and required for recovery.
-- **Report-metadata block** — the required report metadata fields. Hidden, written near the end after Appendix A.
-- **Conformance block** — schema, assembly, and source-rendering conformance. Written last.
-
-Only the assembly manifest's `assembly_status` changes during writing. Everything frozen in the assembly order remains fixed.
+8. Append final conformance metadata.
+9. Reopen and validate the completed report.
 
 The final deliverable remains one Markdown report. Temporary fragments are non-authoritative and must not replace the final report.
 
@@ -727,7 +644,7 @@ The final deliverable remains one Markdown report. Temporary fragments are non-a
 
 ```yaml
 report_assembly_manifest:
-  report_path: .copilot-tracking/plans/reports/09-09-2026-abc-microservice-code-level-resiliency-assessment.md
+  report_path: .copilot-tracking/plans/reports/code-level-resiliency-assessment.md
   selected_priorities: []
   omitted_priorities: []
   selected_finding_ids: []
@@ -763,51 +680,6 @@ Use invisible HTML markers so recovery can identify completed units:
 ```
 
 Each expected marker must occur exactly once in the completed report.
-
-#### Required marker vocabulary
-
-The block above is an illustrative sample, not the complete list. `REPORT_TEMPLATE` is the authoritative marker source. Render every marker it declares, using the exact spelling and hyphenation below, and do not invent, rename, or omit one.
-
-Document-level markers, in template order:
-
-| Order | Marker pair | Position |
-|-------|-------------|----------|
-| 1 | `report-governance:start` / `report-governance:end` | Before the H1 title |
-| 2 | `content:report-header:start` / `content:report-header:end` | After the H1 title, before the table of contents |
-| 3 | `report-metadata:start` / `report-metadata:end` | After Appendix A |
-| 4 | `schema-conformance:start` / `schema-conformance:end` | Last block in the report |
-
-Each top-level section carries a single `section:` locator marker followed by a `content:` pair. Both use the same hyphenated slug:
-
-| Section | `section:` marker | `content:` pair slug |
-|---------|-------------------|----------------------|
-| 1. Assessment Overview | `section:assessment-overview` | `content:assessment-overview` |
-| 2. Resiliency-Focused Recommendations | `section:resiliency-recommendations` | `content:resiliency-recommendations` |
-| 3. Non-Resiliency-Focused Recommendations | `section:non-resiliency-recommendations` | `content:non-resiliency-recommendations` |
-| 4. Repository and IaC Evidence Gap Analysis | `section:evidence-gap-analysis` | `content:evidence-gap-analysis` |
-| 5. Full Finding Matrix | `section:full-finding-matrix` | `content:full-finding-matrix` |
-| 6. Standards Alignment | `section:standards-alignment` | `content:standards-alignment` |
-| 7. Implementation Roadmap | `section:implementation-roadmap` | `content:implementation-roadmap` |
-| 8. Appendix A: Traceability | `section:appendix-traceability` | `content:appendix-traceability` |
-
-Each detailed finding additionally carries `finding:{display-id}`, for example `finding:F-001`, rendered once at the start of that finding.
-
-#### Marker and manifest name reconciliation
-
-The assembly manifest `sections:` list uses underscore keys, while markers use hyphenated slugs. They name the same units. Map them as follows and treat a mismatch as an assembly defect rather than a new section:
-
-| Manifest key | Marker slug |
-|--------------|-------------|
-| `assessment_overview` | `assessment-overview` |
-| `resiliency_recommendations` | `resiliency-recommendations` |
-| `non_resiliency_recommendations` | `non-resiliency-recommendations` |
-| `evidence_gap_analysis` | `evidence-gap-analysis` |
-| `full_finding_matrix` | `full-finding-matrix` |
-| `standards_alignment` | `standards-alignment` |
-| `implementation_roadmap` | `implementation-roadmap` |
-| `appendix_traceability` | `appendix-traceability` |
-
-Marker vocabulary is structural. It must not change findings, priorities, evidence, control mappings, or scope.
 
 #### Recoverable-write behavior
 
@@ -861,22 +733,3 @@ source_rendering_conformance:
   original_source_blocks_unmodified: true
   comments_added_inside_original_source_blocks: false
 ``` -->
-
-
-## Finding-class ordering and inclusion contract
-Both qualified resiliency findings and retained non-resiliency findings are authoritative Step 2 findings. Render sections in this fixed order:
-1. Resiliency-Focused Recommendations
-2. Non-Resiliency-Focused Recommendations
-
-Within each section, render priority groups in this fixed order: P0, P1, P2, P3. Omit an empty priority heading only when no finding in that class has that priority. Do not mix finding classes. Both classes participate in Summary Findings, Full Finding Matrix, Standards Alignment, Implementation Roadmap, and Appendix A. Counts must reconcile by class and priority. Replace the legacy `Resiliency Related: Yes|No` derivation with the authoritative Step 2 `finding_classification.type`, rendered as Yes for `resiliency` and No for `non_resiliency`. Non-resiliency findings remain findings and receive Step 3A priority; they are not downgraded to observations.
-
-schema_conformance_additions:
-  qualification_policy_id: RESILIENCY-FINDING-QUALIFICATION
-  qualification_policy_version: "1.0.0"
-  every_finding_has_classification: true
-  resiliency_findings_have_complete_impact_chain: true
-  non_resiliency_findings_retained: true
-  resiliency_section_precedes_non_resiliency_section: true
-  priority_order_within_each_class: [P0, P1, P2, P3]
-  classes_not_intermixed: true
-  class_priority_counts_reconcile: true

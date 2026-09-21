@@ -1,0 +1,421 @@
+---
+schema_version: 3.1.0
+document_type: application_architecture_context
+lifecycle_status: draft
+architecture_context:
+  metadata:
+    application_name: Replace with application name
+    repository_name: Replace with repository name
+    business_role: Kafka-based processing with no application database
+    context_owner: Replace with context owner
+    approved_by: not_provided
+    approved_at: not_provided
+    lifecycle_status: draft
+    version: 3.1.0
+  runtime_expectations:
+    contract_version: 1.0.0
+    canonical_key_source: dependency_standard_registry
+    runtimes:
+      jvm-runtime:
+        expected_status: required
+        production_use_expected: true
+        assessment_scope:
+        - build_configuration
+        - container_entrypoint
+        - repository_owned_jvm_options
+        - repository_owned_workload_configuration
+        - application_lifecycle
+        - runtime_tests
+        source:
+          lifecycle_status: current
+          runtime_family: jvm
+          runtime_version: unknown
+          execution_platform: aks
+          containerized: true
+        target:
+          lifecycle_status: approved_target
+          runtime_family: jvm
+          minimum_runtime_version: unknown
+          execution_platform: aks
+          containerized: true
+          required_capabilities:
+            container_awareness: required
+            bounded_heap_strategy: required
+            garbage_collection_strategy: workload_validated
+            graceful_shutdown: required
+            readiness_withdrawal: required
+            runtime_observability: required
+          virtual_threads:
+            adoption_status: optional
+            minimum_jdk_version: '21'
+            enablement_requires:
+            - repository_evidence
+            - library_compatibility_validation
+            - pinning_analysis
+            - representative_load_testing
+            - downstream_concurrency_protection
+        grounding:
+          standard_id: JVM-RUNTIME-RESILIENCY
+          registry_id: jvm-runtime
+          path: grounding/dependencies/jvm-runtime-resiliency.md
+          version: 1.0.0
+  deployment_evolution:
+    source:
+      state_label: current_deployment
+      lifecycle_status: current
+      operating_model: active_standby
+      traffic_model: single_active
+      primary_region: westus
+      disaster_recovery_region: eastus
+      regions:
+      - region: westus
+        role: primary
+        processing_state: active
+      - region: eastus
+        role: disaster_recovery
+        processing_state: standby
+      same_application_artifact_across_regions: true
+      description: West US is active and East US is reserved for disaster recovery.
+    target:
+      state_label: approved_target_deployment
+      lifecycle_status: approved_target
+      operating_model: active_active
+      traffic_model: multi_active
+      regions:
+      - region: westus2
+        role: active
+        processing_state: active
+      - region: westus
+        role: active
+        processing_state: active
+      same_application_artifact_across_regions: true
+      description: The approved target runs the same application artifact actively in West US 2 and West US.
+    transition:
+      transition_type: source_to_target
+      source_to_target_assessment: true
+      assessment_focus: target_state_code_readiness
+      source_state_used_for:
+      - current_state_description
+      - migration_context
+      - existing_behavior_baseline
+      target_state_used_for:
+      - resiliency_control_applicability
+      - gap_assessment
+      - remediation_planning
+      - implementation_target
+      - implementation_review
+      target_state_must_not_be_reported_as_current: true
+      source_and_target_regions_must_not_be_merged: true
+      source_target_difference_is_not_a_finding: true
+  authoritative_state:
+    dependency: none
+    role: no_application_database
+    source:
+      lifecycle_status: current
+      database_present: false
+    target:
+      lifecycle_status: approved_target
+      database_present: false
+    reporting_rule: The application has no authoritative application database. Do not infer authoritative database
+      state from Kafka topics, local memory, caches, or external systems.
+  kafka_operating_model:
+    scenario_policy_id: KAFKA-OPERATING-SCENARIO
+    expected_scenario_rule_id: KAFKA-SCENARIO-003
+    source:
+      lifecycle_status: current
+      scenario: database_independent_kafka
+      regional_processing_model: single_active
+      processing_model: unknown
+      cluster_model:
+        type: independent_regional_clusters
+        stretched_cluster: false
+        cluster_per_region: true
+    target:
+      lifecycle_status: approved_target
+      scenario: database_independent_kafka
+      regional_processing_model: single_active
+      processing_model: unknown
+      cluster_model:
+        type: independent_regional_clusters
+        stretched_cluster: false
+        cluster_per_region: true
+    classification_required:
+      processing_model:
+      - stateless_producer
+      - stateless_consumer
+      - stream_transformer
+      - topic_bridge
+      - external_side_effect_processor
+      - stateful_stream_processor
+      - mixed
+      - unknown
+      external_side_effects:
+      - none
+      - idempotent_external_service
+      - non_idempotent_external_service
+      - unknown
+      kafka_backed_state:
+      - none
+      - compacted_topic
+      - kafka_streams_state_store
+      - unknown
+    architecture_confirmation_required: true
+    reporting_rule: Describe this as database-independent Kafka. Single-active processing is the template default
+      and must be confirmed from approved architecture evidence; application active-active deployment does not automatically
+      mean Kafka multi-active processing.
+  shared_service_operating_models:
+    contract_version: 1.1.0
+    authoritative_for: shared_service_target_operating_model
+    default_assessment_state: target
+    allowed_operating_models:
+    - active_active
+    - active_standby
+    - single_region
+    - externally_managed
+    - not_applicable
+    - unresolved
+    rules:
+    - Source records current service operating model when known.
+    - Target records the approved model used for control applicability.
+    - A source-target difference is migration context, not a finding.
+    - Missing or conflicting target model makes scenario-specific controls not_assessed.
+    services:
+      aks-istio:
+        dependency_standard_id: aks-istio
+        source:
+          operating_model: single_region
+          lifecycle_status: current
+        target:
+          operating_model: active_active
+          lifecycle_status: approved_target
+      apim:
+        dependency_standard_id: apim
+        source:
+          operating_model: single_region
+          lifecycle_status: current
+        target:
+          operating_model: active_active
+          lifecycle_status: approved_target
+      appgateway-glb:
+        dependency_standard_id: appgateway-glb
+        source:
+          operating_model: active_standby
+          lifecycle_status: current
+        target:
+          operating_model: active_active
+          lifecycle_status: approved_target
+      azure-functions:
+        dependency_standard_id: azure-functions
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+      azure-managed-redis:
+        dependency_standard_id: azure-managed-redis
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+      azure-sql:
+        dependency_standard_id: azure-sql
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+      confluent-kafka:
+        dependency_standard_id: confluent-kafka
+        source:
+          operating_model: active_standby
+          lifecycle_status: current
+        target:
+          operating_model: active_standby
+          lifecycle_status: approved_target
+        scenario_source: architecture_context.kafka_operating_model.source
+        scenario_target: architecture_context.kafka_operating_model.target
+      cosmosdb:
+        dependency_standard_id: cosmosdb
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+      dse-cassandra:
+        dependency_standard_id: dse-cassandra
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+      eventhubs:
+        dependency_standard_id: eventhubs
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+      keyvault:
+        dependency_standard_id: keyvault
+        source:
+          operating_model: single_region
+          lifecycle_status: current
+        target:
+          operating_model: active_active
+          lifecycle_status: approved_target
+      postgresql:
+        dependency_standard_id: postgresql
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+      storage-blob:
+        dependency_standard_id: storage-blob
+        source:
+          operating_model: not_applicable
+          lifecycle_status: current
+        target:
+          operating_model: not_applicable
+          lifecycle_status: approved_target
+  shared_service_connectivity_contracts:
+    contract_version: 1.0.0
+    default_assessment_state: target
+    rules:
+    - Connectivity model is distinct from operating model.
+    - Only include service entries with an application-visible resiliency endpoint contract.
+    - Repository evidence validates endpoint usage but does not prove deployed infrastructure.
+    services: {}
+  external_side_effects:
+    present: unknown
+    types: []
+    classification_required: true
+    note: For no-database Kafka applications, classify external side effects before confirming whether regional
+      processing can be multi-active.
+  allowed_expected_statuses:
+  - required
+  - optional
+  - not_expected
+  - unknown
+  dependency_expectations:
+    azure-managed-redis: not_expected
+    azure-sql: not_expected
+    confluent-kafka: required
+    cosmosdb: not_expected
+    dse-cassandra: not_expected
+    eventhubs: not_expected
+    keyvault: required
+    postgresql: not_expected
+    storage-blob: not_expected
+  platform_capability_expectations:
+    aks-istio: optional
+    apim: required
+    appgateway-glb: required
+    azure-functions: not_expected
+    jvm-runtime: required
+  context_validation:
+    dependency_expectation_keys_must_match_shared_service_keys: true
+    platform_capability_expectation_keys_must_use_registry_ids: true
+    shared_service_keys_must_match_dependency_standard_ids: true
+    connectivity_service_keys_must_match_operating_model_service_keys: true
+    runtime_expectation_keys_must_use_registry_ids: true
+    required_runtime_must_have_runtime_expectation: true
+    runtime_keys_must_not_appear_as_shared_service_keys: true
+    runtime_operating_model_prohibited: true
+    no_application_database_requires_authoritative_state_none: true
+    database_independent_kafka_requires_scenario_rule_003: true
+    database_independent_kafka_requires_processing_model_classification: true
+    database_independent_kafka_requires_external_side_effect_classification: true
+    aliases_prohibited: true
+  assessment_guidance:
+    application_context_is_primary_architecture_authority: true
+    solution_context_required: false
+    repository_evidence_must_validate_implementation: true
+    conflicts_route_to_architecture_review: true
+    kafka_no_database_interpretation:
+      authoritative_database_state_present: false
+      scenario: database_independent_kafka
+      default_regional_processing_model: single_active
+      multi_active_requires_explicit_approval: true
+      evaluate:
+      - processing_model
+      - regional_processing_model
+      - external_side_effects
+      - kafka_backed_state
+      - duplicate_and_replay_safety
+      - workload_ownership
+      do_not_infer_multi_active_from_application_active_active: true
+    deployment_state_interpretation:
+      source_is_current_state: true
+      target_is_approved_future_state: true
+      assess_code_against: target
+      do_not_merge_source_and_target_regions: true
+      do_not_report_target_as_current: true
+      do_not_create_findings_from_migration_delta_alone: true
+    runtime_expectation_interpretation:
+      authoritative_path: architecture_context.runtime_expectations.runtimes
+      assess_code_against: target
+      runtime_operating_model_prohibited: true
+  resiliency_assessment_context:
+    qualification_policy:
+      policy_id: RESILIENCY-FINDING-QUALIFICATION
+      version: 1.0.0
+      path: grounding/governance/resiliency-finding-qualification-policy.yml
+    preserve_finding_classes:
+    - resiliency
+    - non_resiliency
+    report_section_order:
+    - resiliency
+    - non_resiliency
+    priority_order_within_each_class:
+    - P0
+    - P1
+    - P2
+    - P3
+    qualifying_architecture_paths:
+    - architecture_context.deployment_evolution.target
+    - architecture_context.kafka_operating_model.target
+    - architecture_context.shared_service_operating_models.services
+    - architecture_context.runtime_expectations.runtimes
+    finding_rules:
+      repository_evidence_required: true
+      control_violation_required: true
+      resiliency_impact_chain_required_for_resiliency_class: true
+      non_resiliency_findings_retained: true
+      source_target_difference_is_not_a_finding: true
+  reporting_contract:
+    required_fields:
+      current_deployment:
+        source: architecture_context.deployment_evolution.source
+        label: Current deployment
+      approved_target_deployment:
+        source: architecture_context.deployment_evolution.target
+        label: Approved target deployment
+      migration_context:
+        source: architecture_context.deployment_evolution.transition
+        label: Migration context
+      authoritative_state:
+        source: architecture_context.authoritative_state
+        label: Authoritative state
+      kafka_operating_model:
+        source: architecture_context.kafka_operating_model
+        label: Kafka operating model
+    prohibited_collapsing:
+    - Do not treat Kafka as an application database.
+    - Do not infer Kafka multi-active processing from active-active application deployment.
+    - Do not describe database-independent Kafka as database-backed authoritative state.
+  finding_boundary:
+    source_target_difference_is_not_a_finding: true
+    finding_requires_repository_evidence: true
+    missing_deployed_target_infrastructure_is_evidence_gap: true
+    architecture_context_conflict_is_not_a_code_finding: true
+    infrastructure_findings_allowed: false
+---

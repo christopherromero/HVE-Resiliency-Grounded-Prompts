@@ -59,12 +59,6 @@ Freeze the report manifest before writing. Append bounded sections and one compl
 
 Abbreviate source fingerprints in the customer report. Preserve exact Step 2 source excerpts without adding comments or labels inside original-source code blocks. Reopen and validate the final report before claiming completion.
 
-## Next phase
 
-Step 4 requires explicit human approval of remediation scope. Do not choose that scope.
-
-Present the available priorities, waves, and change IDs from the Step 3A plan, then end the response with the command template for the user to complete:
-
-`/04-implement runDate=${RUN_DATE} taskSlug=${TASK_SLUG} planSlug=${PLAN_SLUG} priorities=<approved> waves=<approved> changeIds=<approved> commitMode=none`
-
-Step 4 runs as `Task Implementor` in a new conversation.
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.

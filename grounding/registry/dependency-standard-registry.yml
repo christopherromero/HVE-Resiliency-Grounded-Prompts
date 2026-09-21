@@ -25,7 +25,7 @@ standards:
         - AZURE_KEYVAULT_URI
     standard:
       path: grounding/dependencies/springboot-keyvault.md
-      version: "2.0.0"
+      version: "2.2.0"
 
   cosmosdb:
     display_name: Azure Cosmos DB
@@ -42,7 +42,7 @@ standards:
         - ChangeFeedProcessor
     standard:
       path: grounding/dependencies/springboot-cosmosdb.md
-      version: "2.1.0"
+      version: "2.2.0"
       business_logic_risk_classification: true
 
   eventhubs:
@@ -61,7 +61,7 @@ standards:
         - BlobCheckpointStore
     standard:
       path: grounding/dependencies/springboot-eventhubs.md
-      version: "2.1.0"
+      version: "2.2.0"
       business_logic_risk_classification: true
 
   storage-blob:
@@ -79,7 +79,7 @@ standards:
         - spring.cloud.azure.storage
     standard:
       path: grounding/dependencies/springboot-storage-blob.md
-      version: "2.1.0"
+      version: "2.2.0"
       business_logic_risk_classification: true
 
   azure-sql:
@@ -98,7 +98,7 @@ standards:
         - spring.datasource.url
     standard:
       path: grounding/dependencies/springboot-azure-sql.md
-      version: "2.0.0"
+      version: "2.3.0"
 
   postgresql:
     display_name: PostgreSQL
@@ -116,7 +116,7 @@ standards:
         - PGHOST
     standard:
       path: grounding/dependencies/springboot-postgresql.md
-      version: "2.1.0"
+      version: "2.2.0"
       business_logic_risk_classification: true
 
   apim:
@@ -135,7 +135,7 @@ standards:
         - FeignClient
     standard:
       path: grounding/dependencies/springboot-apim.md
-      version: "2.1.0"
+      version: "2.2.0"
       business_logic_risk_classification: true
 
   appgateway-glb:
@@ -154,7 +154,7 @@ standards:
         - actuator/health/liveness
     standard:
       path: grounding/dependencies/springboot-appgateway-glb.md
-      version: "2.1.0"
+      version: "2.2.0"
       business_logic_risk_classification: true
 
   http-client:
@@ -176,7 +176,7 @@ standards:
         - FeignClient
     standard:
       path: grounding/dependencies/springboot-http-client.md
-      version: "1.0.0"
+      version: "2.1.0"
 
   confluent-kafka:
     display_name: Confluent Kafka
@@ -193,10 +193,10 @@ standards:
         - schema.registry.url
     standard:
       path: grounding/dependencies/springboot-confluent-kafka.md
-      version: "2.0.0"
+      version: "3.1.0"
     scenario_policy:
       path: grounding/governance/kafka-operating-scenario-policy.yml
-      version: "2.0.0"
+      version: "3.2.0"
     context_sources:
       preferred:
         - application-context/application-architecture-context.yml
@@ -217,7 +217,7 @@ standards:
         - cassandra.contact-points
     standard:
       path: grounding/dependencies/springboot-dse-cassandra.md
-      version: "2.0.0"
+      version: "2.2.0"
     scenario_policy:
       path: grounding/governance/dse-cassandra-operating-scenario-policy.yml
       version: "2.0.0"
@@ -246,7 +246,7 @@ standards:
         - spring.session.store-type=redis
     standard:
       path: grounding/dependencies/springboot-azure-managed-redis.md
-      version: "2.0.0"
+      version: "2.2.0"
 
   aks-istio:
     display_name: Azure AKS with Istio
@@ -265,7 +265,7 @@ standards:
         - istio-injection
     standard:
       path: grounding/dependencies/springboot-aks-istio.md
-      version: "2.0.0"
+      version: "2.2.0"
 
   azure-functions:
     display_name: Azure Function
@@ -287,7 +287,7 @@ standards:
         - DurableOrchestrationContext
     standard:
       path: grounding/dependencies/springboot-azure-function.md
-      version: "2.0.0"
+      version: "2.2.0"
 
   jvm-runtime:
     display_name: JVM Runtime Resiliency
@@ -354,7 +354,7 @@ assessment_domain_standards:
     display_name: Kubernetes Deployment Resiliency
     grounding_file: grounding/dependencies/kubernetes-deployment-resiliency.md
     standard_id: KUBERNETES-DEPLOYMENT-RESILIENCY
-    version: "1.0.0"
+    version: "1.1.0"
     assessment_domain: deployment_configuration
     activate_when:
       scope_status: enabled

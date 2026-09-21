@@ -258,3 +258,6 @@ completion_validation:
   - Verify missing deployed-topology evidence is recorded as an evidence gap rather than a finding.
   - Verify no infrastructure finding or unapproved topology recommendation was created.
   - Verify consistency, retry, speculative execution, readiness, security, and privacy rules were applied.
+
+
+finding_qualification_policy: {policy_id: RESILIENCY-FINDING-QUALIFICATION, version: "1.0.0"}

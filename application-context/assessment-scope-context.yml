@@ -41,3 +41,9 @@ report_preferences:
     show_acceptance_criteria: false
     show_validation_evidence: false
     include_consolidated_validation_strategy: false
+
+  finding_classification_output:
+    include_resiliency_findings: true
+    include_non_resiliency_findings: true
+    report_section_order: [resiliency, non_resiliency]
+    priority_order_within_each_class: [P0, P1, P2, P3]
