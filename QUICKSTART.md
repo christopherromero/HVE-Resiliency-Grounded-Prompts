@@ -3,9 +3,38 @@ title: Quickstart
 description: How to run a governed resiliency assessment from start to finish.
 ---
 
+## Set up the workspace
+
+Run `tools/New-AssessmentWorkspace.ps1` from a framework clone. It prompts for the microservice path and the destination folder, pulls the latest framework content from the requested branch, creates the tracking scaffolding, and copies the microservice code into `source/`.
+
+```powershell
+# Prompts for the microservice path and the destination parent folder
+pwsh ./tools/New-AssessmentWorkspace.ps1
+
+# Fully specified, pulling the framework from the main branch
+pwsh ./tools/New-AssessmentWorkspace.ps1 `
+  -MicroservicePath C:\src\ocsp-subscriptionservice `
+  -DestinationRoot "C:\Phase 2\phase2-repos\OCSP\Assessments" `
+  -Branch main
+```
+
+Useful switches:
+
+| Switch | Effect |
+|--------|--------|
+| `-AssessmentName` | Names the new folder, defaults to the microservice folder name |
+| `-Branch` | Framework branch to pull, defaults to `feature/refined-context-and-schema` |
+| `-UseLocalFramework` | Copies from the local clone instead of cloning from GitHub |
+| `-SourceSubfolder customer-app` | Nests the code under `source/customer-app` |
+| `-IncludeSourceGitFolder` | Keeps the microservice `.git` folder |
+| `-ExcludeFromSource` | Overrides the excluded build folders, defaults to `.git`, `target`, `node_modules`, `.gradle`, `.idea`, `bin`, `obj` |
+| `-Force` | Writes into an existing, non-empty assessment folder |
+
+Open the new assessment folder in VS Code as the workspace root, then run the assessment.
+
 ## Run it
 
-1. Put the application under `source/`.
+1. Put the application under `source/`, if the setup script did not already do it.
 2. Open Chat and pick **Resiliency Assessment** from the agent dropdown.
 3. Send:
 
