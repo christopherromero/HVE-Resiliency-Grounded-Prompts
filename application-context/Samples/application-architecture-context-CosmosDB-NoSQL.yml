@@ -136,7 +136,7 @@ architecture_context:
 # The above rules help determine the appropriate operating model for Kafka based on the database deployment model.  
 
   authoritative_state:
-    dependency: cosmos-db
+    dependency: cosmosdb
     role: authoritative_business_state
     source:
       lifecycle_status: current
@@ -154,7 +154,7 @@ architecture_context:
   # The scenario rule must align with the definitions in kafka operational policy
   kafka_operating_model:
     scenario_policy_id: KAFKA-OPERATING-SCENARIO
-    expected_scenario_rule_id: KAFKA-SCENARIO-001
+    expected_scenario_rule_id: KAFKA-SCENARIO-002
     source:
       lifecycle_status: current
       scenario: active_standby
@@ -165,8 +165,8 @@ architecture_context:
         cluster_per_region: true
     target:
       lifecycle_status: approved_target
-      scenario: active_active
-      regional_processing_model: single_active
+      scenario: independent_regional_active_active
+      regional_processing_model: multi_active
       cluster_model:
         type: independent_regional_clusters
         stretched_cluster: false
@@ -272,7 +272,7 @@ architecture_context:
           - write region configuration
           - automatic failover configuration
 
-  external_side_effects:
+  external_side_effects:  # Need to document any potential external side effects of the application.
     present: false
     types: []
 
