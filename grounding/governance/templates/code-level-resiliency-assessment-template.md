@@ -5,6 +5,9 @@
 
 # Code-Level Resiliency Assessment
 
+<!-- content:report-header:start -->
+<!-- content:report-header:end -->
+
 ## Table of Contents
 
 - [Assessment Overview](#assessment-overview)

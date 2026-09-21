@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.10.0"
+  schema_version: "1.11.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -40,12 +40,14 @@ Sections 1 through 7 are readable customer-facing content. Section 8 is the trac
 - Repository scope
 - Current deployment
 - Approved target deployment
-- Migration context
+<!-- - Migration context (retired in 1.11.0; the compact report header block renders current and target deployment only) -->
 - Language and framework
 - Runtime platform
 - Report version
 
 Use `Not provided` when required metadata is unavailable.
+
+Application, assessment date, repository scope, current deployment, and approved target deployment are also rendered as visible one-line fields in the report header block. The remaining fields stay in the hidden metadata block.
 
 ### Deployment-state metadata contract
 
@@ -55,7 +57,7 @@ Resolve deployment metadata from the approved application architecture context:
 deployment_metadata_resolution:
   current_deployment_source: architecture_context.deployment_evolution.source
   approved_target_deployment_source: architecture_context.deployment_evolution.target
-  migration_context_source: architecture_context.deployment_evolution.transition
+  # migration_context_source: architecture_context.deployment_evolution.transition
 ```
 
 Rules:
@@ -63,6 +65,7 @@ Rules:
 - `Current deployment` is the source state marked `lifecycle_status: current`.
 - `Approved target deployment` is the future state marked `lifecycle_status: approved_target`.
 - Render both fields separately. Do not collapse them into one ambiguous deployment-model field.
+- Render each as a single line. Do not expand either field into a narrative paragraph.
 - Do not merge source and target region lists.
 - Do not report the target as current or the source as target.
 - Do not substitute Azure SQL, Kafka, or another dependency topology for the application deployment topology.
@@ -75,14 +78,14 @@ Render report metadata as a hidden HTML comment block between the `report-metada
 
 Follow the marker pattern already used by the governance block. The `report-metadata:start` and `report-metadata:end` markers are separate comments, and the metadata itself is one comment block between them. Never nest a comment inside another comment.
 
-Because the metadata is hidden, the readable title and its summary line carry document identification. They must state the application, and when the report is a priority-filtered view, they must state that and name the included priorities. This satisfies the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
+Because the metadata is hidden, the readable title, the report header block, and the filtered-view summary line carry document identification. They must state the application, and when the report is a priority-filtered view, they must state that and name the included priorities. This satisfies the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
 
 Metadata placement and visibility are presentation-only. Every required field is still rendered, and no field may be dropped.
 
 ## Required Assessment Overview content
 
 - Application and repository overview
-- Current deployment, approved target deployment, and migration-context summary
+<!-- - Current deployment, approved target deployment, and migration-context summary (retired in 1.11.0; rendered in the report header block) -->
 - Assessment themes with finding references
 - Approved Azure Shared Services reference-architecture table, rendered from
   REFERENCE_ARCHITECTURE_REGISTRY, or the no-registry statement when no approved
@@ -128,6 +131,47 @@ infrastructure is deployed correctly and must never be used as repository source
 evidence for a finding.
 ```
 
+## Report header block rendering contract
+
+The report header block is the compact identification block rendered immediately after the H1 title and before the table of contents. It replaces the former narrative Deployment Evolution subsection in Assessment Overview.
+
+Render these lines in order, each as its own bold line separated by a blank line:
+
+```markdown
+# Code-Level Resiliency Assessment
+
+**{Application}**
+
+**Assessment Date:** {YYYY-MM-DD}
+
+**Repo Scope:** {repository scope}
+
+**Current Deployment:** {one line from architecture_context.deployment_evolution.source}
+
+**Target Deployment:** {one line from architecture_context.deployment_evolution.target}
+```
+
+Rules:
+
+- Keep every field to one line. Do not render a paragraph, bullet list, or table in the header block.
+- **Current Deployment** uses only `architecture_context.deployment_evolution.source`.
+- **Target Deployment** uses only `architecture_context.deployment_evolution.target`.
+- Use `Not provided` when a field is unavailable.
+- Do not add fields to the header block. Language, framework, runtime platform, and report version stay in the hidden report-metadata block.
+- Assessment Overview must not repeat Application or Repository scope, because the header block carries them. The remaining overview attributes are unaffected.
+- Assessment Overview must not render a Deployment Evolution subsection.
+- Wording may be polished, but state, region, and lifecycle meaning must not change. If source or target is missing or conflicting, state the limitation in the Assessment Overview and route it to architecture review.
+- Do not infer deployment state from repository configuration or dependency topology.
+
+Expected semantic rendering for this application:
+
+```text
+**Current Deployment:** Active-standby; West US active, East US reserved for disaster recovery.
+**Target Deployment:** Active-active across West US 2 and West US using the same application artifact.
+```
+
+<!-- Retired in 1.11.0; superseded by the report header block rendering contract.
+
 ## Deployment evolution rendering contract
 
 Assessment Overview must render these items in order:
@@ -145,6 +189,8 @@ Migration context: The assessment evaluates application code readiness for the a
 ```
 
 Wording may be polished, but state, region, and lifecycle meaning must not change. If source or target is missing or conflicting, state the limitation and route it to architecture review. Do not infer deployment state from repository configuration or dependency topology.
+
+-->
 
 ## Summary findings table columns
 
@@ -198,11 +244,11 @@ Priority
 
 ### Report title
 
-The report title is H1 and precedes section 1. The template carries a generic default title.
+The report title is H1 and precedes section 1. The template carries a generic default title. The report header block is rendered immediately after the title.
 
-When the report is a priority-filtered view, replace the default with a title that identifies the filtered scope, then follow it with a one-line summary naming the application, stating that the document is a priority-filtered view, and listing the included priorities.
+When the report is a priority-filtered view, replace the default with a title that identifies the filtered scope, then follow the header block with a one-line summary naming the application, stating that the document is a priority-filtered view, and listing the included priorities.
 
-The title and that summary line are the readable identification of the document, because report metadata is rendered as a hidden block at the end. Together they satisfy the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
+The title, the header block, and that summary line are the readable identification of the document, because report metadata is rendered as a hidden block at the end. Together they satisfy the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
 
 ### Heading hierarchy
 
@@ -543,7 +589,11 @@ schema_conformance:
   deployment_source_and_target_separated: true
   current_deployment_rendered_from_source: true
   approved_target_deployment_rendered_from_target: true
-  migration_context_rendered: true
+  report_header_block_rendered: true
+  report_header_block_fields_single_line: true
+  deployment_evolution_subsection_rendered: false
+  source_locator_notice_rendered: false
+  # migration_context_rendered: true
   target_reported_as_current: false
   source_reported_as_target: false
   source_and_target_regions_merged: false
@@ -566,9 +616,9 @@ Rules:
 - Cross-references to excluded findings must remain identifiable as omitted references and must not be silently renumbered or reassigned.
 - Display IDs must remain deterministic from the complete authoritative finding set. Do not renumber selected findings merely because other priorities are omitted.
 - Evidence gaps and verified controls follow their independent inclusion preferences. They are not selected by remediation priority unless an authoritative priority exists.
-- The report title and metadata must identify the document as a filtered view. Because report metadata is rendered as a hidden block at the end, the readable title and its summary line must carry this identification.
+- The report title and metadata must identify the document as a filtered view. Because report metadata is rendered as a hidden block at the end, the readable title, the report header block, and the filtered-view summary line must carry this identification.
 - Assessment Overview must list included priorities, omitted priorities, context path/version, and the authoritative Step 2 and Step 3A artifact paths.
-- Filtering must not remove or alter the separate Current deployment, Approved target deployment, and Migration context fields.
+- Filtering must not remove or alter the separate Current Deployment and Target Deployment header-block fields.
 - The report must state that omitted priorities remain in the authoritative assessment and remediation plan.
 - Filtered counts must reconcile to filtered sections and the filtered Full Finding Matrix. Do not label filtered counts as total assessment counts.
 - A filtered report must not claim full-schema coverage of omitted priorities. Schema conformance evaluates the selected report scope.
@@ -617,11 +667,17 @@ Allowed snapshot types:
 - `source_drop`
 - `unknown`
 
+<!-- Retired in 1.11.0; the Assessment Overview no longer carries a Source Locator Notice subsection.
+
 Required Assessment Overview notice:
 
 > Source line numbers are advisory and identify the location observed in the assessed snapshot. Repository path, symbol, exact source excerpt, and source fingerprint are the primary evidence locators. The assessment snapshot may be a Git revision, workspace snapshot, uploaded archive, or source drop. Git metadata is optional.
 
-For non-Git snapshots, render the snapshot type, identifier, provenance, and material limitations. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
+-->
+
+Assessment Overview must not render a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative. Snapshot identity stays in the Assessment Overview attribute table, and locator semantics stay with each finding's source locator.
+
+For non-Git snapshots, render the snapshot type, identifier, and provenance in each finding's source locator, and state a material limitation only where it affects that evidence. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
 
 <!-- Add conformance checks:
 
@@ -643,7 +699,7 @@ Large reports must be assembled in bounded units rather than through one unbound
 1. Read and validate all authoritative inputs.
 2. Freeze report scope, selected findings, display IDs, categories, and change mappings.
 3. Create the assembly manifest.
-4. Initialize the final report with the governance block, the assembly manifest, the title, and the table of contents.
+4. Initialize the final report with the governance block, the assembly manifest, the title, the report header block, and the table of contents.
 5. Append top-level sections in schema order.
 6. Append one complete detailed finding at a time.
 7. Append the Full Finding Matrix, Standards Alignment, and Implementation Roadmap.

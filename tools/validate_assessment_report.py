@@ -3,6 +3,8 @@ from pathlib import Path
 import sys,re
 secs=[('assessment-overview', 'Assessment Overview'), ('resiliency-recommendations', 'Resiliency-Focused Recommendations'), ('non-resiliency-recommendations', 'Non-Resiliency-Focused Recommendations'), ('evidence-gap-analysis', 'Repository and IaC Evidence Gap Analysis'), ('full-finding-matrix', 'Full Finding Matrix'), ('standards-alignment', 'Standards Alignment'), ('implementation-roadmap', 'Implementation Roadmap')]
 t=Path(sys.argv[1]).read_text(); e=[]; ps=[]
+if t.count("<!-- content:report-header:start -->")!=1:e.append("report-header:start")
+if t.count("<!-- content:report-header:end -->")!=1:e.append("report-header:end")
 for sid,h in secs:
  m=f"<!-- section:{sid} -->"; hd=f"## {h}"; ps.append(t.find(m))
  if t.count(m)!=1:e.append(m)

@@ -283,6 +283,8 @@ Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the rep
 
 Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged, except for the H1 title, which the schema's report-title rule governs when the report is a filtered view. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
 
+Render the compact report header block between the `content:report-header` markers, following the schema's report header block rendering contract. Keep each field to one line, and do not render a Deployment Evolution subsection or repeat Application and Repository scope in Assessment Overview.
+
 Render the shared-service reference-architecture table from the schema's required Albertsons Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
 
 When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied and publishes reference-architecture links, add or override entries from it, because a supplied registry is the more current customer source. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow the table. When the schema carries no table and no registry is supplied, render the schema-required no-registry statement.
@@ -671,6 +673,8 @@ Add the selected and omitted priority lists, finding/change counts, and frozen s
 
 Render the Step 2 `assessment_snapshot` exactly as preserved by Step 3A. Do not reopen the workspace to manufacture Git metadata and do not treat non-Git snapshots as report errors.
 
+Render snapshot identity with each finding's source locator. Do not add a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative to Assessment Overview.
+
 Example non-Git rendering:
 
 ```markdown
@@ -706,7 +710,7 @@ Freezing applies to scope, identifiers, counts, and mappings. The assembly manif
 
 ### Bounded write sequence
 
-1. Initialize the final report with the governance block, the assembly manifest, the title, and the table of contents.
+1. Initialize the final report with the governance block, the assembly manifest, the title, the report header block, and the table of contents.
 2. Append Assessment Overview.
 3. Append detailed recommendations one complete finding at a time.
 4. Append Non-Resiliency Recommendations.

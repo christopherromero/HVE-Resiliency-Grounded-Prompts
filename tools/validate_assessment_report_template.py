@@ -7,6 +7,11 @@ errors=[]
 if text.count("# Code-Level Resiliency Assessment") != 1:
     errors.append("H1 title must occur exactly once")
 positions=[]
+header_start="<!-- content:report-header:start -->"; header_end="<!-- content:report-header:end -->"
+for value,label in [(header_start,"report header start marker"),(header_end,"report header end marker")]:
+    if text.count(value)!=1: errors.append(f"{label} must occur once: {value}")
+if text.find(header_start) < text.find("# Code-Level Resiliency Assessment"): errors.append("report header block must follow the H1 title")
+if text.find(header_end) > text.find("## Table of Contents"): errors.append("report header block must precede the table of contents")
 for sid,title in SECTIONS:
     marker=f"<!-- section:{sid} -->"; heading=f"## {title}"
     start=f"<!-- content:{sid}:start -->"; end=f"<!-- content:{sid}:end -->"
