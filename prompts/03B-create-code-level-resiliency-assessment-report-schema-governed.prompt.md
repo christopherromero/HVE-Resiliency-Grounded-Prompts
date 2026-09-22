@@ -129,12 +129,20 @@ Pipe-delimited placeholders in examples describe allowed values only. Generated 
 
 Render and validate source locators in this order:
 
-1. Repository path
+1. Repository path, including its line range
+2. Exact original source excerpt
+
+<!-- Disabled 2026-09-21 by customer report preference. The customer report no longer renders
+per finding symbol, source fingerprint, assessment snapshot, snapshot provenance, or advisory line
+range. Complete values remain authoritative in the Step 2 review artifact and the Step 3A plan
+artifact. Restore these list items to reinstate full locator rendering.
+
 2. Symbol or configuration/build element
 3. Exact original source excerpt
 4. Source fingerprint
 5. Assessment snapshot
 6. Original assessed line range, explicitly labeled advisory
+-->
 
 Line numbers are navigation metadata. Never present a line number alone as the authoritative locator, recalculate Step 2 line numbers, or treat line drift as evidence drift.
 
@@ -339,7 +347,7 @@ records.
 When a change contains mixed statuses:
 
 1. Render all generated code and configuration blocks.
-2. Render each generated target with its repository path and symbol.
+2. Render each generated target with its repository path.
 3. Render targeted-discovery information only for the blocked target.
 4. Do not replace generated proposals with one change-level
    "Targeted implementation discovery required" statement.
@@ -356,10 +364,13 @@ Illustrative proposal only.
 
 ## Required Rendering
 ### Target file and location
-- Repository path
+- Repository path, including its line range
+- Change ID
+
+<!-- Disabled 2026-09-21 by customer report preference.
 - Symbol
 - Original assessed lines
-- Change ID
+-->
 
 ### Original source requiring update
 Include exact Step 2 source excerpt.
@@ -673,7 +684,18 @@ Add the selected and omitted priority lists, finding/change counts, and frozen s
 
 Render the Step 2 `assessment_snapshot` exactly as preserved by Step 3A. Do not reopen the workspace to manufacture Git metadata and do not treat non-Git snapshots as report errors.
 
-Render snapshot identity with each finding's source locator. Do not add a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative to Assessment Overview.
+Do not add a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative to Assessment Overview.
+
+Render each piece of repository evidence with its repository path and line range only, followed by the exact Step 2 source excerpt:
+
+```markdown
+**File:** `src/main/java/example/Service.java`:142-156
+```
+
+<!-- Disabled 2026-09-21 by customer report preference. Restore this block to reinstate per
+finding symbol, fingerprint, snapshot, and advisory line rendering.
+
+Render snapshot identity with each finding's source locator.
 
 Example non-Git rendering:
 
@@ -691,7 +713,10 @@ Example non-Git rendering:
 **Original assessed lines (advisory):** 142-156
 ```
 
-Show a Git commit SHA only for `git_revision`. Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
+Show a Git commit SHA only for `git_revision`.
+-->
+
+Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
 
 ## Incremental Report Assembly and Recovery
 
@@ -737,6 +762,23 @@ Carry every suppressed identifier into Appendix A so nothing is lost. Suppressio
 
 Hidden governance, manifest, and conformance comment blocks retain full identifiers and are exempt.
 
+### Notes rendering
+
+Render `**Notes:**` as one short paragraph of at most three sentences, following the schema's
+Notes content rule. Cover only the main way the fix goes wrong if applied carelessly, how to undo
+it, and a genuinely blocking unresolved input.
+
+Do not restate complexity, wave, dependencies, release gates, approval requirements, or file
+counts, all of which are rendered elsewhere. Do not explain why testing detail is hidden. Do not
+emit the same sentence in more than one finding; a note that would be identical everywhere belongs
+in a scope declaration instead.
+
+<!-- Disabled 2026-09-21 by customer report preference. Notes previously rendered three labeled
+sub-bullets for Implementation, Validation, and Guardrail. Testing, validation, release-gate,
+dependency, and approval obligations remain authoritative in the Step 3A plan and are unchanged
+by this rendering preference.
+-->
+
 ### Finding write unit
 
 For each selected finding:
@@ -766,11 +808,15 @@ If the last completed unit or file integrity cannot be established, stop, set re
 
 ### Source rendering safeguards
 
-- Display source fingerprints in abbreviated form using the first 12 hexadecimal characters plus an ellipsis.
+- Do not display source fingerprints in the customer report.
 - Preserve complete fingerprints in Step 2 and Step 3A only.
 - The `Original source requiring update` fenced block must contain the exact Step 2 excerpt and nothing else.
 - Never insert language-specific `before` comments, labels, IDs, line annotations, or synthetic ellipses inside original-source blocks.
 - Place all explanatory labels outside code fences.
+
+<!-- Disabled 2026-09-21 by customer report preference.
+- Display source fingerprints in abbreviated form using the first 12 hexadecimal characters plus an ellipsis.
+-->
 
 ### Final validation
 

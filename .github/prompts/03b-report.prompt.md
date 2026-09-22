@@ -57,7 +57,11 @@ Use the incremental assembly and recoverable-write protocol in the authoritative
 
 Freeze the report manifest before writing. Append bounded sections and one complete finding at a time. Use stable invisible markers and resume after the last verified completed unit following a recoverable request error. Do not restart report planning, duplicate completed content, or change IDs, counts, priorities, categories, or scope.
 
-Abbreviate source fingerprints in the customer report. Preserve exact Step 2 source excerpts without adding comments or labels inside original-source code blocks. Reopen and validate the final report before claiming completion.
+Preserve exact Step 2 source excerpts without adding comments or labels inside original-source code blocks. Reopen and validate the final report before claiming completion.
+
+<!-- Disabled 2026-09-21 by customer report preference.
+Abbreviate source fingerprints in the customer report.
+-->
 
 
 ## Resiliency and non-resiliency finding classification contract

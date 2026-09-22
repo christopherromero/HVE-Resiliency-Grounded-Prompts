@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.12.0"
+  schema_version: "1.13.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -316,11 +316,44 @@ Emit fields in this order:
 - `**File:** {path}:{startLine}-{endLine}`
 - a `// before` fenced code block showing current state
 - `**Fix:**` then one or more fenced code blocks of the proposal
+- `**Notes:**` one short paragraph, at most three sentences
+
+<!-- Disabled 2026-09-21 by customer report preference. The three sub-bullet structure produced
+repetition and a wall of text. Restore this line to reinstate the previous structure.
+
 - `**Notes:**` sub-bullets (`Implementation`, `Validation`, `Guardrail`)
+-->
 - `<span style="font-size: 14px;">**Standards reference:** {grounded standard name and version} — `{grounding file path}`</span>`, using `[title](url)` only when the grounded standard publishes an external URL for the cited control
 
 Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority). Apply the
 same display ID everywhere, including cross-references.
+
+#### Notes content
+
+Render `**Notes:**` as one short paragraph of at most three sentences. Include only
+information a reader cannot get from elsewhere in the report:
+
+1. The main way this fix goes wrong if applied carelessly, and the specific choice that avoids it
+2. How to undo the change
+3. An unresolved input, only when one genuinely blocks a target
+
+Do not restate anything already rendered in another field or table:
+
+- Complexity, wave, and dependencies appear in the Implementation Roadmap tables
+- Release gates appear in the priority summary table
+- Approval requirements appear in the approval boundary
+- File counts, and any sentence explaining why testing detail is hidden, are omitted entirely
+
+Never repeat the same sentence across findings. When a note would be identical for
+every finding, it belongs in a scope declaration, not in each finding.
+
+<!-- Disabled 2026-09-21 by customer report preference. Previously the Notes section carried
+three labeled sub-bullets. The Validation sub-bullet rendered the same sentence in every
+finding and the Guardrail sub-bullet grew past one thousand characters. Testing, validation,
+release-gate, dependency, and approval obligations remain authoritative in the Step 3A plan and
+are unchanged by this rendering preference.
+-->
+
 ### Internal identifier suppression in report body
 
 The display ID is the only finding identifier permitted in the readable report body.
@@ -333,7 +366,7 @@ Apply these substitutions:
 - Express change dependencies through display IDs, for example `Depends on P0-002`.
 - State acceptance criteria and test obligations in prose rather than by test ID.
 - Describe an open question, evidence gap, or targeted-discovery item by its substance rather than its identifier.
-- Render repository evidence through its path, symbol, and exact excerpt rather than its evidence ID, because evidence IDs embed the Step 2 finding ID.
+- Render repository evidence through its path and exact excerpt rather than its evidence ID, because evidence IDs embed the Step 2 finding ID.
 - Cite the priority policy ID and version in the finding. Resolve the priority rule ID in Appendix A.
 - Omit the `Cross-refs` notes sub-bullet from the body. Its content belongs in Appendix A.
 
@@ -369,6 +402,8 @@ Every repository source, configuration, build, or test target must have exactly 
 
 Narrative instructions are not code. Text such as `Bind the properties`, `Persist stable identity`, `Add a lease`, or `Use a durable outbox` must not satisfy the illustrative-code field by itself.
 
+This list states what the Step 3A proposal record must contain. It is not a rendering list. Do not render the target symbol or the evidence ID in the customer report.
+
 #### Targeted discovery required
 
 `targeted_discovery_required` requires:
@@ -401,9 +436,12 @@ Label every individual illustrative code proposal:
 > Illustrative proposal only. 
 
 ## Target file and location
-- Repository path
+- Repository path, including its line range
+
+<!-- Disabled 2026-09-21 by customer report preference.
 - Symbol
 - Original assessed lines
+-->
 
 ## Finding classifications
 
@@ -653,13 +691,20 @@ The report must not require or imply that the assessed folder is a Git repositor
 
 Render source locators in this order:
 
-1. Repository path
+1. Repository path, including its line range
+
+<!-- Disabled 2026-09-21 by customer report preference. The customer report no longer renders
+per finding symbol, source fingerprint, assessment snapshot, snapshot provenance, advisory line
+range, or evidence ID. Complete values remain authoritative in the Step 2 review artifact and the
+Step 3A plan artifact. Restore these list items to reinstate full locator rendering.
+
 2. Symbol or configuration/build element
 3. Source fingerprint
 4. Assessment snapshot type and identifier
 5. Git commit SHA only when snapshot type is `git_revision`
 6. Original assessed lines, labeled advisory
 7. Evidence ID
+-->
 
 Allowed snapshot types:
 
@@ -679,7 +724,14 @@ Required Assessment Overview notice:
 
 Assessment Overview must not render a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative. Snapshot identity stays in the Assessment Overview attribute table, and locator semantics stay with each finding's source locator.
 
+<!-- Disabled 2026-09-21 by customer report preference. Per finding snapshot rendering is
+suppressed; snapshot identity remains in the Assessment Overview attribute table and in the
+authoritative Step 2 and Step 3A artifacts.
+
 For non-Git snapshots, render the snapshot type, identifier, and provenance in each finding's source locator, and state a material limitation only where it affects that evidence. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
+-->
+
+For non-Git snapshots, state a material limitation only where it affects that specific evidence. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.
 
 <!-- Add conformance checks:
 
@@ -825,13 +877,19 @@ If report integrity cannot be proven, stop with conformance failed, preserve the
 
 #### Fingerprint display
 
-Authoritative artifacts retain complete source fingerprints. In the customer report display only the algorithm and first 12 hexadecimal characters followed by an ellipsis, for example:
+Authoritative artifacts retain complete source fingerprints. The customer report does not display source fingerprints.
+
+<!-- Disabled 2026-09-21 by customer report preference. Restore this rule to reinstate
+abbreviated fingerprint rendering in the customer report.
+
+In the customer report display only the algorithm and first 12 hexadecimal characters followed by an ellipsis, for example:
 
 ```text
 sha256:12ab34cd56ef...
 ```
 
 The abbreviated report value must not be used for programmatic validation.
+-->
 
 #### Exact original source blocks
 
