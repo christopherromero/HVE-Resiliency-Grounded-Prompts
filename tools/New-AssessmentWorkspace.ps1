@@ -62,10 +62,9 @@
     Prompts for the microservice path and destination, then builds the workspace.
 
 .EXAMPLE
-    .\New-AssessmentWorkspace.ps1 -MicroservicePath C:\src\ocsp-subscriptionservice `
-        -DestinationRoot "C:\Phase 2\phase2-repos\OCSP\Assessments" -Branch main
+    .\New-AssessmentWorkspace.ps1 -MicroservicePath '<microservice repository path>' -DestinationRoot '<assessment workspaces parent folder>' -Branch main
 
-    Builds C:\Phase 2\phase2-repos\OCSP\Assessments\ocsp-subscriptionservice from the main branch.
+    Builds '<assessment workspaces parent folder>\<microservice folder name>' from the main branch.
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(

@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.13.0"
+  schema_version: "1.14.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -85,7 +85,7 @@ Metadata placement and visibility are presentation-only. Every required field is
 
 ## Required Assessment Overview content
 
-- Application and repository overview
+- Opening narrative and the compact overview bullets
 <!-- - Current deployment, approved target deployment, and migration-context summary (retired in 1.11.0; rendered in the report header block) -->
 - Assessment themes with finding references
 - Approved Azure Shared Services reference-architecture table, rendered from
@@ -159,7 +159,7 @@ Rules:
 - **Target Deployment** uses only `architecture_context.deployment_evolution.target`.
 - Use `Not provided` when a field is unavailable.
 - Do not add fields to the header block. Language, framework, runtime platform, and report version stay in the hidden report-metadata block.
-- Assessment Overview must not repeat Application or Repository scope, because the header block carries them. The remaining overview attributes are unaffected.
+- Assessment Overview must not repeat Application or Repository scope, because the header block carries them. The opening overview bullets are unaffected.
 - Assessment Overview must not render a Deployment Evolution subsection.
 - Wording may be polished, but state, region, and lifecycle meaning must not change. If source or target is missing or conflicting, state the limitation in the Assessment Overview and route it to architecture review.
 - Do not infer deployment state from repository configuration or dependency topology.
@@ -169,6 +169,38 @@ Expected semantic rendering for this application:
 ```text
 **Current Deployment:** Active-standby; West US active, East US reserved for disaster recovery.
 **Target Deployment:** Active-active across West US 2 and West US using the same application artifact.
+```
+
+## Assessment Overview opening contract
+
+Assessment Overview opens directly with one or two short narrative paragraphs describing the application and what was assessed, followed by three to five bullets and nothing more. Do not render an `Application and Repository Overview` subsection heading or any other subsection heading above this content; the opening narrative and bullets sit immediately under the Assessment Overview section heading.
+
+Render the bullets in this order, omitting any bullet whose facts are unavailable or not applicable:
+
+1. **Stack and runtime:** language, framework, and runtime platform.
+2. **Assessment basis:** assessment snapshot type and identifier, approved architecture context path and version, and the enabled assessment domains.
+3. **Coverage:** standards evaluated, controls evaluated, verified and conditional finding counts, and confirmed dependencies.
+4. **Operating scenario:** rendered only when an applicable dependency standard defines an operating scenario, following the applicable operating-scenario reporting contract, such as Kafka scenario reporting.
+
+Rules:
+
+- Keep each bullet to one line. Do not expand a bullet into a table, a nested list, or a paragraph.
+- Do not render an `Assessment Attributes` subsection, an attribute table, an `Operating Scenario` subsection, or a `Kafka Operating Scenario` subsection anywhere in the report.
+- Do not repeat Application, Repository scope, Current Deployment, or Target Deployment, because the report header block carries them.
+- Attribute detail beyond these bullets is intentionally omitted from the report. It remains authoritative and unchanged in the Step 1 inventory, the Step 2 review, and the Step 3A remediation plan.
+- Omitting detail is a presentation operation only. It must not change finding identity, status, severity, priority, evidence, control mapping, change mapping, or implementation scope.
+
+Expected semantic rendering:
+
+```markdown
+## Assessment Overview
+
+{One or two short paragraphs describing the application and what was assessed.}
+
+- **Stack and runtime:** Java 17, Spring Boot servlet web; JVM on AKS container per approved architecture context.
+- **Assessment basis:** Workspace snapshot `{identifier}`; architecture context `application-context/application-architecture-context.yml` v3.0.0 (approved); application code and application configuration enabled.
+- **Coverage:** 1 master and 5 dependency standards, 181 control results across 144 applicable controls, 23 verified and 0 conditional findings; confirmed dependencies are Azure SQL, Confluent Kafka, HTTP clients, Azure API Management, and the JVM runtime.
+- **Operating scenario:** Kafka `active_standby` from approved architecture context v3.0.0; single-active regional processing with non-idempotent external side effects and no Kafka-backed authoritative state. Classifies application behavior only; deployed Kafka topology was not validated.
 ```
 
 <!-- Retired in 1.11.0; superseded by the report header block rendering contract.
@@ -208,22 +240,31 @@ Every detailed finding must include:
 
 1. Finding ID and title
 2. Priority
-3. Priority policy ID and version. The rule ID resolves in Appendix A.
-4. Severity
-5. Resiliency relationship
-6. Finding status
-7. Issue
-8. What the recommendation solves
-9. Active-active impact or operational/quality impact
-10. Recommended fix
-11. Repository evidence
-12. Target file and location
-13. Original source requiring update
-14. Illustrative proposed implementation
-15. Validation requirements
-16. Dependencies
-17. Notes
-18. Standards reference, when supported
+3. Resiliency relationship
+4. Issue
+5. What the recommendation solves
+6. Active-active impact or operational/quality impact
+7. Recommended fix
+8. Repository evidence
+9. Target file and location
+10. Original source requiring update
+11. Illustrative proposed implementation
+12. Validation requirements
+13. Dependencies
+14. Notes
+15. Standards reference, when supported
+16. Conditional status, only when the finding status is conditional
+
+<!-- Disabled 2026-09-22 by customer report preference. Severity duplicated the priority risk
+label, finding status was `Verified finding` on every rendered finding, and the priority policy ID
+and version were identical across findings. All three remain authoritative and unchanged in the
+Step 2 review and the Step 3A plan. The priority rule ID still resolves in Appendix A. Restore
+these list items to reinstate the previous per finding rendering.
+
+- Priority policy ID and version. The rule ID resolves in Appendix A.
+- Severity
+- Finding status
+-->
 
 Group findings primarily by governance priority.
 
@@ -309,6 +350,7 @@ Emit fields in this order:
 
 - `**Priority: {P0|P1|P2|P3} - {risk label}**`
 - `**Resiliency Related:** {Yes|No}`
+- `**Conditional finding:** {conditions and evidence required}`, rendered only when the Step 2 finding status is conditional
 - `**Issue:**`
 - `**What does this solve:**`
 - `**Resiliency Impact:**` (or `**Impact:**` for non-resiliency findings)
@@ -323,7 +365,31 @@ repetition and a wall of text. Restore this line to reinstate the previous struc
 
 - `**Notes:**` sub-bullets (`Implementation`, `Validation`, `Guardrail`)
 -->
-- `<span style="font-size: 14px;">**Standards reference:** {grounded standard name and version} — `{grounding file path}`</span>`, using `[title](url)` only when the grounded standard publishes an external URL for the cited control
+- `**Standards reference:** {grounded standard name and version} — {grounding file path}`, following the standards reference content contract
+
+Do not render a severity field, a finding status field, or a priority policy ID and version in the finding body. Severity duplicates the priority risk label, a rendered finding is verified unless the conditional field says otherwise, and the priority policy identity is declared once above the Appendix A table while the priority rule ID resolves in that table.
+
+<!-- Disabled 2026-09-22 by customer report preference. Restore this line to reinstate the
+combined severity, finding status, and priority policy line.
+
+- `**Severity:** {severity} | **Finding status:** {status} | **Priority policy:** {policy ID} v{version}`
+-->
+
+#### Standards reference content
+
+Render the standards reference as the finding's final line, as plain Markdown. Do not wrap it in a `<span>` or any other HTML element, and do not apply inline font sizing.
+
+Cite only the grounded standards that define the controls this finding violates. Do not restate the full set of standards evaluated by the assessment; that inventory belongs in Standards Alignment.
+
+When a finding violates controls from more than one grounded standard, cite each contributing standard once, separated by `;`.
+
+Render the grounding file path as inline code. Use a `[title](url)` link only when the grounded standard publishes an external URL for the cited control.
+
+Expected semantic rendering:
+
+```markdown
+**Standards reference:** Spring Boot Confluent Kafka dependency standard v3.1.0 — `grounding/dependencies/springboot-confluent-kafka.md`
+```
 
 Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority). Apply the
 same display ID everywhere, including cross-references.
@@ -367,7 +433,7 @@ Apply these substitutions:
 - State acceptance criteria and test obligations in prose rather than by test ID.
 - Describe an open question, evidence gap, or targeted-discovery item by its substance rather than its identifier.
 - Render repository evidence through its path and exact excerpt rather than its evidence ID, because evidence IDs embed the Step 2 finding ID.
-- Cite the priority policy ID and version in the finding. Resolve the priority rule ID in Appendix A.
+- Declare the priority policy ID and version once above the Appendix A table. Resolve the priority rule ID per finding in Appendix A.
 - Omit the `Cross-refs` notes sub-bullet from the body. Its content belongs in Appendix A.
 
 Record every suppressed identifier in Appendix A so traceability is preserved rather than lost. Suppression is presentation-only and must not change findings, priorities, evidence, control mappings, change mappings, or validation obligations.
@@ -562,6 +628,7 @@ Columns:
 
 Rules:
 
+- Declare the priority policy ID and version once, immediately above the table, because the finding body no longer carries them.
 - Use `—` for any cell with no applicable value.
 - When two findings share one remediation change, render the same change ID on both rows so consolidation is visible.
 - Reproduce identifiers exactly as they appear in the authoritative Step 2 and Step 3A artifacts. Do not renumber, abbreviate, or invent identifiers.
@@ -630,6 +697,21 @@ schema_conformance:
   approved_target_deployment_rendered_from_target: true
   report_header_block_rendered: true
   report_header_block_fields_single_line: true
+  overview_bullets_rendered: true
+  overview_bullet_count_within_three_to_five: true
+  overview_bullets_single_line: true
+  overview_subsection_heading_rendered: false
+  finding_severity_field_rendered: false
+  finding_status_field_rendered: false
+  finding_priority_policy_field_rendered: false
+  conditional_findings_declare_conditions: true
+  standards_reference_html_wrapper_rendered: false
+  standards_reference_limited_to_violated_standards: true
+  priority_policy_declared_once_in_appendix_a: true
+  assessment_attributes_subsection_rendered: false
+  assessment_attributes_table_rendered: false
+  operating_scenario_subsection_rendered: false
+  operating_scenario_table_rendered: false
   deployment_evolution_subsection_rendered: false
   source_locator_notice_rendered: false
   # Retired in 1.11.0. Superseded by report_header_block_rendered. Do not reintroduce.
@@ -643,7 +725,11 @@ schema_conformance:
 
 ### Kafka scenario reporting
 
-When Kafka is applicable, Assessment Overview must include scenario, source, policy version/rule, validation status, architecture confirmation, processing model, regional processing model, external side effects, and Kafka-backed/local state. Allowed scenarios: `active_standby`, `independent_regional_active_active`, `database_independent_kafka`, and `unresolved`. Database-independent must not be presented as automatically stateless or multi-active.
+When Kafka is applicable, render the scenario as the single **Operating scenario** bullet defined by the Assessment Overview opening contract. The bullet must state the scenario, its source, the regional processing model, and the authoritative state position, and it must close with the one-line caveat that the scenario classifies application behavior only and that deployed Kafka topology was not validated. When the scenario is inferred rather than supplied by approved context, or when it is `unresolved`, the bullet must also state that architecture confirmation is required.
+
+Allowed scenarios: `active_standby`, `independent_regional_active_active`, `database_independent_kafka`, and `unresolved`. Database-independent must not be presented as automatically stateless or multi-active.
+
+Do not render a `Kafka Operating Scenario` subsection or scenario table. Policy version and rule ID, policy validation status, processing-model classification, external-side-effect classification, conditional assumptions, and unresolved infrastructure facts are intentionally omitted from the report and remain authoritative in the Step 1 inventory and the Step 2 review.
 
 ### Priority-filtered report views
 
@@ -722,10 +808,10 @@ Required Assessment Overview notice:
 
 -->
 
-Assessment Overview must not render a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative. Snapshot identity stays in the Assessment Overview attribute table, and locator semantics stay with each finding's source locator.
+Assessment Overview must not render a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative. Snapshot identity stays in the opening **Assessment basis** bullet, and locator semantics stay with each finding's source locator.
 
 <!-- Disabled 2026-09-21 by customer report preference. Per finding snapshot rendering is
-suppressed; snapshot identity remains in the Assessment Overview attribute table and in the
+suppressed; snapshot identity remains in the Assessment Overview opening bullets and in the
 authoritative Step 2 and Step 3A artifacts.
 
 For non-Git snapshots, render the snapshot type, identifier, and provenance in each finding's source locator, and state a material limitation only where it affects that evidence. Do not display `commit SHA: not available` as an error or evidence defect. If snapshot type is unknown, state the limitation while preserving the remaining source evidence.

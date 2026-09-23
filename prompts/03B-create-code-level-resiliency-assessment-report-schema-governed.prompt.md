@@ -293,6 +293,10 @@ Write content only between the template's matching `:start` and `:end` markers. 
 
 Render the compact report header block between the `content:report-header` markers, following the schema's report header block rendering contract. Keep each field to one line, and do not render a Deployment Evolution subsection or repeat Application and Repository scope in Assessment Overview.
 
+Open Assessment Overview following the schema's Assessment Overview opening contract. Render one or two short narrative paragraphs, then three to five one-line bullets covering stack and runtime, assessment basis, coverage, and the operating scenario when one applies. Do not render an `Application and Repository Overview` subsection heading above them, and do not render an `Assessment Attributes` subsection, an attribute table, or a scenario subsection or table. Attribute and scenario detail beyond those bullets stays authoritative in the Step 1, Step 2, and Step 3A artifacts and is intentionally omitted from the report.
+
+Render each detailed finding using the schema's field order. Do not render a severity field, a finding status field, or a priority policy ID and version in the finding body; render a `**Conditional finding:**` field only when the Step 2 finding status is conditional, and declare the priority policy ID and version once above the Appendix A table. Render the standards reference as the finding's final line in plain Markdown with no `<span>` or inline font sizing, citing only the grounded standards that define the controls the finding violates rather than the full evaluated standards set.
+
 Render the shared-service reference-architecture table from the schema's required Albertsons Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
 
 When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied and publishes reference-architecture links, add or override entries from it, because a supplied registry is the more current customer source. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow the table. When the schema carries no table and no registry is supplied, render the schema-required no-registry statement.
@@ -308,7 +312,7 @@ Do not reproduce or reinterpret the schema contract from memory. For each requir
 - Preserve the section even when authoritative content is unavailable.
 - Use the schema-defined unavailable-content behavior.
 - Render only authoritative Step 1, Step 2, and Step 3A facts.
-- Preserve Step 2 finding status and severity and Step 3A priority and change mapping.
+- Preserve Step 2 finding status and severity and Step 3A priority and change mapping. Preservation is a data obligation, not a rendering obligation; the schema governs which of these fields the report body renders.
 - Apply the frozen report selection consistently to detailed findings, summary, matrix, and roadmap.
 - Render exact Step 2 source excerpts and Step 3A illustrative proposals according to their target-level status.
 - Display source locators using the authority order defined in this prompt.
@@ -544,10 +548,20 @@ Before completing:
   generated target-level proposals.
 26. Verify blocked implementation adapters are distinguished from
   generated application abstractions and tests.
+27. Verify Assessment Overview opens with narrative plus three to five one-line
+  bullets, with no `Application and Repository Overview` subsection heading and
+  no `Assessment Attributes` or operating-scenario subsection or table.
+28. Verify no finding body renders a severity field, a finding status field, or a
+  priority policy ID and version, and that the priority policy is declared once
+  above the Appendix A table.
+29. Verify every standards reference is plain Markdown with no HTML wrapper and
+  cites only the standards whose controls the finding violates.
 
 ### Kafka scenario reporting
 
-When Kafka is applicable, render the Step 1 scenario declaration, provenance, policy validation, processing model, regional processing model, external-side-effect classification, Kafka-backed state, conditional assumptions, architecture confirmation requirement, and unresolved infrastructure facts exactly as required by `REPORT_SCHEMA` and the authoritative Kafka policy.
+When Kafka is applicable, render the Step 1 scenario as the single **Operating scenario** bullet in the Assessment Overview opening bullets, exactly as required by `REPORT_SCHEMA`. State the scenario, its source, the regional processing model, and the authoritative state position, close with the caveat that the scenario classifies application behavior only, and add the architecture-confirmation statement when the scenario is inferred or `unresolved`.
+
+Do not render a `Kafka Operating Scenario` subsection or scenario table. Policy version and rule ID, validation status, processing-model and external-side-effect classification, conditional assumptions, and unresolved infrastructure facts remain authoritative in the Step 1 and Step 2 artifacts and are intentionally omitted from the report.
 
 Do not recreate scenario inference in Step 3B. Keep repository-observed interactions and supplied architecture context separate. Do not present context as source-code evidence or as proof of deployed infrastructure.
 

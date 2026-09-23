@@ -12,11 +12,17 @@ Run `tools/New-AssessmentWorkspace.ps1` from a framework clone. It prompts for t
 pwsh ./tools/New-AssessmentWorkspace.ps1
 
 # Fully specified, pulling the framework from the main branch
+# Replace both placeholders with paths on your own machine
+$microservicePath = '<path to the microservice repository you are assessing>'
+$assessmentsRoot = '<parent folder that holds your assessment workspaces>'
+
 pwsh ./tools/New-AssessmentWorkspace.ps1 `
-  -MicroservicePath C:\src\ocsp-subscriptionservice `
-  -DestinationRoot "C:\Phase 2\phase2-repos\OCSP\Assessments" `
+  -MicroservicePath $microservicePath `
+  -DestinationRoot $assessmentsRoot `
   -Branch main
 ```
+
+Neither path is fixed by the framework. `$microservicePath` points at the code you want assessed, `$assessmentsRoot` is any folder you can write to, and the script creates `$assessmentsRoot\<AssessmentName>` under it. Keep the quotes so paths containing spaces work.
 
 Useful switches:
 
