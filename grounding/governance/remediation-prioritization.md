@@ -1,12 +1,12 @@
 ---
 document_type: remediation_prioritization_policy
-schema_version: "1.1"
+schema_version: "1.1.0"
 policy_id: AA-REMEDIATION-PRIORITY
-policy_version: "1.1.0"
+policy_version: "1.2.0"
 last_updated: "2026-09-20"
 owner: Cloud Architecture Team
 lifecycle_status: proposed
-supersedes: "AA-REMEDIATION-PRIORITY 1.0.0"
+supersedes: "AA-REMEDIATION-PRIORITY 1.1.0"
 applies_to:
   - springboot-active-active-code-assessment
   - active-active-remediation-planning
@@ -45,6 +45,67 @@ default_rules:
   prerequisite_priority_inheritance: false
   standalone_test_finding_inherits_behavior_priority: false
   behavior_validation_tests_inherit_behavior_priority: true
+
+cache_rules:
+
+  default_priority: P3
+
+  applies_to:
+    - cache_size
+    - cache_eviction
+    - cache_staleness
+
+  elevate_to:
+
+    P2:
+      - material_degradation_of_recovery
+
+    P1:
+      - customer_visible_incorrect_processing
+
+    P0:
+      - failover_failure
+      - memory_driven_outage
+      - loss_of_accepted_work
+
+graceful_transition_rules:
+
+  default_priority: P2
+
+  applies_to:
+    - graceful_shutdown
+    - executor_drain
+    - termination_drain
+
+  elevate_to:
+
+    P1:
+      - repeated_duplicate_processing
+
+    P0:
+      - duplicate_payment
+      - unrecoverable_state_divergence
+      - loss_of_accepted_work
+
+backpressure_rules:
+
+  default_priority: P2
+
+  applies_to:
+    - executor_queue_bounds
+    - rejection_policy
+    - backpressure
+
+  elevate_to:
+
+    P1:
+      - service_instability
+
+    P0:
+      - lost_accepted_work
+      - memory_driven_outage
+      - promotion_failure
+
 
 excluded_work:
   - compliant_controls
@@ -333,9 +394,20 @@ Compound findings that combine startup availability with schema governance shoul
 
 ## 15. Non-resiliency prioritization
 
-Classification and priority are independent dimensions. A non-resiliency finding may be P0 or P1 when its own security, correctness, contract, or data impact meets a numbered rule.
+Non-resiliency findings are limited to P2 and P3.
 
-Do not force a critical correctness or security defect to P2 solely because it is not resiliency-related.
+#### P2-NR-001: Material non-resiliency remediation
+
+Assign P2 when an evidence-backed security, correctness, contract, compatibility, performance, assessment-quality, or operational problem warrants planned remediation but does not establish the complete resiliency impact chain.
+
+#### P3-NR-001: Non-resiliency consistency or maintainability
+
+Assign P3 for logging-only improvement, telemetry enhancement, scheduled-run improvement, documentation, maintainability, readability, configuration consistency, or supplemental verification when no material impact requiring P2 is established.
+
+Rules:
+- Never assign P0 or P1 to a non-resiliency finding.
+- If a finding appears to satisfy P0 or P1, return it to resiliency-classification review.
+- Human override may move a non-resiliency finding only between P2 and P3.
 
 ## 16. Human override policy
 
@@ -357,7 +429,7 @@ An override does not change finding severity, classification, evidence, or compl
 priority:
   value: P1
   policy_id: AA-REMEDIATION-PRIORITY
-  policy_version: "1.1.0"
+  policy_version: "1.2.0"
   rule_id: P1-RCV-002
   secondary_rule_ids: []
   rationale: >
@@ -396,8 +468,11 @@ Before completing Step 3A, verify:
 - Compound findings are split when different root causes or priority characteristics would otherwise be hidden.
 - Severity was not used as the sole priority formula.
 - Human overrides are complete and auditable.
+- Resiliency findings use P0-P3.
+- Non-resiliency findings use P2-P3 only.
+- No non-resiliency finding appears in the P0 or P1 index.
 
-## 19. Migration guidance from version 1.0.0
+## 19. Migration guidance from version 1.1.0
 
 Re-evaluate existing plans using these corrections:
 

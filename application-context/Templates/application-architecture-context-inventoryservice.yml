@@ -11,8 +11,8 @@ architecture_context:
     repository_name: Inventory Service
     business_role: Inventory tracking
 
-    context_owner: Albertsons Ecommerce
-    approved_by: Albertsons
+    context_owner: Ecommerce
+    approved_by: Ecommerce
     approved_at: 2026-01-01
 
     lifecycle_status: approved

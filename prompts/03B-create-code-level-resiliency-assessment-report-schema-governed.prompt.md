@@ -297,7 +297,7 @@ Open Assessment Overview following the schema's Assessment Overview opening cont
 
 Render each detailed finding using the schema's field order. Do not render a severity field, a finding status field, or a priority policy ID and version in the finding body; render a `**Conditional finding:**` field only when the Step 2 finding status is conditional, and declare the priority policy ID and version once above the Appendix A table. Render the standards reference as the finding's final line in plain Markdown with no `<span>` or inline font sizing, citing only the grounded standards that define the controls the finding violates rather than the full evaluated standards set.
 
-Render the shared-service reference-architecture table from the schema's required Albertsons Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
+Render the shared-service reference-architecture table from the schema's required Ecommerce Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
 
 When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied and publishes reference-architecture links, add or override entries from it, because a supplied registry is the more current customer source. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow the table. When the schema carries no table and no registry is supplied, render the schema-required no-registry statement.
 
@@ -848,7 +848,38 @@ Successful Step 3B completion requires a complete validated final report, not a 
 
 
 ## Resiliency and non-resiliency finding classification contract
-Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
 
 ### Phase-specific rule
-Render Resiliency-Focused Recommendations first and Non-Resiliency-Focused Recommendations second. Within each section render P0, P1, P2, P3. Include both classes in counts, matrix, roadmap, and traceability.
+Render Resiliency-Focused Recommendations first, ordered P0, P1, P2, P3. Render Non-Resiliency-Focused Recommendations second, ordered P2, P3 only. Do not render non-resiliency P0/P1 headings. If Step 3A contains non-resiliency P0/P1, fail conformance and route to Step 3A revision. Include both classes in counts, matrix, roadmap, and traceability.
+
+
+### Concise finding rendering mode
+
+Render customer-facing findings using concise mode.
+
+Target limits:
+- Finding <= 25 words
+- Impact <= 40 words
+- Architecture Context <= 35 words
+- Recommendation <= 50 words
+- Repository Evidence <= 3 lines
+
+Do not repeat the same information across sections.
+
+Section purpose:
+- Finding = what is wrong.
+- Impact = why it matters.
+- Architecture Context = target-state relevance.
+- Evidence = traceability only.
+- Recommendation = what should change.
+
+Suppress detailed implementation content:
+- change specifications
+- implementation steps
+- acceptance-test procedures
+- business-logic workflow details
+- selector information
+- verbose code discussion
+
+Preserve all findings, priorities, classifications, matrix entries, roadmap mappings, and Appendix A traceability.

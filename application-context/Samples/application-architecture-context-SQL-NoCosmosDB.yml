@@ -9,8 +9,8 @@ architecture_context:
     application_name: Ecommerce Platform  #update the application name
     repository_name: Inventory Service  #update the repository name
     business_role: Inventory tracking  #update the business role
-    context_owner: Albertsons Ecommerce  #update the context owner
-    approved_by: Albertsons  #update the approver
+    context_owner: Ecommerce  #update the context owner
+    approved_by: Ecommerce  #update the approver
     approved_at: 2026-01-01  #update the approval date
     lifecycle_status: approved
     version: "3.0.0"
@@ -249,7 +249,7 @@ architecture_context:
 
 
   shared_service_connectivity_contracts:
-    contract_version: "1.0.0"
+    contract_version: "1.1.0"
     default_assessment_state: target
     rules:
       - Connectivity model is distinct from operating model.
@@ -384,7 +384,7 @@ architecture_context:
   resiliency_assessment_context:
     qualification_policy:
       policy_id: RESILIENCY-FINDING-QUALIFICATION
-      version: "1.0.0"
+      version: "1.1.0"
       path: grounding/governance/resiliency-finding-qualification-policy.yml
     preserve_finding_classes: [resiliency, non_resiliency]
     report_section_order: [resiliency, non_resiliency]

@@ -106,7 +106,7 @@ implementation_scope:
   scope_resolution_source: authoritative_remediation_plan
   plan_artifact: <exact Step 3 plan path>
   plan_policy_id: AA-REMEDIATION-PRIORITY
-  plan_policy_version: "1.0.0"
+  plan_policy_version: "1.1.0"
   scope_fingerprint: <stable hash or deterministic identifier when available>
 ```
 
@@ -459,7 +459,7 @@ For every resolved change, record:
   priority:
     value: P0
     policy_id: AA-REMEDIATION-PRIORITY
-    policy_version: "1.0.0"
+    policy_version: "1.1.0"
     rule_id: P0-AA-003
   files_changed:
     - path: src/main/java/example/File.java
@@ -650,7 +650,7 @@ Rules:
 
 
 ## Resiliency and non-resiliency finding classification contract
-Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
 
 ### Phase-specific rule
 Implementation selectors may include either class. Do not reinterpret classification during implementation.
