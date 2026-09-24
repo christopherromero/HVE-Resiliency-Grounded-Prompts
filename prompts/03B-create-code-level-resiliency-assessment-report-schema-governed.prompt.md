@@ -754,7 +754,38 @@ Successful Step 3B completion requires a complete validated final report, not a 
 
 
 ## Resiliency and non-resiliency finding classification contract
-Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.0.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
 
 ### Phase-specific rule
-Render Resiliency-Focused Recommendations first and Non-Resiliency-Focused Recommendations second. Within each section render P0, P1, P2, P3. Include both classes in counts, matrix, roadmap, and traceability.
+Render Resiliency-Focused Recommendations first, ordered P0, P1, P2, P3. Render Non-Resiliency-Focused Recommendations second, ordered P2, P3 only. Do not render non-resiliency P0/P1 headings. If Step 3A contains non-resiliency P0/P1, fail conformance and route to Step 3A revision. Include both classes in counts, matrix, roadmap, and traceability.
+
+
+### Concise finding rendering mode
+
+Render customer-facing findings using concise mode.
+
+Target limits:
+- Finding <= 25 words
+- Impact <= 40 words
+- Architecture Context <= 35 words
+- Recommendation <= 50 words
+- Repository Evidence <= 3 lines
+
+Do not repeat the same information across sections.
+
+Section purpose:
+- Finding = what is wrong.
+- Impact = why it matters.
+- Architecture Context = target-state relevance.
+- Evidence = traceability only.
+- Recommendation = what should change.
+
+Suppress detailed implementation content:
+- change specifications
+- implementation steps
+- acceptance-test procedures
+- business-logic workflow details
+- selector information
+- verbose code discussion
+
+Preserve all findings, priorities, classifications, matrix entries, roadmap mappings, and Appendix A traceability.

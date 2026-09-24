@@ -249,7 +249,7 @@ architecture_context:
 
 
   shared_service_connectivity_contracts:
-    contract_version: "1.0.0"
+    contract_version: "1.1.0"
     default_assessment_state: target
     rules:
       - Connectivity model is distinct from operating model.
@@ -384,7 +384,7 @@ architecture_context:
   resiliency_assessment_context:
     qualification_policy:
       policy_id: RESILIENCY-FINDING-QUALIFICATION
-      version: "1.0.0"
+      version: "1.1.0"
       path: grounding/governance/resiliency-finding-qualification-policy.yml
     preserve_finding_classes: [resiliency, non_resiliency]
     report_section_order: [resiliency, non_resiliency]

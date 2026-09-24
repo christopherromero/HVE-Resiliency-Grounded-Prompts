@@ -2,6 +2,7 @@
 schema_version: 3.1.0
 document_type: application_architecture_context
 lifecycle_status: draft
+
 architecture_context:
   metadata:
     application_name: Replace with application name
@@ -12,6 +13,7 @@ architecture_context:
     approved_at: not_provided
     lifecycle_status: draft
     version: 3.1.0
+
   runtime_expectations:
     contract_version: 1.0.0
     canonical_key_source: dependency_standard_registry
@@ -59,6 +61,7 @@ architecture_context:
           registry_id: jvm-runtime
           path: grounding/dependencies/jvm-runtime-resiliency.md
           version: 1.0.0
+
   deployment_evolution:
     source:
       state_label: current_deployment
@@ -107,6 +110,7 @@ architecture_context:
       target_state_must_not_be_reported_as_current: true
       source_and_target_regions_must_not_be_merged: true
       source_target_difference_is_not_a_finding: true
+
   authoritative_state:
     dependency: none
     role: no_application_database
@@ -118,6 +122,7 @@ architecture_context:
       database_present: false
     reporting_rule: The application has no authoritative application database. Do not infer authoritative database
       state from Kafka topics, local memory, caches, or external systems.
+
   kafka_operating_model:
     scenario_policy_id: KAFKA-OPERATING-SCENARIO
     expected_scenario_rule_id: KAFKA-SCENARIO-003
@@ -163,6 +168,7 @@ architecture_context:
     reporting_rule: Describe this as database-independent Kafka. Single-active processing is the template default
       and must be confirmed from approved architecture evidence; application active-active deployment does not automatically
       mean Kafka multi-active processing.
+
   shared_service_operating_models:
     contract_version: 1.1.0
     authoritative_for: shared_service_target_operating_model
@@ -286,20 +292,27 @@ architecture_context:
         target:
           operating_model: not_applicable
           lifecycle_status: approved_target
+
   shared_service_connectivity_contracts:
-    contract_version: 1.0.0
+    contract_version: 1.1.0
     default_assessment_state: target
     rules:
     - Connectivity model is distinct from operating model.
     - Only include service entries with an application-visible resiliency endpoint contract.
     - Repository evidence validates endpoint usage but does not prove deployed infrastructure.
     services: {}
+
+# If this application calls third-party systems, changes inventory, sends notifications, 
+# writes files, or creates other externally observable effects, update that section before 
+# approving the context. This determines whether Kafka processing can eventually be approved 
+# as multi-active or should remain single-active.
   external_side_effects:
     present: unknown
     types: []
     classification_required: true
     note: For no-database Kafka applications, classify external side effects before confirming whether regional
       processing can be multi-active.
+
   allowed_expected_statuses:
   - required
   - optional
@@ -367,7 +380,7 @@ architecture_context:
   resiliency_assessment_context:
     qualification_policy:
       policy_id: RESILIENCY-FINDING-QUALIFICATION
-      version: 1.0.0
+      version: 1.1.0
       path: grounding/governance/resiliency-finding-qualification-policy.yml
     preserve_finding_classes:
     - resiliency

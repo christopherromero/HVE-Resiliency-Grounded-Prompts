@@ -290,6 +290,37 @@ This standard assesses **application code, application configuration checked int
 - `not_applicable`: The dependency or behavior does not apply.
 - `accepted_risk`: A cited approved exception exists.
 
+### Azure SQL Failover Group (FOG) Connectivity Rules
+
+These rules apply when:
+
+target:
+connectivity_model: failover_group_listener
+
+fog_rules:
+
+  authoritative_failover_mechanism: true
+
+  prohibited_findings:
+
+    - manual_failover_logic
+
+    - manual_failback_logic
+
+    - custom_sql_region_selection
+
+    - client_side_failover_state_machine
+
+  exception:
+
+    - application_connection_recovery
+
+    - failover_group_listener_usage
+
+    - stale_connection_cleanup
+
+    - connection_pool_recovery
+
 # Controls
 
 ## SQL-001: JDBC connection string is deployment-injected and points to the regional/listener endpoint

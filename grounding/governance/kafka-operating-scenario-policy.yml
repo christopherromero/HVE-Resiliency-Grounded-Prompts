@@ -326,4 +326,4 @@ completion_validation:
   - Verify missing deployed topology remains an evidence gap.
 
 
-finding_qualification_policy: {policy_id: RESILIENCY-FINDING-QUALIFICATION, version: "1.0.0"}
+finding_qualification_policy: {policy_id: RESILIENCY-FINDING-QUALIFICATION, version: "1.1.0"}

@@ -260,4 +260,4 @@ completion_validation:
   - Verify consistency, retry, speculative execution, readiness, security, and privacy rules were applied.
 
 
-finding_qualification_policy: {policy_id: RESILIENCY-FINDING-QUALIFICATION, version: "1.0.0"}
+finding_qualification_policy: {policy_id: RESILIENCY-FINDING-QUALIFICATION, version: "1.1.0"}

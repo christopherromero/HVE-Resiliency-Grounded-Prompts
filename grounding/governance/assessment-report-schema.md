@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.11.0"
+  schema_version: "1.12.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -180,14 +180,13 @@ identifier suppression is withdrawn.
 -->
 Group findings primarily by governance priority.
 
-Priority order:
+Priority order is class-specific:
+- Resiliency findings: P0, P1, P2, P3
+- Non-resiliency findings: P2, P3 only
 
-P0
-P1
-P2
-P3
+P0 and P1 are prohibited for non-resiliency findings. An invalid combination requires Step 3A revision; Step 3B must not silently downgrade, omit, or reclassify it.
 
-Within each priority group, optionally organize findings
+Within each allowed priority group, optionally organize findings
 by repository-specific category.
 
 Required order:
@@ -236,6 +235,28 @@ Rules:
 - Findings remain rendered using the existing H4 format.
 - Category headers are not findings and are not included in finding counts.
 - Category headers must be visually larger than the finding heading.
+
+### Finding rendering policy
+
+rendering_mode: concise
+
+Rules:
+- Preserve all required sections and fields.
+- Remove duplicated narrative across Finding, Impact, Architecture Context, Evidence, and Recommendation.
+- Detailed implementation instructions remain authoritative in Step 3A and must not be reproduced.
+
+finding_content_limits:
+  finding: { max_words: 25 }
+  impact: { max_words: 40 }
+  architecture_context: { max_words: 35 }
+  repository_evidence: { max_lines: 3 }
+  recommendation: { max_words: 50 }
+
+redundancy_rules:
+  duplicate_information_prohibited: true
+  recommendation_repeats_finding: prohibited
+  impact_repeats_finding: prohibited
+  architecture_context_repeats_impact: prohibited
 
 ### Required detailed finding content
 
@@ -790,11 +811,11 @@ Both qualified resiliency findings and retained non-resiliency findings are auth
 1. Resiliency-Focused Recommendations
 2. Non-Resiliency-Focused Recommendations
 
-Within each section, render priority groups in this fixed order: P0, P1, P2, P3. Omit an empty priority heading only when no finding in that class has that priority. Do not mix finding classes. Both classes participate in Summary Findings, Full Finding Matrix, Standards Alignment, Implementation Roadmap, and Appendix A. Counts must reconcile by class and priority. Replace the legacy `Resiliency Related: Yes|No` derivation with the authoritative Step 2 `finding_classification.type`, rendered as Yes for `resiliency` and No for `non_resiliency`. Non-resiliency findings remain findings and receive Step 3A priority; they are not downgraded to observations.
+Within the resiliency section, render P0, P1, P2, P3. Within the non-resiliency section, render P2, P3 only. Do not render non-resiliency P0 or P1 headings. Omit an empty priority heading only when no finding in that class has that priority. Do not mix finding classes. Both classes participate in Summary Findings, Full Finding Matrix, Standards Alignment, Implementation Roadmap, and Appendix A. Counts must reconcile by class and priority. Replace the legacy `Resiliency Related: Yes|No` derivation with the authoritative Step 2 `finding_classification.type`, rendered as Yes for `resiliency` and No for `non_resiliency`. Non-resiliency findings remain findings and receive Step 3A priority; they are not downgraded to observations.
 
 schema_conformance_additions:
   qualification_policy_id: RESILIENCY-FINDING-QUALIFICATION
-  qualification_policy_version: "1.0.0"
+  qualification_policy_version: "1.1.0"
   every_finding_has_classification: true
   resiliency_findings_have_complete_impact_chain: true
   non_resiliency_findings_retained: true
@@ -802,3 +823,12 @@ schema_conformance_additions:
   priority_order_within_each_class: [P0, P1, P2, P3]
   classes_not_intermixed: true
   class_priority_counts_reconcile: true
+
+
+### Concise report validation
+- Finding text must describe only the problem.
+- Impact must describe only the consequence.
+- Recommendation must describe only the corrective action.
+- Architecture Context must describe only target-architecture relevance.
+- Repository Evidence should be limited to concise traceability references.
+- Implementation steps, change specifications, code examples, acceptance tests, selector information, and detailed remediation procedures must not appear in the report body.
