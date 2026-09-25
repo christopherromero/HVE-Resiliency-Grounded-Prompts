@@ -1,5 +1,5 @@
 ---
-schema_version: 2.0.0
+schema_version: 2.3.0
 document_type: dependency_behavior
 service: azure-sql
 service_name: Azure SQL
@@ -227,11 +227,30 @@ controls:
   emit_on_failure: true
 ---
 
-# Azure SQL Active-Active Application Behavior Standard
+# Azure SQL Target-State Application Behavior Standard
+
+### Shared-service operating-model contract
+
+This standard does not select the application's shared-service topology. Resolve the operating model from:
+
+```text
+architecture_context.shared_service_operating_models.services.azure_sql
+```
+
+Use `source.operating_model` only to describe current state. Use `target.operating_model` for control applicability and target-state code-readiness assessment.
+
+- Evaluate common client controls whenever production use is confirmed.
+- Evaluate model-specific controls only for the resolved target operating model.
+- `not_applicable` plus no repository production use makes this standard not applicable.
+- `not_applicable` plus confirmed repository production use is a context conflict, not an automatic code finding.
+- Missing, unresolved, or conflicting target model makes model-specific controls `not_assessed` and routes to architecture review.
+- A source-target difference is migration context, not a finding by itself.
+- Findings require repository-owned evidence that the application is incompatible with an applicable target-state control.
+- Do not infer deployed topology from this standard's title, examples, or assumptions.
 
 ## Purpose
 
-This dependency-specific standard assesses how a Spring Boot microservice uses Azure SQL when deployed to two active Azure regions. The local regional service endpoint is assumed to exist and be reachable through the approved private networking design.
+This dependency-specific standard assesses how a Spring Boot microservice uses Azure SQL when evaluated for the approved target operating model supplied by application architecture context. The local regional service endpoint is assumed to exist and be reachable through the approved private networking design.
 
 ## Scope boundary
 
@@ -270,6 +289,37 @@ This standard assesses **application code, application configuration checked int
 - `not_assessed`: Evidence is unavailable or insufficient.
 - `not_applicable`: The dependency or behavior does not apply.
 - `accepted_risk`: A cited approved exception exists.
+
+### Azure SQL Failover Group (FOG) Connectivity Rules
+
+These rules apply when:
+
+target:
+connectivity_model: failover_group_listener
+
+fog_rules:
+
+  authoritative_failover_mechanism: true
+
+  prohibited_findings:
+
+    - manual_failover_logic
+
+    - manual_failback_logic
+
+    - custom_sql_region_selection
+
+    - client_side_failover_state_machine
+
+  exception:
+
+    - application_connection_recovery
+
+    - failover_group_listener_usage
+
+    - stale_connection_cleanup
+
+    - connection_pool_recovery
 
 # Controls
 
@@ -746,7 +796,43 @@ Cite the file path, symbol, property, and line range when available. Evaluate ef
 
 ---
 
-# Standard finding format
+# ### SQL-017: Read-write connectivity uses the approved failover-group listener
+
+**Severity:** Critical  
+**Category:** connectivity  
+**Applies when:** Target connectivity model is `failover_group_listener`.
+
+#### Requirement
+Read-write JDBC and R2DBC configuration must resolve to the approved FOG read-write listener and must not name a physical regional logical server. The endpoint must be deployment-injected.
+
+#### Finding condition
+Emit a finding when repository evidence hardcodes or constructs a regional logical-server hostname, or bypasses the required listener for ordinary read-write traffic.
+
+#### Evidence and caveats
+Inspect `spring.datasource.url`, `spring.r2dbc.url`, `JDBC_URL`, `R2DBC_URL`, configuration binding, and `database.windows.net` hostnames. Do not invent the listener name or report missing FOG deployment as code noncompliance. Changing the effective endpoint requires architecture approval.
+
+### SQL-018: Read-only listener use is explicitly isolated
+
+**Severity:** High  
+**Category:** connectivity-and-consistency
+
+Use a FOG read-only listener only for explicitly read-only operations with approved replica-lag and read-after-write semantics. Emit a finding when mutating or correctness-sensitive work can route to the read-only listener. Enabling read-only routing requires product and data approval.
+
+### SQL-019: Pools recover through listener redirection without restart
+
+**Severity:** Critical  
+**Category:** recovery
+
+After failover disconnects existing sessions and redirects the listener, pools must evict unusable connections, reconnect within bounded budgets, and recover without redeploying, changing the connection string, or restarting the process. Do not prescribe numeric DNS TTL or pool lifetime values without evidence.
+
+### SQL-020: Tests prove FOG listener failover and ambiguous-commit safety
+
+**Severity:** Critical  
+**Category:** testing
+
+Tests must cover connection interruption, stale-pool eviction, listener redirection, bounded reconnect, recovery without configuration change or restart, and safe handling of transactions whose commit outcome is unknown during failover. Mock-only tests do not prove socket, pool, DNS-redirection, or commit-outcome behavior.
+
+Standard finding format
 
 - **Title:** [specific code-level gap]
 - **Control:** [SQL-NNN]
@@ -759,4 +845,8 @@ Cite the file path, symbol, property, and line range when available. Evaluate ef
 
 # Non-findings
 
-Do not create infrastructure findings such as missing second-region resources, private endpoints, zone redundancy, geo-replication, capacity, DNS, or global load-balancer configuration. Those are assumed platform responsibilities and are outside this repository assessment.
+Do not create infrastructure findings such as missing second-region resources, private endpoints, zone redundancy, geo-replication, capacity, DNS, or global load-balancer configuration. Those are assumed platform responsibilities and are outside this repository assessment.### Shared-service operating and connectivity contract
+
+Resolve the Azure SQL target operating model from `architecture_context.shared_service_operating_models.services.azure_sql.target` and connectivity from `architecture_context.shared_service_connectivity_contracts.services.azure_sql.target`.
+
+The approved target remains `active_standby`. When connectivity is `failover_group_listener`, read-write JDBC and R2DBC traffic must use the approved FOG read-write listener rather than a regional logical-server hostname. Missing proof of deployed FOG resources is external evidence, not a code finding.

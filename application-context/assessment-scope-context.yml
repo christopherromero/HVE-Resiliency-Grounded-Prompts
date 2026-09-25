@@ -9,7 +9,7 @@ owner: Cloud Architecture Team
 assessment_scope:
   application_code: {status: enabled}
   application_configuration: {status: enabled}
-  container_build: {status: enabled}
+  container_build: {status: disabled}
   cicd_pipeline: {status: disabled}
   deployment_configuration: {status: disabled}
   infrastructure_as_code: {status: disabled}
@@ -23,19 +23,27 @@ scope_rules:
   pcf_findings_allowed: false
 report_preferences:
   finding_selection:
-    mode: priority_filter
+    mode: all_priorities
     include_priorities:
       - P0
       - P1
+      - P2
+      - P3
     include_conditional_findings: true
     include_verified_controls: false
     include_evidence_gaps: true
     excluded_priority_behavior: omit_from_filtered_report
   testing_output:
-    mode: full
+    mode: hidden
     show_test_findings: true
-    show_test_code: true
-    show_validation_commands: true
-    show_acceptance_criteria: true
-    show_validation_evidence: true
-    include_consolidated_validation_strategy: true
+    show_test_code: false
+    show_validation_commands: false
+    show_acceptance_criteria: false
+    show_validation_evidence: false
+    include_consolidated_validation_strategy: false
+
+  finding_classification_output:
+    include_resiliency_findings: true
+    include_non_resiliency_findings: true
+    report_section_order: [resiliency, non_resiliency]
+    priority_order_within_each_class: [P0, P1, P2, P3]

@@ -36,10 +36,14 @@ APPLICATION_CONTEXT=<optional application-context file path>
 REFERENCE_ARCHITECTURE_REGISTRY=<optional approved reference-architecture registry path>
 REPORT_SCHEMA=grounding/governance/assessment-report-schema.md
 REPORT_TEMPLATE=grounding/governance/templates/code-level-resiliency-assessment-template.md
-REPORT_OUTPUT_PATH=<optional; defaults to .copilot-tracking/plans/reports/code-level-resiliency-assessment.md>
+MICROSERVICE_SLUG=<optional; defaults to TASK_SLUG lowercased with a trailing `-inventory` suffix removed>
+RUN_DATE=<assessment run date in YYYY-MM-DD, used to derive the report filename prefix>
+REPORT_OUTPUT_PATH=<optional; defaults to the generated path in Preferred report path>
 ```
 
 `REPORT_SCHEMA` is normally fixed and must not be changed per application unless an approved schema version is intentionally selected.
+
+Derive `MICROSERVICE_SLUG` and `REPORT_DATE` rather than asking for them. State both derived values in the completion report.
 
 ## Mandatory inputs to read
 
@@ -125,12 +129,20 @@ Pipe-delimited placeholders in examples describe allowed values only. Generated 
 
 Render and validate source locators in this order:
 
-1. Repository path
+1. Repository path, including its line range
+2. Exact original source excerpt
+
+<!-- Disabled 2026-09-21 by customer report preference. The customer report no longer renders
+per finding symbol, source fingerprint, assessment snapshot, snapshot provenance, or advisory line
+range. Complete values remain authoritative in the Step 2 review artifact and the Step 3A plan
+artifact. Restore these list items to reinstate full locator rendering.
+
 2. Symbol or configuration/build element
 3. Exact original source excerpt
 4. Source fingerprint
 5. Assessment snapshot
 6. Original assessed line range, explicitly labeled advisory
+-->
 
 Line numbers are navigation metadata. Never present a line number alone as the authoritative locator, recalculate Step 2 line numbers, or treat line drift as evidence drift.
 
@@ -232,8 +244,16 @@ PCF references must be informational only and excluded from findings, priorities
 Attempt to create the complete report at:
 
 ```text
-.copilot-tracking/plans/reports/code-level-resiliency-assessment.md
+.copilot-tracking/plans/reports/{{REPORT_DATE}}-{{MICROSERVICE_SLUG}}-code-level-resiliency-assessment.md
 ```
+
+Resolve the filename prefix as follows:
+
+* `REPORT_DATE` is the assessment run date rewritten to `MM-DD-YYYY`. Rewrite the run date supplied in `YYYY-MM-DD` form rather than reading the current system date, so the report matches the run it reports on.
+* `MICROSERVICE_SLUG` is the assessed microservice name in lowercase kebab-case, containing only letters, digits, and single hyphens. Derive it from the Step 1 and Step 2 task slug by lowercasing it and removing a trailing `-inventory` suffix.
+* The `-code-level-resiliency-assessment.md` suffix is fixed. Do not translate, abbreviate, or reorder the filename parts.
+
+Use `REPORT_OUTPUT_PATH` instead when the caller supplies it explicitly. One run produces exactly one report file. Overwrite the resolved path when regenerating a report for the same run and microservice rather than creating a numbered or suffixed variant.
 
 Do not stop, delegate the report to Task Implementor, or request implementation merely because the preferred output path is unavailable.
 
@@ -267,11 +287,21 @@ report_governance:
 
 #### Canonical template rendering contract
 
-Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the seven required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
+Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the eight required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
 
-Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
+Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged, except for the H1 title, which the schema's report-title rule governs when the report is a filtered view. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
 
-When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied, render only applicable approved entries. When absent, render the schema-required no-registry statement. Never source customer-specific references from hardcoded prompt or schema content.
+Render the compact report header block between the `content:report-header` markers, following the schema's report header block rendering contract. Keep each field to one line, and do not render a Deployment Evolution subsection or repeat Application and Repository scope in Assessment Overview.
+
+Open Assessment Overview following the schema's Assessment Overview opening contract. Render one or two short narrative paragraphs, then three to five one-line bullets covering stack and runtime, assessment basis, coverage, and the operating scenario when one applies. Do not render an `Application and Repository Overview` subsection heading above them, and do not render an `Assessment Attributes` subsection, an attribute table, or a scenario subsection or table. Attribute and scenario detail beyond those bullets stays authoritative in the Step 1, Step 2, and Step 3A artifacts and is intentionally omitted from the report.
+
+Render each detailed finding using the schema's field order. Do not render a severity field, a finding status field, or a priority policy ID and version in the finding body; render a `**Conditional finding:**` field only when the Step 2 finding status is conditional, and declare the priority policy ID and version once above the Appendix A table. Render the standards reference as the finding's final line in plain Markdown with no `<span>` or inline font sizing, citing only the grounded standards that define the controls the finding violates rather than the full evaluated standards set.
+
+Render the shared-service reference-architecture table from the schema's required Ecommerce Azure Services table in full. It is required content and the schema is authoritative for required content, so do not drop rows for services this repository does not use. Mark each row's applicability from authoritative Step 1 and Step 2 facts instead, and state that an unevidenced service was not evidenced within the enabled assessment domains rather than implying it is absent from the deployed environment.
+
+When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied and publishes reference-architecture links, add or override entries from it, because a supplied registry is the more current customer source. A registry that only maps dependency keys to grounding standards publishes no links and must not narrow the table. When the schema carries no table and no registry is supplied, render the schema-required no-registry statement.
+
+Never invent a reference-architecture URL that appears in neither the schema nor a supplied registry.
 
 ### Schema-driven report rendering
 
@@ -282,7 +312,7 @@ Do not reproduce or reinterpret the schema contract from memory. For each requir
 - Preserve the section even when authoritative content is unavailable.
 - Use the schema-defined unavailable-content behavior.
 - Render only authoritative Step 1, Step 2, and Step 3A facts.
-- Preserve Step 2 finding status and severity and Step 3A priority and change mapping.
+- Preserve Step 2 finding status and severity and Step 3A priority and change mapping. Preservation is a data obligation, not a rendering obligation; the schema governs which of these fields the report body renders.
 - Apply the frozen report selection consistently to detailed findings, summary, matrix, and roadmap.
 - Render exact Step 2 source excerpts and Step 3A illustrative proposals according to their target-level status.
 - Display source locators using the authority order defined in this prompt.
@@ -321,7 +351,7 @@ records.
 When a change contains mixed statuses:
 
 1. Render all generated code and configuration blocks.
-2. Render each generated target with its repository path and symbol.
+2. Render each generated target with its repository path.
 3. Render targeted-discovery information only for the blocked target.
 4. Do not replace generated proposals with one change-level
    "Targeted implementation discovery required" statement.
@@ -338,10 +368,13 @@ Illustrative proposal only.
 
 ## Required Rendering
 ### Target file and location
-- Repository path
+- Repository path, including its line range
+- Change ID
+
+<!-- Disabled 2026-09-21 by customer report preference.
 - Symbol
 - Original assessed lines
-- Change ID
+-->
 
 ### Original source requiring update
 Include exact Step 2 source excerpt.
@@ -515,10 +548,20 @@ Before completing:
   generated target-level proposals.
 26. Verify blocked implementation adapters are distinguished from
   generated application abstractions and tests.
+27. Verify Assessment Overview opens with narrative plus three to five one-line
+  bullets, with no `Application and Repository Overview` subsection heading and
+  no `Assessment Attributes` or operating-scenario subsection or table.
+28. Verify no finding body renders a severity field, a finding status field, or a
+  priority policy ID and version, and that the priority policy is declared once
+  above the Appendix A table.
+29. Verify every standards reference is plain Markdown with no HTML wrapper and
+  cites only the standards whose controls the finding violates.
 
 ### Kafka scenario reporting
 
-When Kafka is applicable, render the Step 1 scenario declaration, provenance, policy validation, processing model, regional processing model, external-side-effect classification, Kafka-backed state, conditional assumptions, architecture confirmation requirement, and unresolved infrastructure facts exactly as required by `REPORT_SCHEMA` and the authoritative Kafka policy.
+When Kafka is applicable, render the Step 1 scenario as the single **Operating scenario** bullet in the Assessment Overview opening bullets, exactly as required by `REPORT_SCHEMA`. State the scenario, its source, the regional processing model, and the authoritative state position, close with the caveat that the scenario classifies application behavior only, and add the architecture-confirmation statement when the scenario is inferred or `unresolved`.
+
+Do not render a `Kafka Operating Scenario` subsection or scenario table. Policy version and rule ID, validation status, processing-model and external-side-effect classification, conditional assumptions, and unresolved infrastructure facts remain authoritative in the Step 1 and Step 2 artifacts and are intentionally omitted from the report.
 
 Do not recreate scenario inference in Step 3B. Keep repository-observed interactions and supplied architecture context separate. Do not present context as source-code evidence or as proof of deployed infrastructure.
 
@@ -655,6 +698,19 @@ Add the selected and omitted priority lists, finding/change counts, and frozen s
 
 Render the Step 2 `assessment_snapshot` exactly as preserved by Step 3A. Do not reopen the workspace to manufacture Git metadata and do not treat non-Git snapshots as report errors.
 
+Do not add a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative to Assessment Overview.
+
+Render each piece of repository evidence with its repository path and line range only, followed by the exact Step 2 source excerpt:
+
+```markdown
+**File:** `src/main/java/example/Service.java`:142-156
+```
+
+<!-- Disabled 2026-09-21 by customer report preference. Restore this block to reinstate per
+finding symbol, fingerprint, snapshot, and advisory line rendering.
+
+Render snapshot identity with each finding's source locator.
+
 Example non-Git rendering:
 
 ```markdown
@@ -669,11 +725,12 @@ Example non-Git rendering:
 **Snapshot provenance:** Workspace generated
 
 **Original assessed lines (advisory):** 142-156
-
-**Repository evidence:** `EV-F-001-01`
 ```
 
-Show a Git commit SHA only for `git_revision`. Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
+Show a Git commit SHA only for `git_revision`.
+-->
+
+Apply the active schema version read from `REPORT_SCHEMA` and record repository-agnostic snapshot conformance in the final comment and handoff.
 
 ## Incremental Report Assembly and Recovery
 
@@ -688,9 +745,11 @@ Before creating the report:
 3. Create the schema-required `report_assembly_manifest`.
 4. Do not reconsider these values during writing or recovery.
 
+Freezing applies to scope, identifiers, counts, and mappings. The assembly manifest's `assembly_status` is progress tracking and is expected to change as sections and findings are appended.
+
 ### Bounded write sequence
 
-1. Initialize the final report with governance metadata, title, table of contents, and the frozen manifest metadata.
+1. Initialize the final report with the governance block, the assembly manifest, the title, the report header block, and the table of contents.
 2. Append Assessment Overview.
 3. Append detailed recommendations one complete finding at a time.
 4. Append Non-Resiliency Recommendations.
@@ -698,10 +757,41 @@ Before creating the report:
 6. Append the Full Finding Matrix.
 7. Append Standards Alignment.
 8. Append the Implementation Roadmap.
-9. Append final schema and assembly conformance metadata.
-10. Reopen and validate the completed file.
+9. Append Appendix A: Traceability.
+10. Append the hidden report-metadata block.
+11. Append the final conformance block.
+12. Reopen and validate the completed file.
+
+Use the schema's assembly block names. The governance block, assembly manifest, report-metadata block, and conformance block are four separate blocks in three positions, and none substitutes for another. The report-metadata block is the required report metadata fields, is hidden, and belongs after Appendix A rather than beneath the title.
 
 Use the schema-required invisible markers before each top-level section and detailed finding.
+
+### Internal identifier suppression
+
+Sections 1 through 7 are customer-facing narrative and must not contain internal workflow identifiers. Follow the schema's internal-identifier-suppression rule exactly.
+
+Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, priority rule IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs in body content. Reference findings, dependencies, and consolidation through display IDs. State test obligations, open questions, evidence gaps, and discovery items in prose. Omit the `Cross-refs` notes sub-bullet.
+
+Carry every suppressed identifier into Appendix A so nothing is lost. Suppression and appendix placement are presentation-only and must not change findings, priorities, severity, status, evidence, control mappings, change mappings, or validation obligations.
+
+Hidden governance, manifest, and conformance comment blocks retain full identifiers and are exempt.
+
+### Notes rendering
+
+Render `**Notes:**` as one short paragraph of at most three sentences, following the schema's
+Notes content rule. Cover only the main way the fix goes wrong if applied carelessly, how to undo
+it, and a genuinely blocking unresolved input.
+
+Do not restate complexity, wave, dependencies, release gates, approval requirements, or file
+counts, all of which are rendered elsewhere. Do not explain why testing detail is hidden. Do not
+emit the same sentence in more than one finding; a note that would be identical everywhere belongs
+in a scope declaration instead.
+
+<!-- Disabled 2026-09-21 by customer report preference. Notes previously rendered three labeled
+sub-bullets for Implementation, Validation, and Guardrail. Testing, validation, release-gate,
+dependency, and approval obligations remain authoritative in the Step 3A plan and are unchanged
+by this rendering preference.
+-->
 
 ### Finding write unit
 
@@ -732,11 +822,15 @@ If the last completed unit or file integrity cannot be established, stop, set re
 
 ### Source rendering safeguards
 
-- Display source fingerprints in abbreviated form using the first 12 hexadecimal characters plus an ellipsis.
+- Do not display source fingerprints in the customer report.
 - Preserve complete fingerprints in Step 2 and Step 3A only.
 - The `Original source requiring update` fenced block must contain the exact Step 2 excerpt and nothing else.
 - Never insert language-specific `before` comments, labels, IDs, line annotations, or synthetic ellipses inside original-source blocks.
 - Place all explanatory labels outside code fences.
+
+<!-- Disabled 2026-09-21 by customer report preference.
+- Display source fingerprints in abbreviated form using the first 12 hexadecimal characters plus an ellipsis.
+-->
 
 ### Final validation
 
@@ -751,3 +845,41 @@ After writing, reopen the report and verify:
 - Final schema and assembly conformance are passed.
 
 Successful Step 3B completion requires a complete validated final report, not a partial file or report text that exists only in chat.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Phase-specific rule
+Render Resiliency-Focused Recommendations first, ordered P0, P1, P2, P3. Render Non-Resiliency-Focused Recommendations second, ordered P2, P3 only. Do not render non-resiliency P0/P1 headings. If Step 3A contains non-resiliency P0/P1, fail conformance and route to Step 3A revision. Include both classes in counts, matrix, roadmap, and traceability.
+
+
+### Concise finding rendering mode
+
+Render customer-facing findings using concise mode.
+
+Target limits:
+- Finding <= 25 words
+- Impact <= 40 words
+- Architecture Context <= 35 words
+- Recommendation <= 50 words
+- Repository Evidence <= 3 lines
+
+Do not repeat the same information across sections.
+
+Section purpose:
+- Finding = what is wrong.
+- Impact = why it matters.
+- Architecture Context = target-state relevance.
+- Evidence = traceability only.
+- Recommendation = what should change.
+
+Suppress detailed implementation content:
+- change specifications
+- implementation steps
+- acceptance-test procedures
+- business-logic workflow details
+- selector information
+- verbose code discussion
+
+Preserve all findings, priorities, classifications, matrix entries, roadmap mappings, and Appendix A traceability.

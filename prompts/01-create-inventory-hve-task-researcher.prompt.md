@@ -351,7 +351,7 @@ kafka_operating_scenario:
 
   policy_validation:
     policy_id: KAFKA-OPERATING-SCENARIO
-    policy_version: "3.1.0"
+    policy_version: "3.2.0"
     rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004
     status: consistent|inferred|conditionally_inferred|conflict|insufficient_evidence
 
@@ -683,3 +683,10 @@ Before completing:
 - Verify the handoff schema version is read from `grounding/governance/phase-handoff-schema.yml` rather than hardcoded.
 - Verify one compact handoff summary exists under `.copilot-tracking/research/handoffs/` when agent write permissions permit it.
 - Report the exact artifact path, assessment run ID, snapshot type and identifier, files examined, enabled scope domains, confirmed dependencies, registry gaps, architecture conflicts, and unresolved uncertainties.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Phase-specific rule
+Inventory applicable target architecture elements and credible failure scenarios needed by Step 2; do not classify findings in Step 1.

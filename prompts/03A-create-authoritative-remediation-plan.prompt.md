@@ -105,7 +105,7 @@ Use:
 priority:
   value: P0
   policy_id: AA-REMEDIATION-PRIORITY
-  policy_version: "1.0.0"
+  policy_version: "1.2.0"
   rule_id: P0-AA-003
   rationale: >
     Evidence-based explanation of why the governance rule applies.
@@ -158,7 +158,7 @@ resiliency_related: true
 priority:
   value: P0
   policy_id: AA-REMEDIATION-PRIORITY
-  policy_version: "1.0.0"
+  policy_version: "1.2.0"
   rule_id: P0-AA-003
   rationale: ""
   calculated_priority: P0
@@ -290,6 +290,62 @@ Resiliency remediation must preserve existing business semantics,
 partner-contract interpretation, privacy controls, and security behavior
 unless an explicit approved architecture or business decision authorizes
 a change.
+
+#### Retry and Timeout Remediation Constraints
+
+retry_remediation_constraints:
+
+  allowed_when:
+    - connection_timeout
+    - transient_http_500
+    - transient_transport_failure
+
+  prohibited_when:
+    - non_idempotent_operation
+    - business_workflow_retry
+    - partner_contract_change
+
+  requires:
+    - bounded_retry
+    - bounded_timeout
+
+#### Idempotency and Uniqueness Remediation Constraints
+
+idempotency_constraints:
+
+  permitted_scope:
+
+    - duplicate_prevention
+
+    - safe_retry_support
+
+    - replay_protection
+
+  prohibited_scope:
+
+    - business_workflow_modification
+
+    - state_machine_changes
+
+    - new_business_rules
+
+    - new_functionality
+
+    - partner_contract_change
+
+### Azure SQL FOG Constraints
+
+azure_sql_fog_constraints:
+
+  do_not_recommend:
+    - custom_failover_logic
+    - custom_failback_logic
+
+  permitted:
+    - fog_listener_usage
+    - pool_recovery
+    - reconnect_behavior
+    - dns_refresh_behavior
 
 #### Business-logic changes requiring explicit approval
 
@@ -625,7 +681,7 @@ planning:
   prioritization_policy:
     path: grounding/governance/remediation-prioritization.md
     policy_id: AA-REMEDIATION-PRIORITY
-    policy_version: "1.0.0"
+    policy_version: "1.2.0"
 ```
 
 ## Priority and wave summaries
@@ -771,6 +827,8 @@ Before completing Step 3A, run the following consolidated validation gate.
 - Verify P2 data-correctness candidates were evaluated for P0 elevation where active-active operation could make a critical transaction materially unsafe.
 - Verify required tests inherit the priority of the behavior they validate.
 - Verify priority and wave indexes contain every change exactly once in each applicable index.
+- Verify resiliency changes use P0-P3 and non-resiliency changes use P2-P3 only.
+- Verify P0 and P1 indexes contain only resiliency changes.
 - Verify no deployed-infrastructure or PCF remediation was added.
 
 ### Source evidence and targeting validation
@@ -1026,3 +1084,10 @@ Before completing library resolution, verify:
 - Technology-neutral contracts and tests were still generated when evidence supported them.
 - No unmanaged version, unsupported API, or unapproved product substitution was invented.
 - Step 3A did not create a new finding solely because the approved-library file was absent or draft.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Phase-specific rule
+Assign priority to both classes. Resiliency may use P0-P3. Non-resiliency may use P2-P3 only. Do not place non-resiliency changes in P0/P1 indexes.

@@ -1,43 +1,112 @@
 ---
 document_type: remediation_prioritization_policy
-schema_version: "1.0"
+schema_version: "1.1.0"
 policy_id: AA-REMEDIATION-PRIORITY
-policy_version: "1.0.0"
-last_updated: "2026-08-25"
+policy_version: "1.2.0"
+last_updated: "2026-09-20"
 owner: Cloud Architecture Team
-lifecycle_status: active
+lifecycle_status: proposed
+supersedes: "AA-REMEDIATION-PRIORITY 1.1.0"
 applies_to:
   - springboot-active-active-code-assessment
   - active-active-remediation-planning
-assessment_scope: application_code_only
+assessment_scope:
+  - application_code
+  - application_configuration
+
 priority_levels:
   P0:
-    name: Active-active deployment or traffic-eligibility blocker
+    name: Blocking/Critical Risk
     target_start: immediate
     target_completion: before_active_active_release
   P1:
-    name: Failure-amplification or recovery blocker
+    name: High Priority
     target_start: current_remediation_wave
     target_completion: before_failover_certification
   P2:
-    name: Data-correctness or processing-resilience gap
+    name: Non-blocking Improvement/Best Practice
     target_start: planned_remediation
     target_completion: before_full_active_active_enablement
   P3:
-    name: Operational-maturity or verification gap
+    name: Non-Blocking Code Consistency (Best Practices / Maintainability)
     target_start: planned_backlog
     target_completion: before_operational_acceptance
+
 default_rules:
   severity_does_not_equal_priority: true
   evidence_required: true
   rationale_required: true
   rule_id_required: true
   priority_assigned_per_root_cause_change: true
+  highest_applicable_priority_wins: true
   human_override_allowed: true
   override_reason_required: true
   override_approver_required: true
-  tests_inherit_behavior_priority: true
-  highest_applicable_priority_wins: true
+  prerequisite_priority_inheritance: false
+  standalone_test_finding_inherits_behavior_priority: false
+  behavior_validation_tests_inherit_behavior_priority: true
+
+cache_rules:
+
+  default_priority: P3
+
+  applies_to:
+    - cache_size
+    - cache_eviction
+    - cache_staleness
+
+  elevate_to:
+
+    P2:
+      - material_degradation_of_recovery
+
+    P1:
+      - customer_visible_incorrect_processing
+
+    P0:
+      - failover_failure
+      - memory_driven_outage
+      - loss_of_accepted_work
+
+graceful_transition_rules:
+
+  default_priority: P2
+
+  applies_to:
+    - graceful_shutdown
+    - executor_drain
+    - termination_drain
+
+  elevate_to:
+
+    P1:
+      - repeated_duplicate_processing
+
+    P0:
+      - duplicate_payment
+      - unrecoverable_state_divergence
+      - loss_of_accepted_work
+
+backpressure_rules:
+
+  default_priority: P2
+
+  applies_to:
+    - executor_queue_bounds
+    - rejection_policy
+    - backpressure
+
+  elevate_to:
+
+    P1:
+      - service_instability
+
+    P0:
+      - lost_accepted_work
+      - memory_driven_outage
+      - promotion_failure
+
+
 excluded_work:
   - compliant_controls
   - not_assessed_controls
@@ -50,358 +119,370 @@ excluded_work:
 
 # Active-Active Remediation Prioritization Policy
 
-## Purpose
+## 1. Purpose
 
-This policy defines how HVE Task Planner assigns P0, P1, P2, and P3 remediation priorities to approved application-code findings from the Spring Boot on AKS active-active assessment.
+This policy defines how Task Planner assigns P0, P1, P2, and P3 remediation priorities to evidence-backed application-code and application-configuration findings.
 
-Priority determines remediation order and release gating. Finding severity describes potential impact. Severity and priority are related but are not interchangeable.
+Priority represents the impact of the defect itself. Priority must not be increased solely because a change is a prerequisite, a release gate, a test dependency, difficult to implement, or required earlier in an implementation wave.
 
-## Mandatory planning behavior
+Severity describes potential impact. Priority determines remediation order and release gating. Severity and priority are related inputs but are not interchangeable.
 
-Task Planner must:
+## 2. Mandatory decision sequence
 
-1. Assign priority only to a root-cause change mapped to one or more approved `non_compliant` findings.
-2. Select the highest applicable priority rule when more than one rule applies.
-3. Cite the policy ID, policy version, and rule ID.
-4. Provide a concise evidence-based priority rationale.
-5. Keep a validation test in the same priority as the behavior it proves when that test is required to establish release readiness.
-6. Record human-approved overrides separately from the calculated priority.
-7. Never derive priority from severity alone.
-8. Never assign remediation work to PCF exclusions or infrastructure-only observations.
+For every root-cause finding or change, evaluate rules in this order:
 
-# Priority levels and decision rules
+1. Confirm that the finding is evidence-backed and within the enabled assessment scope.
+2. Determine the finding classification using `RESILIENCY-FINDING-QUALIFICATION`.
+3. Evaluate the numbered P0 rules in this policy.
+4. If no P0 rule applies, evaluate the numbered P1 rules.
+5. If no P0 or P1 rule applies, evaluate P2 rules.
+6. Assign P3 only when no P0, P1, or P2 rule applies.
+7. Record remediation dependencies, release gates, implementation waves, approvals, and test obligations separately from finding priority.
+8. Cite exactly one primary numbered priority rule. Additional applicable rules may be recorded as secondary rules.
 
-## P0: Active-active deployment or traffic-eligibility blocker
+A priority decision is invalid when it cites an undefined rule ID or relies only on an unnumbered policy statement.
 
-Assign P0 when at least one P0 rule applies.
+## 3. Priority must be based on
 
-### Rule P0-AA-001: Same artifact cannot operate in both regions
+- Direct runtime or configuration impact of the finding
+- Credible failure scenario established by evidence
+- Availability or traffic-eligibility impact
+- Accepted-work loss or false acknowledgement
+- Authoritative-state corruption or unrecoverable divergence
+- Regional failover or workload-ownership impact
+- Recoverability and durability impact
+- Material security or normal-operation correctness impact for non-resiliency findings
 
-Apply when region-specific code, builds, artifacts, profiles, or hardcoded endpoints prevent the same immutable application artifact from operating correctly in both regions.
+## 4. Priority must not be based on
 
-### Rule P0-AA-002: Local-region affinity is violated
+- Remediation owner or implementation team
+- Implementation effort, complexity, funding, or story points
+- Implementation wave or sequencing preference
+- The priority of a dependent change
+- The fact that a change is a prerequisite for another change
+- The need to test, certify, or document another remediation
+- Confidence level alone
+- Severity alone
 
-Apply when a normally operating application deployment can use a remote-region dependency instead of its local regional dependency, contrary to the approved target behavior.
+## 5. Separation of priority, dependencies, and release gates
 
-### Rule P0-AA-003: Failed regional deployment remains eligible for traffic
+Every plan must record these dimensions independently:
 
-Apply when sustained failure of a critical local dependency does not cause the application to become not ready, allowing the failed deployment or region to remain eligible for traffic.
+- `priority`: impact of the defect itself
+- `depends_on_change_ids`: technical implementation dependencies
+- `required_by_change_ids`: downstream changes requiring this change
+- `release_gate`: evidence or condition required before release
+- `implementation_wave`: dependency and rollout ordering
+- `approval_required`: business, architecture, security, privacy, or partner approval
 
-### Rule P0-AA-004: External failure creates liveness restart loops
+A P1 prerequisite for a P0 remediation remains P1. The P0 remediation may not close until its P1 prerequisite is complete, but the prerequisite does not inherit P0.
 
-Apply when an external dependency failure causes liveness failure, repeated pod restarts, or a startup/restart loop that cannot restore service.
+## 6. Test and verification policy
 
-### Rule P0-AA-005: Local state prevents regional traffic movement
+### 6.1 Tests attached to a behavior change
 
-Apply when required session, workflow, transaction, or business state exists only in pod-local or region-local volatile storage and requests cannot safely move to the other region.
+Tests that prove a P0, P1, or P2 behavior remain part of that behavior change and inherit its implementation priority. This inheritance applies to the test task, not to a separate missing-test finding.
 
-### Rule P0-AA-006: Active-active operation creates immediate material data-integrity risk
+### 6.2 Standalone missing-test findings
 
-Apply when duplicate execution, unsafe transaction retry, concurrency conflict, or replay behavior would make a critical business transaction unsafe when both regions are active.
+A standalone finding whose root cause is only missing test coverage, a missing shared harness, or insufficient verification is normally:
 
-### Rule P0-AA-007: Defect blocks meaningful regional failure testing
+- P2 under `P2-ASSURE-001`, or
+- P3 under `P3-ASSURE-001` when supplemental only.
 
-Apply when the defect prevents the team from executing or interpreting active-active regional failure tests.
+A standalone missing-test finding must not become P0 or P1 solely because it would test P0 or P1 behaviors. The test suite may still be a mandatory release gate.
 
-### Rule P0-AA-008: Missing graceful shutdown for authoritative processing
+### 6.3 Runtime defect that prevents failover testing
 
-- rule_id: P0-RCV-008
+A runtime or configuration defect that prevents the application from entering, surviving, or recovering from a regional failure is prioritized by the underlying runtime rule. Do not use missing observability or missing tests alone to classify it as P0.
 
-  title: Missing graceful shutdown for authoritative processing
+## 7. P0: Blocking or Critical Risk
 
-  priority: P0
+Assign P0 only when repository-owned code or application configuration establishes at least one direct blocking or critical condition below.
 
-  category: recovery
+### P0-AA-001: Application cannot start or repeatedly crashes in an approved target region
 
-  applies_when:
+Apply when code or application configuration directly prevents successful startup or causes a repeatable crash or restart loop in an approved target region.
 
-    - finding:
-        control_id: APP-AA-017
+Evidence must establish the startup or crash mechanism. A theoretical dependency outage without evidence of startup prevention is not sufficient.
 
-    - condition:
-        graceful_shutdown_missing
+### P0-AA-002: Same immutable artifact cannot operate in both active regions
 
-    - workload:
-        authoritative_processing
+Apply when region-specific code, builds, artifacts, profiles, or hardcoded endpoints prevent the same approved artifact from operating correctly in both regions.
 
-  authoritative_processing:
+### P0-AA-003: Required local-region dependency affinity is violated
 
-    - payment_processing
-    - financial_processing
-    - kafka_consumer
-    - event_processing
-    - scheduler
-    - durable_state_mutation
-    - transaction_processing
+Apply when repository behavior can direct a normally operating regional deployment to an unauthorized remote-region dependency and that behavior violates the approved target design.
 
-  rationale: >
-    The application performs authoritative business processing and
-    lacks graceful shutdown behavior.
+### P0-AA-004: Failed deployment remains eligible for GLB traffic
 
-    Pod termination, deployment, autoscale operations, node drain,
-    infrastructure maintenance, failover, or recovery operations
-    can interrupt in-flight work and create duplicate processing,
-    lost processing, inconsistent state, or incorrect business
-    outcomes.
+Apply when sustained failure of a critical serving dependency leaves the application ready or otherwise traffic-eligible, causing the GLB to continue routing requests to a deployment that cannot provide its critical capability.
 
-    Because authoritative processing correctness is affected,
-    the missing graceful-shutdown implementation represents
-    an immediate resiliency risk.
+### P0-AA-005: Local volatile state blocks safe traffic movement
 
-  implementation_guidance: >
-    Implement readiness withdrawal, work draining,
-    ownership release, offset safety, and bounded completion
-    before process termination.
+Apply when required session, workflow, transaction, or business state exists only in pod-local or region-local volatile storage and requests cannot move safely to the other active region.
 
-  examples:
+### P0-AA-006: Active-active operation creates immediate material authoritative-state corruption
 
-    - Kafka consumer processing authoritative state
+Apply when concurrent regional operation, duplicate execution, replay, unsafe transaction retry, or an unsupported consistency assumption can directly and materially corrupt authoritative business state.
 
-    - Payment transaction processing
+### P0-AA-007: Active-standby workload ownership is unenforced and creates both-active or stale-active processing risk
 
-    - Durable workflow execution
+Apply when an approved active-standby workload can process concurrently in more than one region, or a former active instance cannot be fenced, and the workload mutates authoritative state or performs critical business processing.
 
-    - Scheduled business processing
+### P0-DUR-001: Accepted work can be permanently lost or become unrecoverable
 
-    - Order fulfillment processing
+Apply when all are established:
 
-## P1: Failure-amplification or recovery blocker
+- The application or its messaging boundary has accepted the work.
+- Repository behavior can permanently discard, skip, or lose that work.
+- No durable quarantine, retry, reconciliation, replay, or recovery record remains.
+- The lost work has material business or authoritative-state impact.
 
-Assign P1 when no P0 rule applies and at least one P1 rule applies.
+Examples include advancing a Kafka offset after abandoning authoritative processing with no durable recovery path.
 
-### Rule P1-RCV-001: Calls can exceed the failure-detection budget
+### P0-DUR-002: False acknowledgement before durable acceptance
 
-Apply when missing or excessive timeouts can delay health transition, consume request capacity, or prevent traffic draining within the required budget.
+Apply when the application reports success or completes an accepted operation before the required durable system has accepted or durably recorded the work, and a failure can produce permanent loss or unrecoverable divergence.
 
-### Rule P1-RCV-002: Retry behavior amplifies failure
+Do not apply when the defect only reduces telemetry or when another finding already captures the actual cross-store divergence and this finding is only a supporting producer configuration control.
 
-Apply when retries are unbounded, immediate, unsafe, or likely to cause retry storms, duplicate side effects, or dependency overload.
+### P0-DUR-003: Cross-store divergence is permanent and unreconciled
 
-### Rule P1-RCV-003: Failure is not isolated
+Apply when a critical business transaction updates authoritative state and another durable system, but repository behavior can leave the two permanently inconsistent with no durable intent, reconciliation marker, outbox, or compensating recovery path.
 
-Apply when a missing circuit breaker, bulkhead, or equivalent isolation mechanism can exhaust shared threads, sockets, connection pools, or other application resources.
+### P0-RCV-001: Regional promotion or recovery action can corrupt authoritative state
 
-### Rule P1-RCV-004: Application cannot recover without restart
+Apply when the approved promotion, replay, offset restoration, retry, or recovery mechanism itself can directly corrupt authoritative state or repeat a material business effect.
 
-Apply when the application cannot reconnect, refresh credentials, recreate clients, or return to readiness after dependency restoration without restarting the process or pod.
+### P0-SEC-001: Repository evidence establishes an immediately exploitable critical application security condition
 
-### Rule P1-RCV-005: Temporary dependency loss creates startup failure
+Apply only when application code or configuration evidence establishes both the critical weakness and its reachable impact within the enabled assessment scope. Do not infer network reachability from absent deployment evidence.
 
-Apply when temporary startup-time dependency unavailability causes permanent startup failure or crash looping.
+## 8. P1: High Priority
 
-### Rule P1-RCV-006: Safe degraded operation is unavailable
+Assign P1 when no P0 rule applies and the defect materially increases outage duration, failure amplification, recovery difficulty, data inconsistency risk, security exposure, or normal-operation correctness risk.
 
-Apply when an optional or partially available dependency unnecessarily prevents safe degraded operation.
+### P1-RCV-001: Bounded retry or transient-failure classification is required
 
-### Rule P1-RCV-007: Graceful shutdown implementation absent
+Apply when expected transient failures, conflicts, or failover transitions become terminal customer-visible failures because safe bounded retry or outcome classification is absent.
 
-- rule_id: P1-RCV-007
+### P1-RCV-002: Timeout and failure-budget configuration is required
 
-  title: Graceful shutdown implementation absent
+Apply when missing or excessive timeouts can delay failure detection, consume request or listener capacity, or exceed the required request, readiness, or shutdown budget.
 
-  priority: P1
+A timeout finding remains P1 even when a P0 readiness implementation depends on it. Record the dependency separately.
 
-  category: recovery
+### P1-RCV-003: Dependency isolation or safe degraded operation is absent
 
-  applies_when:
+Apply when missing circuit breaking, bulkheading, pool isolation, cache error handling, or safe degraded behavior allows one dependency to remove otherwise healthy application capability.
 
-    - finding:
-        control_id: APP-AA-017
+### P1-RCV-004: Idempotency or stable event identity is required but direct P0 authoritative-state corruption is not established
 
-    - condition:
-        graceful_shutdown_missing
+Apply when duplicate processing is possible during failover or recovery, but the finding does not itself meet P0-AA-006 or P0-RCV-001.
 
-  rationale: >
-    The application does not implement graceful shutdown,
-    readiness withdrawal, work draining, or safe termination
-    behavior.
+### P1-RCV-005: Application cannot recover without restart
 
-    Lost requests, lost event processing, duplicate processing,
-    and failed in-flight operations can occur during deployment,
-    node maintenance, autoscale events, pod eviction,
-    rolling upgrades, or regional failover.
+Apply when the application cannot reconnect, refresh credentials, recreate clients, restore readiness, or resume service after dependency restoration without restarting the process or pod.
 
-  implementation_guidance: >
-    Add graceful shutdown, readiness transition,
-    traffic draining, and bounded completion or abandonment
-    of in-flight work.
+### P1-RCV-006: Temporary startup dependency loss materially delays recovery but does not establish a target-region startup blocker
 
-  examples:
+Apply when startup is degraded, delayed, or fragile but the evidence does not establish P0-AA-001.
 
-    - Spring Boot server shutdown lifecycle
+### P1-RCV-007: Graceful termination is absent
 
-    - Kafka consumer stop and drain
+Apply when the application lacks readiness withdrawal, request draining, listener draining, ownership release, or bounded termination and routine termination can interrupt work.
 
-    - Scheduler stop and ownership release
+Elevate to P0 only when the finding also satisfies P0-DUR-001, P0-AA-006, or another numbered P0 rule through direct evidence of permanent accepted-work loss or authoritative-state corruption. Authoritative processing alone is not an automatic P0.
 
-    - Executor shutdown and await termination
+### P1-RCV-008: Failure and recovery signals are insufficient
 
-## P2: Data-correctness or processing-resilience gap
+Apply when operators cannot reliably detect a material dependency or processing failure, cannot verify recovery, or cannot determine whether a required workload is operating in the intended region.
 
-Assign P2 when no P0 or P1 rule applies and at least one P2 rule applies.
+Missing correlation, regional dimensions, or root-cause diagnostics alone are P2 unless they are inseparable from absent actionable failure and recovery signals in the same root cause.
 
-### Rule P2-DATA-001: Idempotency is incomplete
+### P1-RCV-009: Overload or unbounded resource consumption can remove regional capacity
 
-Apply when duplicate requests, retries, or event replay can repeat a business effect, but the issue does not meet P0-AA-006.
+Apply when application code contains an unbounded or inadequately isolated consumption path involving heap, threads, sockets, connections, queues, cache load, or result materialization that can materially impair availability.
 
-### Rule P2-DATA-002: Duplicate and replay handling is incomplete
+### P1-DUR-001: Producer durability and outcome handling are incomplete
 
-Apply when messaging or workflow code lacks reliable duplicate detection, replay handling, or checkpoint recovery.
+Apply when acknowledgment, idempotent producer configuration, send-result handling, delivery timeout, or failure signaling is absent, but the finding does not independently satisfy P0-DUR-002 or P0-DUR-003.
 
-### Rule P2-DATA-003: Transaction retry is unsafe or ambiguous
+### P1-CORRECT-001: Material normal-operation correctness defect
 
-Apply when transaction retry can repeat an operation, mishandle an unknown commit outcome, or cross an unsafe transaction boundary.
+Apply to non-resiliency findings when repository behavior can return materially incorrect business data, process malformed mandatory input, violate an established contract, or produce incorrect business outcomes during otherwise healthy operation.
 
-### Rule P2-DATA-004: Concurrency conflicts are not controlled
+### P1-SEC-001: High-priority application security or access-control defect
 
-Apply when multi-region writes can silently overwrite one another or when optimistic or equivalent concurrency handling is absent.
+Apply when repository evidence establishes a material application-level security weakness, but the evidence does not establish the immediate critical reachability and impact required by P0-SEC-001.
 
-### Rule P2-DATA-005: Ordering or consistency assumption is unsupported
+## 9. P2: Non-blocking Improvement or Best Practice
 
-Apply when code relies on global ordering, immediate read-after-write consistency, or another guarantee not established by the approved application behavior.
+Assign P2 when no P0 or P1 rule applies and the change improves resilience, assurance, diagnosis, architecture, or correctness without representing a blocking or high-priority defect.
 
-### P2 elevation rule
+### P2-ARCH-001: New architecture pattern or redesign improves resilience
 
-Elevate a P2 candidate to P0 under `P0-AA-006` when the condition makes a critical production transaction materially unsafe during active-active operation.
+Apply to optional or non-blocking adoption of an outbox, saga, event sourcing, replication redesign, or comparable architecture pattern when no P0/P1 material risk is established.
 
+### P2-OBS-001: Diagnostic observability improvement
 
+Apply when correlation, regional attribution, tracing, dashboards, or root-cause diagnostics improve incident analysis but runtime failure detection and recovery signals otherwise remain sufficient.
 
-rule_id: P2-SUP-001
+### P2-ASSURE-001: Shared failure or failover verification is missing
 
-title: Mutable runtime image
+Apply to a standalone missing-test or shared-harness finding when runtime findings are separately recorded and the missing assurance does not itself create the failure.
 
-priority: P2
+The verification suite may be a mandatory release gate without being P0.
 
-category: supply_chain
+### P2-CORRECT-001: Non-blocking correctness or contract improvement
 
-applies_when:
+Apply when a correctness or contract issue is real but does not materially affect business outcomes and is not covered by P1-CORRECT-001.
 
-  - finding:
-      control_id: APP-SUPPLY-002
+### P2-DATA-001: Duplicate or replay handling is incomplete without material authoritative-state impact
 
-  - condition:
-      image_digest_not_pinned
+Apply when duplicate or replay behavior exists but does not directly satisfy a P0 or P1 rule.
 
-rationale: >
-  Mutable tags can cause runtime behavior to change
-  without repository modification.
-
-  Different image versions may be deployed in
-  different environments or regions.
-
-  Repeatability, rollback consistency, vulnerability
-  tracking, and deterministic recovery are reduced.
-
-implementation_guidance: >
-  Pin runtime images using immutable digests and
-  establish image refresh governance.
-
-examples:
-
-  - FROM eclipse-temurin:17-jre@sha256:...
-
-  - FROM mcr.microsoft.com/openjdk/jdk:17@sha256:...
-
-
-  rule_id: P1-SUP-002
-
-title: Mutable runtime image in regulated or financial processing
-
-priority: P1
-
-applies_when:
-
-  - control_id: APP-SUPPLY-002
-
-  - workload:
-      financial_processing
-      payment_processing
-      pci_scope
-      regulated_data
-      
-
-## P3: Operational-maturity or verification gap
+## 10. P3: Non-blocking Code Consistency and Maintainability
 
 Assign P3 only when no P0, P1, or P2 rule applies.
 
-### Rule P3-OPS-001: Regional telemetry is incomplete
+### P3-OPS-001: Maintainability or readability
 
-Apply when logs, metrics, traces, or health events do not identify the serving region or dependency context.
+Apply to naming, formatting, duplication removal, code consistency, or readability improvements.
 
-### Rule P3-OPS-002: Actionable failure signals are incomplete
+### P3-OPS-002: Non-blocking configuration consistency
 
-Apply when retry exhaustion, circuit state, dependency degradation, or recovery lacks useful telemetry but runtime behavior remains otherwise correct.
+Apply when externalization, naming, or configuration cleanup improves maintainability without material runtime impact.
 
-### Rule P3-OPS-003: Supplemental failure testing is missing
+### P3-ASSURE-001: Supplemental tests or documentation
 
-Apply when additional automated failure tests are desirable but are not the sole proof required for a P0, P1, or P2 behavior.
+Apply when additional tests or documentation are desirable but are not required to prove a governed remediation or satisfy a release gate.
 
-### Rule P3-OPS-004: Graceful-shutdown verification is incomplete
+## 11. Observability decision framework
 
-Apply when the shutdown design exists but automated verification or supporting operational evidence is incomplete.
+Use the following order:
 
-### Rule P3-OPS-005: Documentation or diagnostics need improvement
+- P0: Do not assign P0 for observability alone. P0 requires a separate numbered P0 runtime, durability, security, or traffic-eligibility rule.
+- P1: Actionable material failure or recovery cannot be detected or verified.
+- P2: Failure is detectable, but correlation, regional attribution, or root-cause diagnosis is materially incomplete.
+- P3: Visibility improvement is operationally useful but does not materially affect incident response or recovery.
 
-Apply when the remaining gap primarily affects operational understanding rather than active-active correctness.
+When one finding combines P1 and P2 observability concerns, split the finding or remediation targets when they have distinct root causes and priority characteristics. Do not use the strongest subcondition to elevate unrelated diagnostic enhancements.
 
-### Test-priority inheritance rule
+## 12. Idempotency and replay framework
 
-A missing test must not automatically be assigned P3. When a test is the acceptance evidence for a P0, P1, or P2 change, include that test in the same change and priority as the behavior it validates.
+- P0: Replay, duplicate execution, or recovery directly corrupts authoritative state or repeats a critical business effect.
+- P1: Duplicate processing is possible during failover or recovery, but direct authoritative-state corruption is not established for this service.
+- P2: Duplicate handling is incomplete but topology-independent and non-material.
+- Non-resiliency: No credible failure, recovery, replay, or failover scenario is established.
 
-# Severity and priority relationship
+## 13. Startup framework
 
-Use severity as one input to planning, not as the priority formula.
+- P0: Evidence establishes that the application cannot start or repeatedly crashes in an approved target region.
+- P1: Startup is delayed, fragile, or requires recovery work, but successful startup remains possible.
+- P2: Startup diagnostics or bootstrap observability are incomplete.
 
-Examples:
+Compound findings that combine startup availability with schema governance should be split when the causes, evidence, or priorities differ.
 
-- A critical finding that prevents readiness from changing during a regional dependency failure is P0 under `P0-AA-003`.
-- A high-severity unbounded retry finding can be P1 under `P1-RCV-002`.
-- A critical idempotency finding is P2 under `P2-DATA-001`, unless it materially makes a critical active-active transaction unsafe, in which case elevate it to P0 under `P0-AA-006`.
-- A medium regional telemetry finding is normally P3 under `P3-OPS-001`.
+## 14. Graceful-termination framework
 
-# Priority assignment format
+- P0: Missing termination behavior directly satisfies P0-DUR-001, P0-AA-006, or another numbered P0 rule.
+- P1: Missing readiness withdrawal, draining, or bounded completion creates high-priority interruption or duplication risk.
+- P2: The design exists but operational verification is incomplete.
+- P3: Documentation or minor consistency is incomplete.
 
-Every planned change must include:
+## 15. Non-resiliency prioritization
+
+Non-resiliency findings are limited to P2 and P3.
+
+#### P2-NR-001: Material non-resiliency remediation
+
+Assign P2 when an evidence-backed security, correctness, contract, compatibility, performance, assessment-quality, or operational problem warrants planned remediation but does not establish the complete resiliency impact chain.
+
+#### P3-NR-001: Non-resiliency consistency or maintainability
+
+Assign P3 for logging-only improvement, telemetry enhancement, scheduled-run improvement, documentation, maintainability, readability, configuration consistency, or supplemental verification when no material impact requiring P2 is established.
+
+Rules:
+- Never assign P0 or P1 to a non-resiliency finding.
+- If a finding appears to satisfy P0 or P1, return it to resiliency-classification review.
+- Human override may move a non-resiliency finding only between P2 and P3.
+
+## 16. Human override policy
+
+A human may override the calculated priority for documented business sequencing, maintenance windows, risk acceptance, regulatory obligations, or an approved architecture decision.
+
+Every override must retain:
+
+- calculated priority
+- override priority
+- reason
+- approver
+- approval date
+
+An override does not change finding severity, classification, evidence, or compliance status.
+
+## 17. Required priority record
 
 ```yaml
 priority:
-  value: P0
+  value: P1
   policy_id: AA-REMEDIATION-PRIORITY
-  policy_version: "1.0.0"
-  rule_id: P0-AA-003
+  policy_version: "1.2.0"
+  rule_id: P1-RCV-002
+  secondary_rule_ids: []
   rationale: >
-    Retry exhaustion for the critical local dependency does not change
-    application readiness, so the failed regional deployment remains
-    eligible for traffic.
-  calculated_priority: P0
+    Repository evidence shows that dependency calls have no explicit timeout,
+    so degraded dependencies can exceed the failure-detection budget and consume
+    application capacity. The finding is P1 under P1-RCV-002. It is required by
+    a P0 readiness change, but prerequisite priority inheritance is prohibited.
+  calculated_priority: P1
   override_applied: false
   override_priority: null
   override_reason: null
   override_approved_by: null
+  override_approved_at: null
 ```
 
-# Human override policy
+## 18. Planning validation
 
-A human may override the calculated priority when business sequencing, maintenance windows, risk acceptance, release dependencies, or another documented constraint requires it.
+Before completing Step 3A, verify:
 
-An override must preserve:
+- Every change cites a defined numbered rule ID.
+- No undefined or obsolete rule ID is referenced.
+- Priority is based on the defect itself.
+- Prerequisites do not inherit downstream priority.
+- Implementation waves do not alter priority.
+- Release gates are recorded separately.
+- Behavior-specific tests remain with the behavior change and inherit its implementation priority.
+- Standalone missing-test findings use P2-ASSURE-001 or P3-ASSURE-001 unless another direct defect is established.
+- Accepted-work loss is evaluated against P0-DUR-001.
+- False acknowledgement is evaluated against P0-DUR-002.
+- Cross-store divergence is evaluated against P0-DUR-003.
+- Active-active state corruption is evaluated against P0-AA-006.
+- Active-standby workload ownership is evaluated against P0-AA-007.
+- Observability findings use the framework in section 11.
+- Graceful termination uses the framework in section 14.
+- Material non-resiliency correctness and security findings are evaluated for P1.
+- Compound findings are split when different root causes or priority characteristics would otherwise be hidden.
+- Severity was not used as the sole priority formula.
+- Human overrides are complete and auditable.
+- Resiliency findings use P0-P3.
+- Non-resiliency findings use P2-P3 only.
+- No non-resiliency finding appears in the P0 or P1 index.
 
-- The calculated priority
-- The override priority
-- The reason
-- The approver
-- The approval date
+## 19. Migration guidance from version 1.1.0
 
-An override does not change the original finding severity or compliance status.
+Re-evaluate existing plans using these corrections:
 
-# Planning validation
-
-Before completing a plan, verify:
-
-1. Every change cites one valid rule ID from this policy.
-2. The highest applicable priority rule was selected.
-3. P2 candidates were evaluated for P0 data-integrity elevation.
-4. Required tests inherit the priority of the behavior they validate.
-5. Every override is complete and auditable.
-6. No priority was assigned solely from finding severity.
-7. No work was created for excluded statuses, infrastructure deployment, or PCF.
+- Findings elevated only by former P0-AA-005 prerequisite inheritance should return to their intrinsic priority.
+- Former P0-AA-013 testing/interpretation elevations should be reassessed under P1-RCV-008, P2-OBS-001, or P2-ASSURE-001.
+- Missing graceful shutdown is P1 unless direct evidence satisfies a numbered P0 rule.
+- Accepted-work loss should use P0-DUR-001.
+- False acknowledgement should use P0-DUR-002.
+- Cross-store divergence should use P0-DUR-003.
+- Standalone shared test-harness findings should normally use P2-ASSURE-001.
+- Material non-resiliency correctness findings should be evaluated under P1-CORRECT-001.
+- Material application security findings should be evaluated under P1-SEC-001 or P0-SEC-001.
+- Replace obsolete or inconsistent references to P0-AA-011, the former use of P0-AA-006 for unrelated idempotency elevation, and unnumbered precedence conditions with the defined rules in this version.

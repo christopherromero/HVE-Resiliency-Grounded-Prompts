@@ -36,3 +36,9 @@ Assume:
 - Private Endpoints exist
 
 Generate findings only from grounded controls.
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
+
+### Architecture authority override
+Do not treat the listed regional services as proof of deployed state. Resolve intent from `application-context/application-architecture-context.yml`; treat unavailable deployment proof as evidence gaps. Azure SQL uses operating model `active_standby` and separately uses connectivity model `failover_group_listener` when declared by the approved context.
