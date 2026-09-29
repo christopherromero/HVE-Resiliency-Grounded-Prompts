@@ -25,6 +25,7 @@ APPLICATION_CONTEXT=application-context/assessment-context.md
 APPLICATION_ARCHITECTURE_CONTEXT=application-context/application-architecture-context.yml
 SOLUTION_ARCHITECTURE_CONTEXT=application-context/solution-architecture-context.yml
 REFERENCE_ARCHITECTURE_REGISTRY=application-context/reference-architecture-registry.yml
+MICROSOFT_PATTERN_REGISTRY=grounding/registry/microsoft-pattern-registry.yml
 ASSESSMENT_SCOPE_CONTEXT=application-context/assessment-scope-context.yml
 ASSESSMENT_SCOPE_SCHEMA=grounding/governance/assessment-scope-schema.yml
 REPORT_ARTIFACT=.copilot-tracking/plans/reports/${REPORT_DATE}-${MICROSERVICE_SLUG}-code-level-resiliency-assessment.md

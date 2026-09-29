@@ -91,8 +91,16 @@ Metadata placement and visibility are presentation-only. Every required field is
 - Approved Azure Shared Services reference-architecture table, rendered from
   REFERENCE_ARCHITECTURE_REGISTRY, or the no-registry statement when no approved
   registry is supplied
-- Summary findings table
+- Summary Findings Table
 - Illustrative-code notice
+
+Do not render a `Report Scope` subsection when the report includes every governed priority. A report
+describing its own completeness is meta-commentary the customer did not ask for. When all priorities
+are present, the Summary Findings Table already establishes scope.
+
+Render a `Report Scope` subsection only when priorities are omitted by report preference. In that
+case it must declare the included priorities, the omitted priorities, and the authoritative
+assessment and plan paths, so that no reader mistakes a filtered report for the complete finding set.
 
 
 ```markdown
@@ -113,8 +121,19 @@ When an approved registry is supplied, render under the Assessment Overview head
 
 Render entries whose `applicable_when` matches a Step 1 confirmed dependency or
 capability. When no entry matches, render every approved entry. Sort by Azure Shared
-Service. Render `document_status` alongside approval status so a draft or proposal
-document is not presented as a final approved design.
+Service.
+
+Render exactly these five columns. Do not add a sixth column, and do not render a
+non-matching entry carrying an applicability note in place of filtering it out.
+
+Render `document_status` inside the Approval Status cell rather than as its own
+column, so a draft or proposal document is not presented as a final approved design.
+For example, `Approved (final)`, `Approved (draft)`, `Approved (proposal)`.
+
+Below the table, state that it lists the reference architectures applicable to this
+assessment, and that a service absent from the table was not evidenced within the
+enabled assessment domains rather than shown to be absent from the deployed
+environment.
 
 Registry-supplied URLs are pre-approved. They are explicitly exempt from the Required
 exclusions rule prohibiting invented links.
@@ -130,6 +149,44 @@ a lifecycle status other than approved:
 A reference architecture describes intended design. It is not evidence that
 infrastructure is deployed correctly and must never be used as repository source
 evidence for a finding.
+```
+
+```markdown
+### Microsoft pattern registry contract
+
+Microsoft Learn guidance is supplied by an approved registry at
+`MICROSOFT_PATTERN_REGISTRY`, by default
+`grounding/registry/microsoft-pattern-registry.yml`. That registry is reusable and
+customer-independent. This schema defines structure only and must not contain
+Microsoft URLs.
+
+The registry drives two renderings:
+
+1. The `**MSFT Reference:**` final line on a finding, governed by the Microsoft
+   reference content contract.
+2. The Microsoft pattern table inside the `Standards Alignment` section, governed by the
+   Standards Alignment columns contract. The section heading does not change.
+
+Resolve a pattern for a finding using the registry `resolution_order`: discard
+`standards_alignment_only` patterns, score each remaining pattern by how many of the
+finding's cited controls it matches, prefer the highest score, then the lowest
+`precedence`, then `pattern_id`. Render at most one reference per finding and omit the
+field when nothing matches.
+
+Registry-supplied URLs are pre-approved. They are explicitly exempt from the Required
+exclusions rule prohibiting invented links. Every other Microsoft URL is prohibited.
+
+Store and render locale-neutral URLs. Never emit an `/en-us/` segment; Microsoft
+injects the locale server-side.
+
+A Microsoft pattern describes recommended design. It is never repository source
+evidence for a finding, and a pattern status of `Implemented` requires repository
+evidence.
+
+When the registry is absent, unreadable, or has a lifecycle status other than
+approved, keep the `Standards Alignment` section, render the no-registry statement
+defined in the Standards Alignment columns contract in place of the table, and omit
+every `**MSFT Reference:**` line. Do not substitute invented links.
 ```
 
 ## Report header block rendering contract
@@ -193,7 +250,7 @@ Rules:
 Expected semantic rendering:
 
 ```markdown
-## Assessment Overview
+# 1. Assessment Overview
 
 {One or two short paragraphs describing the application and what was assessed.}
 
@@ -227,10 +284,15 @@ Wording may be polished, but state, region, and lifecycle meaning must not chang
 
 ## Summary findings table columns
 
+Heading: `## Summary Findings Table`. Use that exact wording. `Findings Summary`,
+`Summary Findings`, and `Filtered Findings Summary` are not permitted variants.
+
 - Priority
 - Section
 - Confirmed count
 - Description
+
+Render a final bolded total row so the reader does not have to add the counts.
 
 Exclude verified controls, non-findings, not-assessed controls, not-applicable controls, accepted risks, and PCF references.
 
@@ -297,16 +359,54 @@ Use native Markdown headings at every level so the document outlines, folds, and
 
 | Level | Content | Form |
 |---|---|---|
-| H1 | Numbered top-level section | `# 2. Resiliency-Focused Recommendations` |
+| H1 | Report title, then each numbered top-level section | `# 2. Resiliency-Focused Recommendations` |
 | H2 | Priority group with finding count | `## P0 — Critical Resiliency Risks (9)` |
 | H3 | Repository-specific category | `### Traffic Eligibility and Health` |
 | H4 | Detailed finding | `#### P0-001: {title}` |
 
-The report title is also H1 and precedes section 1.
+The report title is H1 and precedes section 1. Numbered sections are also H1, so the document
+carries more than one top-level heading. This is deliberate: it matches the delivered report format
+and keeps findings at H4 rather than pushing them to H5. It trips markdownlint MD025, which is
+accepted and not enforced in this repository.
 
 Number top-level sections in schema order. Derive table-of-contents anchors from the rendered heading text, so `# 2. Resiliency-Focused Recommendations` is linked as `#2-resiliency-focused-recommendations`.
 
+Every in-document link must resolve to a heading anchor or an explicit `<a id="...">`. Do not link to
+an HTML comment marker such as `<!-- section:resiliency-recommendations -->`; comments generate no
+anchor and the link silently breaks.
+
 State the finding count in each priority heading so the reader can scan volume without counting.
+
+### Priority heading labels
+
+Priority headings use a fixed label set. Do not invent, reword, or extend it, and never fold a
+category name into a priority heading. `P2 — Data Correctness and Replay Risks` is a category
+wearing a priority's label and is not permitted.
+
+In the resiliency section:
+
+| Priority | Required heading |
+|---|---|
+| P0 | `## P0 — Critical Resiliency Risks (N)` |
+| P1 | `## P1 — High Priority Resiliency (N)` |
+| P2 | `## P2 — Improvement / Best Practice (N)` |
+| P3 | `## P3 — Code Consistency (N)` |
+
+In the non-resiliency section:
+
+| Priority | Required heading |
+|---|---|
+| P2 | `## P2 — Improvement / Best Practice (Non-Resiliency) (N)` |
+| P3 | `## P3 — Code Consistency (Non-Resiliency) (N)` |
+
+Use an em dash. `N` is the finding count in that heading's section and class.
+
+Never render a governance state as a priority heading. A change that resolves no governed priority
+rule is governance-blocked, which is a Step 3A condition recorded in the remediation plan and
+Appendix A, not a customer-facing priority group.
+
+The `{risk label}` in the finding's `**Priority:**` field is the same label without the count and
+without the `(Non-Resiliency)` suffix, for example `**Priority: P1 - High Priority Resiliency**`.
 
 Do not use HTML headings. An HTML heading is absent from editor outlines and breadcrumbs, generates no anchor, does not fold, and carries styling that can clash with dark mode and PDF export.
 
@@ -314,23 +414,33 @@ Do not use HTML headings. An HTML heading is absent from editor outlines and bre
 
 Within each priority section, repository-specific categories are rendered as native H3 headings, one level below the priority group and one level above each finding.
 
+Category grouping is required. Do not render findings directly under a priority heading. Grouping is
+what lets a reader scan a long priority section, and the shared vocabulary is what makes findings
+comparable across microservice assessments.
+
 ```markdown
 ### {Category Name}
 ```
 
-Examples:
+Prefer a name from this vocabulary when it fits. These are the categories that recur across
+delivered assessments, and reusing them keeps cross-service reporting possible:
 
-```markdown
-### Regional Data-Path Affinity
-```
+| Category | Typical content |
+|---|---|
+| `Health Probes / GLB Readiness` | Readiness and liveness contracts, dependency health indicators, traffic eligibility |
+| `Resilience Patterns / Connection Management` | Timeouts, retry, circuit breaker, bulkhead, pool bounds, client isolation |
+| `Config Server / Startup Configuration` | Bootstrap configuration, fail-fast, property binding, refresh semantics |
+| `Data Integrity / Idempotency` | Atomicity, duplicate suppression, replay safety, compensation, reconciliation |
+| `Kafka / Event Delivery` | Producer durability, offset commit, consumer ownership, event identity |
+| `Caching / State Consistency` | Cache bounds, coherence, staleness, distributed cache topology |
+| `Deployment Infrastructure / CI-CD` | Repository-owned pipelines, regional deploy wiring, promotion gates |
+| `Container Registry / Image Pull` | Registry endpoints, image tags, regional image availability |
+| `Observability` | Telemetry, correlation, regional attribution, failure visibility |
+| `Security / Configuration Hygiene` | Credential handling, management-plane exposure, sensitive logging |
+| `Build / Packaging` | Dependency versions, artifact identity, build reproducibility |
 
-```markdown
-### Traffic Eligibility and Health
-```
-
-```markdown
-### Authoritative Data Correctness
-```
+Add a repository-specific category only when no listed category fits. Use the same
+`Domain / Concern` shape, and keep it under about 45 characters.
 
 Rules:
 
@@ -339,6 +449,7 @@ Rules:
 - Findings remain rendered using the existing H4 format.
 - Category headers are not findings and are not included in finding counts.
 - Category headers must be visually larger than the finding heading.
+- Do not restate the priority in a category name. The priority heading already carries it.
 
 ### Finding rendering policy
 
@@ -387,6 +498,7 @@ repetition and a wall of text. Restore this line to reinstate the previous struc
 - `**Notes:**` sub-bullets (`Implementation`, `Validation`, `Guardrail`)
 -->
 - `**Standards reference:** {grounded standard name and version} — {grounding file path}`, following the standards reference content contract
+- `**MSFT Reference:** [{title}]({url})`, following the Microsoft reference content contract, rendered only when a pattern resolves
 
 Do not render a severity field, a finding status field, or a priority policy ID and version in the finding body. Severity duplicates the priority risk label, a rendered finding is verified unless the conditional field says otherwise, and the priority policy identity is declared once above the Appendix A table while the priority rule ID resolves in that table.
 
@@ -398,7 +510,7 @@ combined severity, finding status, and priority policy line.
 
 #### Standards reference content
 
-Render the standards reference as the finding's final line, as plain Markdown. Do not wrap it in a `<span>` or any other HTML element, and do not apply inline font sizing.
+Render the standards reference as plain Markdown. Do not wrap it in a `<span>` or any other HTML element, and do not apply inline font sizing. It is the finding's last line when no Microsoft reference resolves, and the second-to-last line when one does.
 
 Cite only the grounded standards that define the controls this finding violates. Do not restate the full set of standards evaluated by the assessment; that inventory belongs in Standards Alignment.
 
@@ -410,6 +522,28 @@ Expected semantic rendering:
 
 ```markdown
 **Standards reference:** Spring Boot Confluent Kafka dependency standard v3.1.0 — `grounding/dependencies/springboot-confluent-kafka.md`
+```
+
+#### Microsoft reference content
+
+Render `**MSFT Reference:**` as the finding's final line, as plain Markdown. Do not wrap it in a
+`<span>` or any other HTML element, and do not apply inline font sizing.
+
+Resolve the pattern from `MICROSOFT_PATTERN_REGISTRY` using that registry's `resolution_order`
+against the controls the finding violates. Render at most one reference per finding.
+
+Cite only URLs published by the registry. Never invent, infer, or substitute a Microsoft URL, and
+never edit a registry URL to add a locale segment.
+
+Omit the field entirely when no pattern resolves. An absent Microsoft reference is correct and is
+not a conformance failure.
+
+A Microsoft reference is guidance. It is never repository source evidence for a finding.
+
+Expected semantic rendering:
+
+```markdown
+**MSFT Reference:** [Health Endpoint Monitoring pattern](https://learn.microsoft.com/azure/architecture/patterns/health-endpoint-monitoring)
 ```
 
 Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority). Apply the
@@ -518,9 +652,25 @@ Include this notice in the Assessment Overview:
 
 > **IMPORTANT:** Hard numbers used for retry counts, timeout settings, interval timings, thread-pool sizes, cache duration, health thresholds, and circuit-breaker settings are examples unless the authoritative plan identifies an approved value. These values must be externally configurable and coordinated with application, mesh, gateway, and load-balancer budgets. All code snippets are illustrative proposals, not applied or prescriptive patches.
 
-Label every individual illustrative code proposal:
+Label every individual illustrative code proposal with its target, as a single italic line
+immediately above the code block:
 
-> Illustrative proposal only. 
+```markdown
+*Target `source/src/main/resources/application.yml`:275-281.*
+```
+
+Use `new target` when the proposal creates a file that does not exist yet.
+
+Do not repeat the illustrative disclaimer on each proposal. The Assessment Overview notice already
+states that every code snippet is an illustrative proposal, and restating it above every block
+inflates the report and makes the guidance read as less certain than it is.
+
+<!-- Disabled 2026-09-29 by customer report preference. The per-proposal disclaimer duplicated the
+Assessment Overview notice and appeared 60 times in a 27-finding report. Restore this line to
+reinstate the per-proposal disclaimer.
+
+> Illustrative proposal only.
+-->
 
 ## Target file and location
 - Repository path, including its line range
@@ -574,19 +724,72 @@ Include:
 
 - ID
 - Priority
-- Severity
-- Resiliency related
-- Status
 - Category
 - Finding
 - Remediated with
+
+Render `ID` as a Markdown link to the finding's heading anchor, for example
+`[P0-001](#p0-001-downstream-event-publication-is-detached)`. A matrix whose IDs are plain text
+forces the reader to scroll and search, which defeats the table.
+
+`Remediated with` names the other display IDs that share a single remediation change, or `—` when
+the finding is remediated alone. Step 2 finding IDs and Step 3A change IDs belong in Appendix A, not in this matrix.
+
+Do not add a column that carries the same value on nearly every row. Severity duplicates the
+priority, status is verified for every rendered finding, and repository scope repeats the assessment
+scope already declared in the overview.
+
+<!-- Disabled 2026-09-29 by customer report preference. Severity, Resiliency related, Status, and
+Repository scope carried no per-row information: severity duplicates priority, status is verified for
+every rendered finding, and repository scope was constant. Restore these entries to reinstate the
+nine-column matrix.
+
+- Severity
+- Resiliency related
+- Status
 - Repository scope
+-->
 
-Use display IDs in the `ID` and `Remediated with` columns. `Remediated with` names the other display IDs that share a single remediation change, or `—` when the finding is remediated alone. Step 2 finding IDs and Step 3A change IDs belong in Appendix A, not in this matrix.
-
-Counts must reconcile with the Summary Findings table.
+Counts must reconcile with the Summary Findings Table.
 
 ## Standards Alignment columns
+
+The section heading remains `6. Standards Alignment`. The template, the section marker map,
+and `tools/validate_assessment_report.py` depend on that exact string. Only the table
+contract below changes.
+
+Columns, in order:
+
+- Pattern
+- Status
+- Findings
+
+Render `Pattern` as a Markdown link using the registry `title` and `url`. Render one row per
+registry pattern that at least one finding resolved to. Sort by registry `precedence`.
+
+Do not render a row for a pattern that no finding resolved to. A row with no findings carries no
+assessment information and forces a misleading status value.
+
+`Status` is derived at assessment time from the findings mapped to the pattern. It is never stored
+in the registry. Permitted values are `Implemented`, `Partial`, `Not Implemented`, `Misconfigured`,
+and `Not Applicable`. `Partial` and `Misconfigured` must carry a short parenthetical reason.
+
+Do not record a status of `Implemented` without repository evidence.
+
+`Findings` lists the display IDs that resolved to the pattern, comma separated.
+
+Cite only URLs published by `MICROSOFT_PATTERN_REGISTRY`. Never invent a Microsoft URL.
+
+When no approved Microsoft pattern registry is supplied, keep the `Standards Alignment` section and
+render this statement in place of the table, rather than substituting invented links:
+
+> No approved Microsoft pattern registry was supplied. Findings remain mapped to the grounded
+> application behavior standards, which stay authoritative in the Step 2 and Step 3A artifacts.
+
+<!-- Disabled 2026-09-29 by customer report preference. The grounded-standards inventory with
+control counts is internal audit detail that the customer has never received, and it displaced the
+Microsoft pattern table the delivered reports carried. The counts remain authoritative in the Step 2
+and Step 3A artifacts. Restore this block to reinstate the grounded-standards alignment table.
 
 - Standard or pattern
 - Assessment status
@@ -594,6 +797,7 @@ Counts must reconcile with the Summary Findings table.
 - Related findings
 
 Only grounded or approved references may be used.
+-->
 
 ## Implementation Roadmap content
 
@@ -658,6 +862,24 @@ Rules:
 
 Precede the table with the authoritative Step 2 and Step 3A artifact paths so a reader can resolve any identifier to its source.
 
+## Customer-facing vocabulary
+
+Sections 1 through 7 are written for the customer. Appendix A is the single place where internal
+workflow identifiers belong.
+
+In sections 1 through 7, do not render:
+
+- Workflow phase names such as `Step 1`, `Step 2`, `Step 3A`, or `Step 3B`. Name the artifact by what
+  it is instead: the inventory, the assessment, the remediation plan.
+- Internal identifiers such as `F-001`, `CHANGE-AA-001`, `T-AA-001-01`, or `OQ-012`. Use the display
+  ID, for example `P0-001`.
+- Paths into `.copilot-tracking/`.
+- Policy version strings inside prose. Declare a policy identity once, above the Appendix A table.
+
+Hidden governance, manifest, and conformance comment blocks are exempt; they are not rendered
+content. Grounding standard paths on the `**Standards reference:**` line are also exempt, because
+that line is the finding's provenance contract.
+
 ## Required exclusions
 
 The report must not:
@@ -671,6 +893,8 @@ The report must not:
 - Present illustrative code as an applied patch
 - Invent internal links or reference architectures not supplied by an approved
   REFERENCE_ARCHITECTURE_REGISTRY
+- Invent, infer, or substitute a Microsoft URL not published by an approved
+  MICROSOFT_PATTERN_REGISTRY
 
 ## Back-to-top links
 
@@ -713,6 +937,27 @@ schema_conformance:
   reference_architecture_column_order_valid: true
   no_registry_statement_used: false
   invented_reference_links: 0
+  microsoft_pattern_registry_supplied: true
+  microsoft_pattern_registry_lifecycle_status: approved
+  microsoft_standards_alignment_table_rendered: true
+  microsoft_reference_source: approved_registry
+  invented_microsoft_links: 0
+  microsoft_links_locale_neutral: true
+  microsoft_reference_max_one_per_finding: true
+  alignment_only_patterns_used_as_finding_reference: false
+  priority_heading_labels_from_fixed_set: true
+  invented_priority_labels: 0
+  governance_state_rendered_as_priority_heading: false
+  summary_findings_table_heading_exact: true
+  summary_findings_table_total_row_rendered: true
+  findings_grouped_under_category_headings: true
+  ungrouped_findings: 0
+  finding_matrix_ids_are_anchor_links: true
+  finding_matrix_column_count: 5
+  per_proposal_illustrative_disclaimer_rendered: false
+  workflow_phase_names_in_sections_1_to_7: 0
+  internal_identifiers_in_sections_1_to_7: 0
+  report_scope_subsection_rendered_only_when_filtered: true
   deployment_source_and_target_separated: true
   current_deployment_rendered_from_source: true
   approved_target_deployment_rendered_from_target: true

@@ -1,0 +1,1035 @@
+# Microsoft Resiliency Pattern Registry
+#
+# Reusable, customer-independent registry of Microsoft Learn guidance cited by
+# resiliency assessment reports.
+#
+# Placement rationale:
+#   application-context/reference-architecture-registry.yml holds CUSTOMER-SPECIFIC
+#   architecture documents. This registry holds PUBLIC Microsoft guidance that is
+#   identical for every customer, so it lives in grounding/registry/ alongside
+#   dependency-standard-registry.yml.
+#
+# Consumed by Prompt 3B via:
+#   MICROSOFT_PATTERN_REGISTRY=grounding/registry/microsoft-pattern-registry.yml
+
+document_type: microsoft_pattern_registry
+schema_version: 1.0.0
+registry_id: MICROSOFT-RESILIENCY-PATTERNS
+lifecycle_status: approved
+source_authority: Microsoft Learn public documentation
+owner: Resiliency Assessment Framework
+last_reviewed: 2026-09-29
+
+provenance:
+  derived_from: 60 delivered code-level resiliency assessment reports
+  extraction_method: Pattern-to-finding-category mapping extracted from 1,222 per-finding citations
+  control_mapping_method: 433 distinct grounding control IDs classified into 23 control families
+  link_validation: Every URL issued an HTTP HEAD request on 2026-09-29; only HTTP 200 responses were admitted
+  excluded_dead_links:
+    - url: https://learn.microsoft.com/azure/architecture/patterns/idempotency
+      status: 404
+      prior_citations: 8
+      replaced_by: MSFT-IDEMCONS-001
+    - url: https://learn.microsoft.com/azure/architecture/patterns/transactional-outbox
+      status: 404
+      prior_citations: 8
+      replaced_by: MSFT-OUTBOX-001
+    - url: https://learn.microsoft.com/azure/architecture/framework/devops/monitor
+      status: 404
+      prior_citations: 7
+      replaced_by: MSFT-OBSERVE-001
+    - url: https://learn.microsoft.com/azure/well-architected/reliability/design-checklist
+      status: 404
+      prior_citations: 6
+      replaced_by: MSFT-WAF-CHECKLIST-001
+
+rendering_contract:
+  finding_reference:
+    render_as: '**MSFT Reference:** [<title>](<url>)'
+    placement: Final line of each finding, after Notes
+    max_per_finding: 1
+    required: false
+    omit_when: No registered pattern matches any control cited by the finding
+    eligible_usage_values:
+      - finding_reference_and_alignment
+  standards_alignment:
+    report_section: standards_alignment
+    heading_owned_by: report schema
+    heading_note: The report schema owns the section heading. It is currently Standards Alignment. Do not rename it from this registry.
+    columns:
+      - order: 1
+        name: Pattern
+        source_field: title
+        render_as: markdown_link
+        link_target_field: url
+      - order: 2
+        name: Status
+        source_field: derived
+      - order: 3
+        name: Findings
+        source_field: derived
+    status_is_derived: true
+    status_derivation: Computed at assessment time from the findings mapped to the pattern. Never stored in this registry.
+    status_values:
+      - Implemented
+      - Partial
+      - Not Implemented
+      - Misconfigured
+      - Not Applicable
+    status_requires_reason_for:
+      - Partial
+      - Misconfigured
+    sort_by: precedence
+  resolution_order:
+    - Discard patterns whose usage is standards_alignment_only.
+    - Score each remaining pattern by how many of the finding's cited controls it matches.
+      An explicit applies_to_controls match scores higher than an applies_to_control_families match.
+    - Select the pattern matching the greatest number of the finding's controls. This prevents a
+      single incidental control from outvoting the finding's dominant control family.
+    - Break a tie on the lowest precedence value, then on pattern_id for determinism.
+    - Omit the reference entirely when no pattern matches.
+
+governance_rules:
+  - Cite only URLs present in this registry. Never invent, infer, or substitute a Microsoft URL.
+  - Every URL must return HTTP 200 at registry review time. Remove or replace any link that does not.
+  - Store locale-neutral URLs. Never emit /en-us/. Microsoft injects the locale server-side.
+  - A pattern reference is guidance. It is never repository source evidence for a finding.
+  - A finding without a matching pattern renders no MSFT Reference line. Absence is correct and expected.
+  - Patterns with usage standards_alignment_only never appear as a per-finding reference.
+  - Do not present a pattern status of Implemented without repository evidence.
+  - Adding a control to grounding does not require a registry edit when its family is already mapped.
+
+# ---------------------------------------------------------------------------
+# Patterns
+# ---------------------------------------------------------------------------
+patterns:
+  - pattern_id: MSFT-RETRY-001
+    title: Retry pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/retry
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 182
+    applies_to_control_families:
+      - timeout_and_retry
+  - pattern_id: MSFT-HEALTH-001
+    title: Health Endpoint Monitoring pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/health-endpoint-monitoring
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 137
+    applies_to_control_families:
+      - health_and_readiness
+  - pattern_id: MSFT-CIRCUIT-001
+    title: Circuit Breaker pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/circuit-breaker
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 93
+    applies_to_control_families:
+      - circuit_breaking_and_isolation
+  - pattern_id: MSFT-EXTCONFIG-001
+    title: External Configuration Store pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/external-configuration-store
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 77
+    applies_to_control_families:
+      - configuration_externalization
+  - pattern_id: MSFT-ACRGEO-001
+    title: Geo-replication in Azure Container Registry
+    url: https://learn.microsoft.com/azure/container-registry/container-registry-geo-replication
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 51
+    applies_to_control_families:
+      - container_image_supply
+  - pattern_id: MSFT-BULKHEAD-001
+    title: Bulkhead pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/bulkhead
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 38
+    applies_to_control_families:
+      - circuit_breaking_and_isolation
+      - load_shedding_and_throttling
+  - pattern_id: MSFT-STAMP-001
+    title: Deployment Stamps pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/deployment-stamp
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 34
+    applies_to_control_families:
+      - regional_deployment_and_artifact
+      - deployment_manifest_integrity
+  - pattern_id: MSFT-CACHEASIDE-001
+    title: Cache-Aside pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/cache-aside
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 34
+    applies_to_control_families:
+      - caching
+  - pattern_id: MSFT-COMPENSATE-001
+    title: Compensating Transaction pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/compensating-transaction
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 28
+    applies_to_control_families:
+      - data_durability_and_compensation
+  - pattern_id: MSFT-TRANSIENT-001
+    title: Transient fault handling best practices
+    url: https://learn.microsoft.com/azure/architecture/best-practices/transient-faults
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 26
+    applies_to_control_families:
+      - timeout_and_retry
+      - dependency_recovery
+  - pattern_id: MSFT-AKSMULTI-001
+    title: AKS multi-region operator best practices
+    url: https://learn.microsoft.com/azure/aks/operator-best-practices-multi-region
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 21
+    applies_to_control_families:
+      - deployment_manifest_integrity
+      - regional_deployment_and_artifact
+  - pattern_id: MSFT-QUEUELEVEL-001
+    title: Queue-Based Load Leveling pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/queue-based-load-leveling
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 17
+    applies_to_control_families:
+      - load_shedding_and_throttling
+      - messaging_delivery
+  - pattern_id: MSFT-GEODE-001
+    title: Geode pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/geodes
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 16
+    applies_to_control_families:
+      - regional_deployment_and_artifact
+  - pattern_id: MSFT-THROTTLE-001
+    title: Throttling pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/throttling
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 15
+    applies_to_control_families:
+      - load_shedding_and_throttling
+  - pattern_id: MSFT-LEADER-001
+    title: Leader Election pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/leader-election
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 11
+    applies_to_control_families:
+      - coordination_and_scheduling
+  - pattern_id: MSFT-IDEMCONS-001
+    title: Idempotent Consumer pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/idempotent-consumer
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 10
+    applies_to_control_families:
+      - idempotency_and_replay
+  - pattern_id: MSFT-KVBEST-001
+    title: Azure Key Vault best practices
+    url: https://learn.microsoft.com/azure/key-vault/general/best-practices
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 10
+    applies_to_control_families:
+      - secrets_and_identity
+  - pattern_id: MSFT-COMPETING-001
+    title: Competing Consumers pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/competing-consumers
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 9
+    applies_to_control_families:
+      - consumer_ownership_and_offsets
+  - pattern_id: MSFT-PUBSUB-001
+    title: Publisher-Subscriber pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/publisher-subscriber
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 9
+    applies_to_control_families:
+      - messaging_delivery
+  - pattern_id: MSFT-AKSMC-001
+    title: AKS multi-cluster reference architecture
+    url: https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks-multi-region/aks-multi-cluster
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 30
+    prior_art_citations: 9
+    applies_to_control_families:
+      - deployment_manifest_integrity
+      - regional_deployment_and_artifact
+  - pattern_id: MSFT-HANDLETRANS-001
+    title: Handle transient faults (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/reliability/handle-transient-faults
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 8
+    applies_to_control_families:
+      - dependency_recovery
+  - pattern_id: MSFT-OUTBOX-001
+    title: Transactional Outbox pattern
+    url: https://learn.microsoft.com/azure/architecture/databases/guide/transactional-outbox-cosmos
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 8
+    applies_to_control_families:
+      - data_durability_and_compensation
+  - pattern_id: MSFT-FEDID-001
+    title: Federated Identity pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/federated-identity
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 7
+    applies_to_control_families:
+      - secrets_and_identity
+  - pattern_id: MSFT-ASYNCREQ-001
+    title: Asynchronous Request-Reply pattern
+    url: https://learn.microsoft.com/azure/architecture/patterns/async-request-reply
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 7
+    applies_to_control_families:
+      - api_contract_and_error_semantics
+  - pattern_id: MSFT-MONALERT-001
+    title: Monitoring and alerting strategy (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/reliability/monitoring-alerting-strategy
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 7
+    applies_to_control_families:
+      - observability_and_telemetry
+  - pattern_id: MSFT-APIDESIGN-001
+    title: API design best practices
+    url: https://learn.microsoft.com/azure/architecture/best-practices/api-design
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 6
+    applies_to_control_families:
+      - api_contract_and_error_semantics
+      - management_plane_and_api_security
+  - pattern_id: MSFT-SELFPRES-001
+    title: Self-preservation (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/reliability/self-preservation
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 30
+    prior_art_citations: 6
+    applies_to_control_families:
+      - circuit_breaking_and_isolation
+  - pattern_id: MSFT-CSISECRET-001
+    title: AKS CSI Secrets Store driver
+    url: https://learn.microsoft.com/azure/aks/csi-secrets-store-driver
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 6
+    applies_to_control_families:
+      - secrets_and_identity
+  - pattern_id: MSFT-WORKLOADID-001
+    title: AKS workload identity overview
+    url: https://learn.microsoft.com/azure/aks/workload-identity-overview
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 6
+    applies_to_control_families:
+      - secrets_and_identity
+  - pattern_id: MSFT-KVDR-001
+    title: Azure Key Vault disaster recovery guidance
+    url: https://learn.microsoft.com/azure/key-vault/general/disaster-recovery-guidance
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 30
+    prior_art_citations: 6
+    applies_to_control_families:
+      - secrets_and_identity
+  - pattern_id: MSFT-OBSERVE-001
+    title: Observability (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/operational-excellence/observability
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 6
+    applies_to_control_families:
+      - observability_and_telemetry
+  - pattern_id: MSFT-FMA-001
+    title: Failure mode analysis (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/reliability/failure-mode-analysis
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 5
+    applies_to_control_families:
+      - testing_and_failure_validation
+  - pattern_id: MSFT-RELENG-001
+    title: Release engineering and continuous integration (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/operational-excellence/release-engineering-continuous-integration
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 5
+    applies_to_control_families:
+      - supply_chain_and_pipeline
+  - pattern_id: MSFT-BASELINEAKS-001
+    title: AKS baseline reference architecture
+    url: https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/baseline-aks
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 40
+    prior_art_citations: 5
+    applies_to_control_families:
+      - deployment_manifest_integrity
+  - pattern_id: MSFT-RESOURCE-001
+    title: AKS resource management best practices
+    url: https://learn.microsoft.com/azure/aks/developer-best-practices-resource-management
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 0
+    applies_to_control_families:
+      - runtime_resource_management
+  - pattern_id: MSFT-BGJOBS-001
+    title: Background jobs best practices
+    url: https://learn.microsoft.com/azure/architecture/best-practices/background-jobs
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 0
+    applies_to_control_families:
+      - coordination_and_scheduling
+  - pattern_id: MSFT-AKSSCHED-001
+    title: AKS scheduler and pod lifecycle best practices
+    url: https://learn.microsoft.com/azure/aks/operator-best-practices-scheduler
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 10
+    prior_art_citations: 0
+    applies_to_control_families:
+      - lifecycle_and_termination
+  - pattern_id: MSFT-SEGMENT-001
+    title: Segmentation and exposure control (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/security/segmentation
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 5
+    prior_art_citations: 0
+    applies_to_control_families:
+      - management_plane_and_api_security
+  - pattern_id: MSFT-APPSECRETS-001
+    title: Application secrets (Well-Architected)
+    url: https://learn.microsoft.com/azure/well-architected/security/application-secrets
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 20
+    prior_art_citations: 0
+    applies_to_control_families:
+      - secrets_and_identity
+  - pattern_id: MSFT-OTEL-001
+    title: Enable OpenTelemetry in Azure Monitor Application Insights
+    url: https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable
+    link_status: verified_200
+    last_verified: 2026-09-29
+    usage: finding_reference_and_alignment
+    precedence: 30
+    prior_art_citations: 3
+    applies_to_control_families:
+      - observability_and_telemetry
+
+# Removed 2026-09-29: six general-guidance patterns carrying usage standards_alignment_only
+# (MSFT-WAF-PRINCIPLES-001, MSFT-WAF-CHECKLIST-001, MSFT-WAF-RELIABILITY-001, MSFT-DESIGNRES-001,
+# MSFT-MISSIONCRIT-001, MSFT-RWA-JAVA-001). They were banned from per-finding references and so
+# appeared only as Standards Alignment rows with no findings, which rendered as "Not Applicable | —"
+# and contradicted the note stating that no status is derived for them. The delivered reports carried
+# no such rows. The usage field and its rules are retained so a general-guidance pattern can be added
+# back as a single entry if one is ever wanted.
+
+# ---------------------------------------------------------------------------
+# Control families
+#   Every grounding control ID is assigned to exactly one family.
+#   Patterns bind to families, so new controls inherit a pattern automatically.
+#
+#   NOTE: repository-delivery-resiliency.md redefines BUILD-001, BUILD-002 and
+#   CICD-001 through CICD-004 that already exist in container-build-resiliency.md
+#   and cicd-pipeline-resiliency.md. Three of those collisions carry DIFFERENT
+#   requirements under the same ID. This registry resolves each ID to the granular
+#   domain standard. The grounding collision itself still needs fixing separately.
+# ---------------------------------------------------------------------------
+control_families:
+  - family_id: api_contract_and_error_semantics
+    control_count: 16
+    controls:
+      - AKS-ISTIO-010
+      - APIM-005
+      - APIM-016
+      - APP-CORRECT-001
+      - APP-REACT-003
+      - APP-WEB-001
+      - APP-WEB-002
+      - BLOB-013
+      - BLOB-019
+      - EH-014
+      - EH-016
+      - FUNC-022
+      - GLB-005
+      - KAFKA-011
+      - KAFKA-DI-008
+      - PG-015
+  - family_id: caching
+    control_count: 19
+    controls:
+      - APIM-015
+      - APP-CACHE-001
+      - APP-CACHE-002
+      - APP-CACHE-003
+      - APP-CACHE-004
+      - APP-CACHE-005
+      - APP-CACHE-006
+      - COSMOS-017
+      - FUNC-014
+      - KV-005
+      - KV-011
+      - KV-015
+      - REDIS-002
+      - REDIS-009
+      - REDIS-010
+      - REDIS-011
+      - REDIS-012
+      - REDIS-014
+      - REDIS-022
+  - family_id: circuit_breaking_and_isolation
+    control_count: 10
+    controls:
+      - AKS-ISTIO-009
+      - APIM-004
+      - APP-AA-006
+      - APP-HTTP-001
+      - HTTP-002
+      - HTTP-003
+      - HTTP-007
+      - HTTP-008
+      - REDIS-008
+      - SQL-018
+  - family_id: configuration_externalization
+    control_count: 15
+    controls:
+      - APIM-001
+      - APP-AA-002
+      - APP-CONF-010
+      - APP-CONF-012
+      - APP-CONF-013
+      - APP-CONF-014
+      - APP-DISC-001
+      - BLOB-001
+      - COSMOS-001
+      - COSMOS-002
+      - DSE-001
+      - KV-001
+      - PG-001
+      - REDIS-003
+      - SQL-001
+  - family_id: consumer_ownership_and_offsets
+    control_count: 12
+    controls:
+      - AKS-ISTIO-006
+      - APP-WORKLOAD-002
+      - COSMOS-011
+      - EH-005
+      - EH-013
+      - KAFKA-004
+      - KAFKA-012
+      - KAFKA-AS-001
+      - KAFKA-AS-002
+      - KAFKA-AS-003
+      - KAFKA-AS-004
+      - KAFKA-DI-005
+  - family_id: container_image_supply
+    control_count: 12
+    controls:
+      - APP-SUPPLY-002
+      - BUILD-001
+      - BUILD-002
+      - BUILD-003
+      - BUILD-004
+      - BUILD-005
+      - BUILD-006
+      - BUILD-007
+      - BUILD-008
+      - BUILD-009
+      - BUILD-010
+      - KAFKA-001
+  - family_id: coordination_and_scheduling
+    control_count: 17
+    controls:
+      - AKS-ISTIO-007
+      - APP-BATCH-001
+      - APP-BATCH-002
+      - APP-BATCH-003
+      - APP-BATCH-004
+      - APP-SCHED-001
+      - APP-SCHED-002
+      - BLOB-015
+      - BLOB-018
+      - COSMOS-009
+      - COSMOS-016
+      - EH-011
+      - FUNC-006
+      - FUNC-007
+      - JVM-021
+      - PG-018
+      - REDIS-016
+  - family_id: data_durability_and_compensation
+    control_count: 28
+    controls:
+      - APP-AA-010
+      - APP-CORRECT-002
+      - APP-DB-001
+      - APP-DB-003
+      - APP-ENDPOINT-001
+      - APP-FIN-001
+      - APP-FIN-002
+      - APP-REACT-002
+      - BLOB-004
+      - BLOB-012
+      - BLOB-014
+      - BLOB-016
+      - COSMOS-014
+      - COSMOS-020
+      - DSE-003
+      - FUNC-010
+      - FUNC-011
+      - HTTP-011
+      - HTTP-012
+      - KAFKA-010
+      - KAFKA-DI-007
+      - PG-007
+      - PG-017
+      - REDIS-001
+      - REDIS-013
+      - REDIS-017
+      - REDIS-023
+      - SQL-013
+  - family_id: dependency_recovery
+    control_count: 20
+    controls:
+      - APIM-013
+      - APP-AA-013
+      - APP-AA-014
+      - APP-FIN-004
+      - APP-HTTP-004
+      - BLOB-007
+      - COSMOS-019
+      - DSE-006
+      - EH-004
+      - FUNC-016
+      - KAFKA-AS-007
+      - KAFKA-AS-008
+      - KV-007
+      - KV-010
+      - PG-005
+      - PG-010
+      - REDIS-006
+      - SQL-005
+      - SQL-010
+      - SQL-019
+  - family_id: deployment_manifest_integrity
+    control_count: 27
+    controls:
+      - DEPLOY-001
+      - DEPLOY-002
+      - DEPLOY-003
+      - DEPLOY-004
+      - HK-001
+      - HK-002
+      - HK-003
+      - HK-004
+      - HK-005
+      - HK-006
+      - HK-007
+      - HK-008
+      - HK-009
+      - HK-010
+      - IAC-001
+      - K8S-DEPLOY-001
+      - K8S-DEPLOY-002
+      - K8S-DEPLOY-003
+      - K8S-DEPLOY-004
+      - K8S-DEPLOY-005
+      - K8S-DEPLOY-006
+      - K8S-DEPLOY-007
+      - K8S-DEPLOY-008
+      - K8S-DEPLOY-009
+      - K8S-DEPLOY-010
+      - K8S-DEPLOY-011
+      - K8S-DEPLOY-012
+  - family_id: health_and_readiness
+    control_count: 29
+    controls:
+      - AKS-ISTIO-001
+      - AKS-ISTIO-003
+      - AKS-ISTIO-004
+      - APIM-007
+      - APP-AA-007
+      - APP-AA-008
+      - APP-AA-009
+      - APP-DISC-002
+      - APP-HEALTH-001
+      - APP-HEALTH-002
+      - APP-HTTP-005
+      - APP-PROC-001
+      - BLOB-005
+      - COSMOS-006
+      - DSE-007
+      - EH-007
+      - GLB-001
+      - GLB-002
+      - GLB-003
+      - GLB-004
+      - GLB-007
+      - GLB-017
+      - HTTP-009
+      - KV-006
+      - KV-014
+      - PG-006
+      - REDIS-019
+      - SQL-006
+      - SQL-015
+  - family_id: idempotency_and_replay
+    control_count: 24
+    controls:
+      - APIM-011
+      - APIM-014
+      - APP-AA-011
+      - APP-KAFKA-006
+      - APP-REACT-001
+      - BLOB-003
+      - COSMOS-005
+      - COSMOS-015
+      - DSE-005
+      - EH-002
+      - EH-003
+      - EH-012
+      - FUNC-001
+      - FUNC-009
+      - GLB-013
+      - HTTP-005
+      - KAFKA-003
+      - KAFKA-AA-002
+      - KAFKA-AA-005
+      - KAFKA-DI-006
+      - KAFKA-DI-010
+      - PG-003
+      - PG-004
+      - SQL-004
+  - family_id: lifecycle_and_termination
+    control_count: 19
+    controls:
+      - AKS-ISTIO-002
+      - AKS-ISTIO-011
+      - AKS-ISTIO-012
+      - AKS-ISTIO-017
+      - APP-AA-017
+      - BLOB-017
+      - BLOB-020
+      - EH-009
+      - EH-018
+      - FUNC-021
+      - GLB-009
+      - GLB-011
+      - GLB-016
+      - JVM-015
+      - JVM-016
+      - JVM-017
+      - JVM-018
+      - JVM-019
+      - REDIS-024
+  - family_id: load_shedding_and_throttling
+    control_count: 8
+    controls:
+      - APIM-010
+      - APIM-018
+      - APP-AA-012
+      - APP-ASYNC-002
+      - APP-TOKEN-002
+      - EH-006
+      - FUNC-019
+      - SQL-007
+  - family_id: management_plane_and_api_security
+    control_count: 5
+    controls:
+      - APP-ACT-001
+      - APP-ACT-002
+      - APP-ACT-003
+      - APP-API-001
+      - GLB-012
+  - family_id: messaging_delivery
+    control_count: 21
+    controls:
+      - APP-KAFKA-001
+      - APP-KAFKA-002
+      - APP-KAFKA-005
+      - APP-KAFKA-007
+      - EH-001
+      - EH-020
+      - FUNC-003
+      - FUNC-004
+      - FUNC-005
+      - KAFKA-002
+      - KAFKA-006
+      - KAFKA-AA-003
+      - KAFKA-AA-004
+      - KAFKA-AS-005
+      - KAFKA-AS-006
+      - KAFKA-DI-003
+      - KAFKA-DI-004
+      - KAFKA-DI-009
+      - PG-016
+      - REDIS-015
+      - SQL-011
+  - family_id: observability_and_telemetry
+    control_count: 28
+    controls:
+      - AKS-ISTIO-013
+      - AKS-ISTIO-014
+      - AKS-ISTIO-015
+      - APIM-006
+      - APP-AA-015
+      - APP-AA-016
+      - APP-FALLBACK-001
+      - APP-KAFKA-004
+      - APP-OBS-001
+      - APP-OBS-002
+      - APP-OBS-003
+      - APP-STATE-001
+      - COSMOS-013
+      - EH-017
+      - FUNC-017
+      - FUNC-018
+      - GLB-018
+      - JVM-007
+      - JVM-008
+      - JVM-013
+      - JVM-020
+      - KAFKA-007
+      - KAFKA-DI-011
+      - KV-016
+      - PG-009
+      - REDIS-020
+      - REDIS-025
+      - REDIS-026
+  - family_id: regional_deployment_and_artifact
+    control_count: 13
+    controls:
+      - AKS-ISTIO-005
+      - APP-AA-001
+      - APP-AA-003
+      - APP-WORKLOAD-001
+      - DSE-002
+      - GLB-014
+      - JVM-001
+      - KAFKA-009
+      - KAFKA-AA-001
+      - KAFKA-DI-001
+      - KAFKA-DI-002
+      - PG-020
+      - REDIS-018
+  - family_id: runtime_resource_management
+    control_count: 16
+    controls:
+      - APP-ASYNC-001
+      - BLOB-006
+      - COSMOS-012
+      - EH-015
+      - FUNC-020
+      - JVM-002
+      - JVM-003
+      - JVM-004
+      - JVM-005
+      - JVM-006
+      - JVM-009
+      - JVM-010
+      - JVM-011
+      - JVM-012
+      - JVM-014
+      - PG-014
+  - family_id: secrets_and_identity
+    control_count: 25
+    controls:
+      - AKS-ISTIO-016
+      - APIM-009
+      - APIM-017
+      - APP-LOG-001
+      - APP-LOG-002
+      - BLOB-009
+      - BLOB-010
+      - COSMOS-004
+      - COSMOS-010
+      - COSMOS-018
+      - EH-010
+      - EH-019
+      - FUNC-013
+      - FUNC-015
+      - GLB-006
+      - GLB-015
+      - HTTP-006
+      - KV-002
+      - KV-004
+      - KV-013
+      - PG-011
+      - PG-012
+      - PG-019
+      - REDIS-004
+      - REDIS-021
+  - family_id: supply_chain_and_pipeline
+    control_count: 12
+    controls:
+      - APP-SUPPLY-001
+      - CICD-001
+      - CICD-002
+      - CICD-003
+      - CICD-004
+      - CICD-005
+      - CICD-006
+      - CICD-007
+      - CICD-008
+      - CICD-009
+      - CICD-010
+      - SQL-014
+  - family_id: testing_and_failure_validation
+    control_count: 21
+    controls:
+      - AKS-ISTIO-018
+      - APIM-008
+      - APP-AA-018
+      - BLOB-008
+      - COSMOS-008
+      - DSE-008
+      - EH-008
+      - FUNC-023
+      - GLB-008
+      - JVM-022
+      - KAFKA-008
+      - KAFKA-AA-006
+      - KAFKA-AS-009
+      - KAFKA-DI-012
+      - KV-008
+      - KV-012
+      - PG-008
+      - REDIS-027
+      - SQL-008
+      - SQL-016
+      - SQL-020
+  - family_id: timeout_and_retry
+    control_count: 36
+    controls:
+      - AKS-ISTIO-008
+      - APIM-002
+      - APIM-003
+      - APIM-012
+      - APP-AA-004
+      - APP-AA-005
+      - APP-CONF-011
+      - APP-FIN-003
+      - APP-HTTP-002
+      - APP-HTTP-003
+      - APP-KAFKA-003
+      - APP-STATE-002
+      - APP-TOKEN-001
+      - BLOB-002
+      - BLOB-011
+      - COSMOS-003
+      - COSMOS-007
+      - DSE-004
+      - FUNC-002
+      - FUNC-008
+      - FUNC-012
+      - GLB-010
+      - HTTP-001
+      - HTTP-004
+      - HTTP-010
+      - KAFKA-005
+      - KV-003
+      - KV-009
+      - PG-002
+      - PG-013
+      - REDIS-005
+      - REDIS-007
+      - SQL-002
+      - SQL-003
+      - SQL-009
+      - SQL-012
