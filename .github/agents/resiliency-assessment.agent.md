@@ -7,6 +7,8 @@ agents:
   - Task Researcher
   - Task Reviewer
   - Task Planner
+  # Step 4 and Step 5 are out of orchestrator scope. Restore with the handoffs below to re-enable remediation.
+  # - Task Implementor
 handoffs:
   - label: "Step 1: Inventory"
     agent: Task Researcher
@@ -20,6 +22,13 @@ handoffs:
   - label: "Step 3B: Report"
     agent: Task Planner
     prompt: "/03b-report runDate= taskSlug=customer-app planSlug=customer-app-remediation-plan"
+  # Remediation handoffs, disabled. Uncomment with the Task Implementor agent entry to restore Steps 4 and 5.
+  # - label: "Step 4: Implement"
+  #   agent: Task Implementor
+  #   prompt: "/04-implement runDate= taskSlug=customer-app planSlug=customer-app-remediation-plan priorities= waves= changeIds= commitMode=none"
+  # - label: "Step 5: Review"
+  #   agent: Task Reviewer
+  #   prompt: "/05-review runDate= taskSlug=customer-app planSlug=customer-app-remediation-plan implementationArtifact="
 ---
 
 # Resiliency Assessment
@@ -34,6 +43,8 @@ Orchestrator for the governed resiliency assessment. Determines which step is cu
 * Chain steps only after validating that the prior step wrote its authoritative artifact.
 * Scope the orchestrated run to Steps 1 through 3B. End the run when Step 3B completes.
 * Apply Run Defaults for run identity. Never assume an artifact path or an approval selector.
+
+<!-- Remediation principle, disabled: Treat the gate between Phase 1 and Phase 2 as a human decision. -->
 
 ## Run Defaults
 
@@ -98,6 +109,19 @@ Each step has an invocation wrapper, an authoritative prompt, and an output arti
 
 Steps 4 and 5 are outside this orchestrator's scope. The user runs them separately through their own wrapper prompts.
 
+<!-- Remediation step map entries, disabled. Restore alongside the frontmatter handoffs to re-enable.
+5. Step 4 Implement, owned by Task Implementor
+   * Wrapper: `.github/prompts/04-implement.prompt.md`
+   * Authority: `prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md`
+   * Inputs: RUN_DATE, TASK_SLUG, PLAN_SLUG, APPROVED_PRIORITIES, APPROVED_WAVES, APPROVED_CHANGE_IDS, COMMIT_MODE
+   * Output: the implementation record path Step 4 reports
+6. Step 5 Review, owned by Task Reviewer
+   * Wrapper: `.github/prompts/05-review.prompt.md`
+   * Authority: `prompts/05-review-implemented-remediation-complete-priority-aware.prompt.md`
+   * Inputs: RUN_DATE, TASK_SLUG, PLAN_SLUG, IMPLEMENTATION_ARTIFACT
+   * Output: the review record and closure decisions
+-->
+
 ## Delegation Format
 
 Delegate to the owning agent with a task prompt containing exactly these elements:
@@ -120,6 +144,20 @@ Steps 1 through 3B produce the remediation plan and assessment report. No source
 4. Report the plan path, the report path, and every unresolved item when Step 3B completes.
 
 End the run there. Do not run Step 4 or Step 5, do not present an approval gate, and do not ask the user whether to continue into remediation.
+
+<!-- Remediation phase, disabled. Restore this section, the commented step map entries, and the commented frontmatter handoffs to re-enable Steps 4 and 5.
+
+### Phase 2: Remediation
+
+Steps 4 and 5 apply approved fixes and verify them. Enter this phase only after Step 3A completes and the user approves the implementation scope. Step 3B is a presentation artifact and is not a prerequisite.
+
+1. Read the Step 3A plan and present the available priorities, waves, and change IDs.
+2. Require the user to state the approved selectors and COMMIT_MODE. Refuse to continue when all selectors are empty.
+3. Run Step 4, then validate the implementation record it reports.
+4. Run Step 5 using that exact implementation record path.
+
+Do not infer approved scope from severity or from the assessment report.
+-->
 
 ## Handoff Arguments
 
