@@ -1,5 +1,10 @@
+
+#### Shared-service assessment-scope contract
+
+Before evaluating controls in this standard, resolve `confluent-kafka` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
+
 ---
-schema_version: 3.0.0
+schema_version: 3.1.0
 document_type: dependency_behavior
 service: confluent-kafka
 service_name: Confluent Kafka Multi-Region
@@ -394,6 +399,25 @@ supported_operating_scenarios:
 
 # Confluent Kafka Multi-Region Application Behavior Standard
 
+### Shared-service operating-model contract
+
+This standard does not select the application's shared-service topology. Resolve the operating model from:
+
+```text
+architecture_context.shared_service_operating_models.services.confluent-kafka
+```
+
+Use `source.operating_model` only to describe current state. Use `target.operating_model` for control applicability and target-state code-readiness assessment.
+
+- Evaluate common client controls whenever production use is confirmed.
+- Evaluate model-specific controls only for the resolved target operating model.
+- `not_applicable` plus no repository production use makes this standard not applicable.
+- `not_applicable` plus confirmed repository production use is a context conflict, not an automatic code finding.
+- Missing, unresolved, or conflicting target model makes model-specific controls `not_assessed` and routes to architecture review.
+- A source-target difference is migration context, not a finding by itself.
+- Findings require repository-owned evidence that the application is incompatible with an applicable target-state control.
+- Do not infer deployed topology from this standard's title, examples, or assumptions.
+
 ## Purpose
 
 This dependency-specific standard assesses Spring Boot use of Confluent Kafka under three approved scenarios: independent regional active-active Kafka clusters aligned with Cosmos DB for MongoDB RU multi-region writes; or active-standby Kafka aligned with Azure SQL primary/standby authoritative state. It does not assess a stretched Kafka cluster.
@@ -451,6 +475,8 @@ The application code and repository-owned configuration must implement this beha
 #### Finding condition
 
 Emit a finding when evidence shows that cluster or registry endpoint is hardcoded, normal regional routing conflicts with the selected scenario, or both clusters are combined without an approved client-routing design.
+
+
 
 #### Evidence rule
 
@@ -1077,6 +1103,65 @@ Cite repository-relative path, symbol/property, original assessed lines, and exa
 - A feature flag alone is not split-brain protection.
 - Do not blindly retry ambiguous, non-idempotent business effects.
 - Do not infer Cluster Linking, offset synchronization, mirror-topic promotion, or Cosmos multi-write deployment from repository absence.
+
+#### KAFKA-AA-007: Active-active topic availability exists in both regions
+
+**Severity:** Critical
+
+**Category:** regional-availability
+
+**Applies when:**
+operating scenario is independent_regional_active_active
+
+##### Requirement
+
+Topics required for business processing
+must exist and remain available in both approved
+Kafka regions.
+
+A supported replication strategy must exist
+for all required topics.
+
+##### Repository evidence to inspect
+
+- topic names
+- topic configuration
+- bootstrap configuration
+- cluster aliases
+- active-active architecture context
+- mirror configuration
+- cluster linking references
+
+##### Finding condition
+
+Emit a finding when:
+
+- Active-active Kafka is selected.
+- Topic mirroring is required by architecture context.
+- Required business topics do not have evidence
+  of mirroring support.
+
+##### Evidence rule
+
+Repository evidence may establish intent.
+
+Deployed replication state remains external evidence.
+
+Missing replication proof must be recorded as:
+
+not_assessed
+
+unless architecture context explicitly declares:
+
+topic_mirroring_required: true
+
+and repository evidence assumes mirrored topics.
+
+#### KAFKA-AA-008: Regional failover does not depend on manual topic recreation
+
+**Severity:** Critical
+
+**Category:** recovery
 
 ---
 

@@ -1,0 +1,263 @@
+# DSE Cassandra Operating Scenario Policy
+schema_version: "2.0.0"
+document_type: dse_cassandra_operating_scenario_policy
+policy_id: DSE-CASSANDRA-OPERATING-SCENARIO
+lifecycle_status: active
+owner: Cloud Architecture Team
+
+purpose: >-
+  Classify the repository-observed and architecture-declared DSE Cassandra
+  operating scenario so scenario-specific resiliency controls can be evaluated
+  without inferring deployed topology from application code alone.
+
+registry_contract:
+  dependency_registry_key: dse-cassandra
+  dependency_standard_path: grounding/dependencies/springboot-dse-cassandra.md
+  dependency_standard_version: "2.0.0"
+  scenario_policy_path: grounding/governance/dse-cassandra-operating-scenario-policy.yml
+  scenario_policy_version: "2.0.0"
+
+activation:
+  activate_when_any:
+    inventory_dependencies:
+      - dse-cassandra
+    repository_patterns:
+      - DseSession
+      - DseCluster
+      - spring.data.cassandra
+      - cassandra.contact-points
+  rules:
+    - Activate only when Step 1 confirms the dependency or a listed repository pattern.
+    - Do not activate from architecture context alone when repository dependency evidence is absent.
+    - Do not infer deployed Cassandra topology, replication factor, consistency behavior, or datacenter health from client code alone.
+
+context_sources:
+  precedence:
+    - application-context/application-architecture-context.yml
+    - application-context/solution-architecture-context.yml
+    - repository_observed_dependency_roles
+  rules:
+    - Approved application context is the primary declaration for this single-microservice repository.
+    - Solution context may supply cross-repository or transitive topology facts.
+    - Repository observations may confirm client behavior but do not prove deployed cluster topology.
+    - Preserve declared context separately from repository-observed evidence.
+
+scenario_model:
+  allowed_values:
+    - single_datacenter
+    - multi_datacenter_active_active
+    - multi_datacenter_active_standby
+    - externally_managed_shared_cluster
+    - unknown
+  default: unknown
+
+scenario_definitions:
+  single_datacenter:
+    description: >-
+      The application is intended to use one Cassandra datacenter for normal
+      processing. Cross-datacenter continuity is not part of the declared
+      application operating model.
+    required_context_evidence:
+      - declared_primary_datacenter_or_single_datacenter_scope
+    prohibited_inference:
+      - Do not infer single-datacenter deployment from one configured contact point.
+
+  multi_datacenter_active_active:
+    description: >-
+      The application may actively process against Cassandra across more than
+      one datacenter, with data replicated between datacenters according to an
+      approved architecture.
+    required_context_evidence:
+      - explicit_active_active_declaration
+      - declared_local_datacenter_behavior
+      - declared_replication_or_ownership_model
+    prohibited_inference:
+      - Do not infer active-active solely from multiple contact points or datacenter-aware load balancing.
+
+  multi_datacenter_active_standby:
+    description: >-
+      One Cassandra datacenter is primary for normal processing and another is
+      reserved for continuity, recovery, or controlled failover.
+    required_context_evidence:
+      - explicit_primary_and_standby_declaration
+      - declared_failover_authority
+    prohibited_inference:
+      - Do not infer standby behavior from backup endpoints or multiple datacenter names alone.
+
+  externally_managed_shared_cluster:
+    description: >-
+      The application consumes a Cassandra service whose topology, failover,
+      replication, and operational ownership are managed outside the repository.
+    required_context_evidence:
+      - shared_service_or_external_ownership_declaration
+    prohibited_inference:
+      - Do not convert unavailable infrastructure evidence into application noncompliance.
+
+  unknown:
+    description: >-
+      Authoritative evidence is insufficient or conflicting. Common client-side
+      controls may still be evaluated, but topology-dependent controls are not assessed.
+
+resolution:
+  output_contract:
+    operating_scenario: unknown
+    resolution_status: insufficient_evidence
+    confidence: low
+    context_source: not_provided
+    repository_observations: []
+    supporting_context_evidence: []
+    conflicting_evidence: []
+    assumptions: []
+    unresolved_inputs: []
+    architecture_confirmation_required: true
+  allowed_resolution_status:
+    - consistent
+    - inferred
+    - conflict
+    - insufficient_evidence
+  allowed_confidence:
+    - high
+    - medium
+    - low
+  rules:
+    - Use one concrete allowed value in generated artifacts.
+    - Set resolution_status to consistent only when approved context and repository observations do not conflict.
+    - Use inferred only when repository behavior strongly supports a client operating role but deployed topology remains unproven.
+    - Use conflict when approved context and repository-observed behavior materially disagree.
+    - Use insufficient_evidence when topology-dependent facts are unavailable.
+    - A conflict must route to architecture_governance_review and must not create a code finding by itself.
+
+common_controls:
+  evaluate_regardless_of_scenario_when_evidence_available:
+    - bounded_connect_and_request_timeouts
+    - authentication_and_tls_configuration
+    - secret_externalization
+    - local_datacenter_configuration
+    - datacenter_aware_load_balancing
+    - prepared_statement_usage
+    - idempotency_classification
+    - retry_safety
+    - exception_handling
+    - session_lifecycle_management
+    - health_check_boundedness
+    - readiness_recovery_after_dependency_restoration
+    - observability_and_redaction
+    - schema_migration_safety_when_repository_owned
+
+scenario_specific_controls:
+  single_datacenter:
+    evaluate:
+      - single_datacenter_outage_behavior
+      - dependency_unavailability_readiness
+      - recovery_after_datacenter_restoration
+  multi_datacenter_active_active:
+    evaluate:
+      - local_datacenter_affinity
+      - cross_datacenter_replication_assumptions
+      - consistency_level_safety
+      - concurrent_multi_region_write_safety
+      - conflict_and_duplicate_handling
+      - cross_datacenter_failure_behavior
+      - topology_refresh_and_recovery
+  multi_datacenter_active_standby:
+    evaluate:
+      - primary_datacenter_affinity
+      - controlled_failover_behavior
+      - stale_or_partial_state_risk
+      - recovery_and_failback_behavior
+      - retry_and_replay_safety_during_transition
+  externally_managed_shared_cluster:
+    evaluate:
+      - application_client_contract
+      - ownership_boundary_documentation
+      - externally_owned_evidence_gaps
+      - application_behavior_during_shared_service_outage
+  unknown:
+    evaluate:
+      - common_controls_only
+    not_assessed:
+      - datacenter_failover_compliance
+      - replication_strategy_compliance
+      - replication_factor_compliance
+      - multi_datacenter_consistency_safety
+      - disaster_recovery_topology
+
+cassandra_specific_evidence:
+  repository_observed:
+    - contact_points
+    - local_datacenter
+    - consistency_levels
+    - serial_consistency_levels
+    - retry_policies
+    - speculative_execution
+    - request_timeout
+    - reconnection_policy
+    - load_balancing_policy
+    - session_creation_and_shutdown
+    - query_idempotency
+    - schema_action_or_migration_configuration
+    - health_indicator_configuration
+  architecture_or_external_only:
+    - deployed_datacenters
+    - replication_strategy
+    - replication_factor_by_datacenter
+    - snitch_configuration
+    - node_count_and_failure_domains
+    - repair_schedule
+    - backup_and_restore_process
+    - failover_and_failback_authority
+    - cross_datacenter_network_characteristics
+    - current_cluster_health
+  evidence_rule: >-
+    Missing architecture-or-external evidence is an evidence gap, not application
+    noncompliance. Do not invent topology facts or create infrastructure findings.
+
+consistency_and_retry_safety:
+  rules:
+    - Evaluate configured consistency levels against the declared scenario and operation criticality.
+    - Do not prescribe a consistency level without approved data correctness and availability requirements.
+    - Treat logged and unlogged batches, lightweight transactions, and conditional updates as behaviorally distinct.
+    - Do not add or broaden retries for non-idempotent writes without an approved duplicate-prevention or reconciliation design.
+    - Do not assume driver retries are safe merely because the retry policy is present.
+    - Speculative execution must not be enabled for operations whose duplicate execution could change business behavior.
+
+readiness_and_liveness:
+  rules:
+    - Cassandra loss may make the application not ready when critical capability cannot be served safely.
+    - Cassandra loss should not normally make application liveness fail.
+    - Optional Cassandra use may permit readiness only when a documented safe degraded mode exists.
+    - Readiness must recover after Cassandra restoration without requiring a process restart when supported by the application contract.
+    - Health checks must be bounded and must not create excessive Cassandra load.
+
+security_and_privacy:
+  rules:
+    - Preserve authentication, authorization, TLS, certificate validation, secret handling, and audit behavior.
+    - Do not expose credentials, contact-point secrets, queries, partition keys, or personal information in logs or findings.
+    - Do not weaken redaction, masking, tokenization, or validation behavior as part of resiliency remediation.
+
+finding_rules:
+  - Create findings only from repository-owned, evidence-backed noncompliance with applicable controls.
+  - Do not create findings solely because deployed topology or operational evidence is unavailable.
+  - Do not create a finding solely because architecture context conflicts with repository observations.
+  - Mark topology-dependent controls not_assessed when scenario resolution is unknown or conflicting.
+  - Preserve evidence IDs, repository paths, symbols, exact excerpts, fingerprints, assessment snapshot, and advisory line ranges.
+
+planning_rules:
+  - Step 3A must preserve the resolved operating scenario and its provenance.
+  - Technology-neutral proposals may proceed when vendor-specific or topology-specific facts are unresolved.
+  - Topology-changing, replication-changing, consistency-changing, or failover-authority changes require explicit architecture approval.
+  - Illustrative proposals must not change business behavior, data correctness semantics, security, or privacy controls without approval.
+
+completion_validation:
+  - Verify the registry key is dse-cassandra.
+  - Verify the dependency standard path and scenario policy path match the registry.
+  - Verify policy version is 2.0.0.
+  - Verify exactly one operating scenario value is emitted.
+  - Verify common controls continue when evidence is sufficient.
+  - Verify topology-dependent controls are not assessed when the scenario is unknown or conflicting.
+  - Verify missing deployed-topology evidence is recorded as an evidence gap rather than a finding.
+  - Verify no infrastructure finding or unapproved topology recommendation was created.
+  - Verify consistency, retry, speculative execution, readiness, security, and privacy rules were applied.
+
+
+finding_qualification_policy: {policy_id: RESILIENCY-FINDING-QUALIFICATION, version: "1.1.0"}
