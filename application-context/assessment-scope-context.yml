@@ -11,7 +11,7 @@ assessment_scope:
   application_configuration: {status: enabled}
   container_build: {status: disabled}
   cicd_pipeline: {status: disabled}
-  deployment_configuration: {status: disabled}
+  deployment_configuration: {status: enabled}
   infrastructure_as_code: {status: disabled}
   deployed_infrastructure: {status: disabled}
 scope_rules:
@@ -47,3 +47,4 @@ report_preferences:
     include_non_resiliency_findings: true
     report_section_order: [resiliency, non_resiliency]
     priority_order_within_each_class: [P0, P1, P2, P3]
+    non_resiliency_allowed_priorities: [P2, P3]

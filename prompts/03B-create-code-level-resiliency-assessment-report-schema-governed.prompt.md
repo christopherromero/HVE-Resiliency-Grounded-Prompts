@@ -789,3 +789,8 @@ Suppress detailed implementation content:
 - verbose code discussion
 
 Preserve all findings, priorities, classifications, matrix entries, roadmap mappings, and Appendix A traceability.
+
+### Shared-Service Assessment Scope Reporting
+
+Render the authoritative Step 1 scope summary within Assessment Overview. Show service, production-use status, assessment scope, scope owner, and rationale. Render out-of-scope, informational-only, and architecture-only services as scope/context records, never as findings. They receive no finding ID or priority and are excluded from finding counts, the Full Finding Matrix, Standards Alignment finding mappings, the remediation roadmap, and implementation selectors. Preserve architecture relationships needed to explain in-scope findings.
+

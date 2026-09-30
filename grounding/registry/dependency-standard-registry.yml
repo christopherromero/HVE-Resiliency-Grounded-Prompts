@@ -1,5 +1,5 @@
 # Dependency Standard Registry
-schema_version: "2.1"
+schema_version: "2.2"
 registry_type: dependency_standard_registry
 
 # Version policy
@@ -399,3 +399,10 @@ registry_rules:
   unknown_ownership_behavior: not_assessed
   duplicate_standard_loading_prohibited: true
   risk_classification_propagates_to_findings: true
+
+shared_service_scope_contract:
+  context_path: architecture_context.shared_service_assessment_scope.services
+  schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+  control_evaluation_allowed_only_when: in_scope
+  architecture_reasoning_allowed_for: [in_scope, out_of_scope, informational_only, architecture_only]
+  scope_conflict_behavior: architecture_governance_review

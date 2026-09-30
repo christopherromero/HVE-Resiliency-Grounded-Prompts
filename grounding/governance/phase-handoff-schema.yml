@@ -1,4 +1,4 @@
-schema_version: "1.2.0"
+schema_version: "1.3.0"
 document_type: phase_handoff_schema
 schema_id: ASSESSMENT-PHASE-HANDOFF
 lifecycle_status: active
@@ -193,3 +193,19 @@ resiliency_qualification_handoff:
   prohibited_behavior:
     - suppress_non_resiliency_findings
     - reclassify_findings_in_handoff
+
+shared_service_assessment_scope_handoff:
+  source_of_truth: authoritative_step_1_inventory
+  downstream_recalculation_prohibited: true
+  preserve:
+    - service_key
+    - assessment_scope
+    - scope_source
+    - rationale
+    - scope_owner
+    - production_use_status
+    - conflicts
+  prohibited_behavior:
+    - silently_expand_service_scope
+    - convert_scope_record_to_finding
+    - suppress_service_from_architecture_inventory

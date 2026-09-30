@@ -654,3 +654,8 @@ Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1
 
 ### Phase-specific rule
 Implementation selectors may include either class. Do not reinterpret classification during implementation.
+
+### Shared-Service Implementation Scope Gate
+
+Before implementing each resolved change, verify from frozen Step 1 and Step 3A records that every affected shared service is `in_scope` and remediation is allowed. Do not implement changes for `out_of_scope`, `informational_only`, or `architecture_only` services. If the plan contains such a change, stop that change, record a scope inconsistency, and route it to Step 3A correction. Implementation must not expand service scope.
+

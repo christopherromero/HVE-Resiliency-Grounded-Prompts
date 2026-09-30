@@ -1091,3 +1091,8 @@ Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1
 
 ### Phase-specific rule
 Assign priority to both classes. Resiliency may use P0-P3. Non-resiliency may use P2-P3 only. Do not place non-resiliency changes in P0/P1 indexes.
+
+### Shared-Service Remediation Scope Gate
+
+Before creating each change, verify that every shared service affected by the source finding is `in_scope` in the authoritative Step 1 inventory and that remediation is allowed. Do not plan changes for `out_of_scope`, `informational_only`, or `architecture_only` services. If Step 2 contains a finding for a non-in-scope service, preserve the inconsistency, stop planning that finding, and route it to Step 2 correction rather than hiding it. Include `remediation_scope_validation` on every shared-service change.
+

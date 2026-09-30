@@ -690,3 +690,8 @@ Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1
 
 ### Phase-specific rule
 Inventory applicable target architecture elements and credible failure scenarios needed by Step 2; do not classify findings in Step 1.
+
+### Shared-Service Assessment Scope Resolution
+
+Read `grounding/governance/shared-service-assessment-scope-schema.yml` and `architecture_context.shared_service_assessment_scope`. Resolve one effective scope for every confirmed or architecture-declared shared service. Inventory all services regardless of scope. Add dependency standards to the control-evaluation load list only for `in_scope` services. Preserve non-in-scope services in dependency and architecture inventories. Do not create findings in Step 1. Emit `shared_service_scope_resolution` records with service key, production-use status, effective scope, scope source, rationale, scope owner, architecture reasoning allowed, observations allowed, findings allowed, remediation allowed, and conflicts. Preserve a categorized `shared_service_assessment_scope_summary` in the authoritative inventory and Step 1 handoff. Repository evidence must not silently expand approved scope; route conflicts to architecture governance.
+

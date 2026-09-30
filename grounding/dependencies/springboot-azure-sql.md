@@ -1,3 +1,8 @@
+
+#### Shared-service assessment-scope contract
+
+Before evaluating controls in this standard, resolve `azure-sql` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
+
 ---
 schema_version: 2.3.0
 document_type: dependency_behavior
@@ -234,7 +239,7 @@ controls:
 This standard does not select the application's shared-service topology. Resolve the operating model from:
 
 ```text
-architecture_context.shared_service_operating_models.services.azure_sql
+architecture_context.shared_service_operating_models.services.azure-sql
 ```
 
 Use `source.operating_model` only to describe current state. Use `target.operating_model` for control applicability and target-state code-readiness assessment.
@@ -847,6 +852,6 @@ Standard finding format
 
 Do not create infrastructure findings such as missing second-region resources, private endpoints, zone redundancy, geo-replication, capacity, DNS, or global load-balancer configuration. Those are assumed platform responsibilities and are outside this repository assessment.### Shared-service operating and connectivity contract
 
-Resolve the Azure SQL target operating model from `architecture_context.shared_service_operating_models.services.azure_sql.target` and connectivity from `architecture_context.shared_service_connectivity_contracts.services.azure_sql.target`.
+Resolve the Azure SQL target operating model from `architecture_context.shared_service_operating_models.services.azure-sql.target` and connectivity from `architecture_context.shared_service_connectivity_contracts.services.azure-sql.target`.
 
 The approved target remains `active_standby`. When connectivity is `failover_group_listener`, read-write JDBC and R2DBC traffic must use the approved FOG read-write listener rather than a regional logical-server hostname. Missing proof of deployed FOG resources is external evidence, not a code finding.
