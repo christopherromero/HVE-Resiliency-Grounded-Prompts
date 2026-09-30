@@ -20,7 +20,7 @@ Read and apply these sources directly. Do not reproduce their substantive rules 
 1. `.github/copilot-instructions.md` governs the cross-phase authority model, assessment boundary, evidence rules, approval requirements, and completion behavior.
 2. The target step's file under `prompts/` is the authoritative specification for that step's inputs, outputs, boundaries, validation, handoff, and completion criteria.
 3. The matching file under `.github/prompts/` is the invocation wrapper. Use it for the slash-command name and bound HVE agent from its frontmatter, and for invocation input names and declared artifact paths from its Inputs section. Use its declared paths only as described in Artifact path resolution.
-4. `.github/agents/resiliency-assessment.agent.md` is the workspace orchestrator that delegates step resolution to this skill. Use it for the run modes, delegation format, handoff labels, and bound agents it declares. When it implies a workflow gate that `.github/copilot-instructions.md` does not require, apply `.github/copilot-instructions.md` and report the divergence.
+4. `.github/agents/resiliency-assessment.agent.md` is the workspace orchestrator that delegates step resolution to this skill. Use it for the run modes, delegation format, handoff labels, bound agents, and orchestrated step scope it declares. When it implies a workflow gate that `.github/copilot-instructions.md` does not require, apply `.github/copilot-instructions.md` and report the divergence.
 5. Authoritative artifacts produced by completed steps are the source of truth for run state. Phase handoffs provide orientation only and never replace an authoritative artifact.
 6. Governing schemas and policies under `grounding/governance/` are authoritative for the contracts the step prompts cite, including `resiliency-finding-qualification-policy.yml` for resiliency and non-resiliency finding classification, `assessment-report-schema.md` for Step 3B report structure and marker vocabulary, and `phase-handoff-schema.yml` for handoff summaries. Route to them by path and let the owning step apply them.
 
@@ -89,6 +89,8 @@ When the user explicitly requests a specific step, treat that step as the target
 
 Otherwise evaluate steps in workflow order and take the earliest step whose output is not complete as the target.
 
+Steps 4 and 5 are outside the orchestrator's declared scope. Route them only when the user explicitly requests them. When routing for the orchestrator, stop after Step 3B and report the run complete instead of advancing to Step 4.
+
 For each candidate step:
 
 1. Read its authoritative prompt in full.
@@ -125,7 +127,7 @@ Do not claim a step completed without validating its authoritative artifact. Do 
 
 ## Approval gate
 
-Before routing Step 4, apply the approval requirements from `.github/copilot-instructions.md`, the Step 3A authoritative artifact, and the Step 4 authoritative prompt. Never infer approval or implementation scope. Stop and ask the user for any approval input required by those sources.
+Step 4 routes only on an explicit user request. Before routing it, apply the approval requirements from `.github/copilot-instructions.md`, the Step 3A authoritative artifact, and the Step 4 authoritative prompt. Never infer approval or implementation scope. Stop and ask the user for any approval input required by those sources.
 
 ## Failure handling
 
