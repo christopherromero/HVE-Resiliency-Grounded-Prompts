@@ -1,3 +1,8 @@
+
+#### Shared-service assessment-scope contract
+
+Before evaluating controls in this standard, resolve `storage-blob` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
+
 ---
 schema_version: 2.2.0
 document_type: dependency_behavior
@@ -417,7 +422,7 @@ business_logic_risk_classification:
 This standard does not select the application's shared-service topology. Resolve the operating model from:
 
 ```text
-architecture_context.shared_service_operating_models.services.storage_blob
+architecture_context.shared_service_operating_models.services.storage-blob
 ```
 
 Use `source.operating_model` only to describe current state. Use `target.operating_model` for control applicability and target-state code-readiness assessment.
@@ -449,7 +454,7 @@ This standard assesses **application code, application configuration checked int
 ## Evaluator workflow
 
 - Confirm the dependency is actually used by production code.
-- Resolve source and target models from `architecture_context.shared_service_operating_models.services.storage_blob` before evaluating model-specific controls.
+- Resolve source and target models from `architecture_context.shared_service_operating_models.services.storage-blob` before evaluating model-specific controls.
 - Locate client construction, configuration binding, error handling, health integration, telemetry, and tests.
 - Evaluate only controls supported by repository evidence.
 - Separate framework defaults from explicit application behavior. Flag reliance on a default only when the assessment requires explicit configuration or the default does not meet the failure budget.

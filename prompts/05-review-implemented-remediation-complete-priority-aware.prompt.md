@@ -555,3 +555,8 @@ Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1
 
 ### Phase-specific rule
 Validate closure against the finding causal mechanism for resiliency findings and against the stated issue for non-resiliency findings; do not reclassify without returning to Step 2.
+
+### Shared-Service Scope Review
+
+For every implemented shared-service change, verify that Step 1 classified the service `in_scope`, Step 3A allowed remediation, and Step 4 did not expand scope. A change affecting an `out_of_scope`, `informational_only`, or `architecture_only` service without an approved scope amendment is an implementation-scope violation and prevents closure. Preserve scope provenance and conflicts; do not reclassify scope in Step 5.
+

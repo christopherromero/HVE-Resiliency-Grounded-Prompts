@@ -1,0 +1,87 @@
+---
+schema_version: "1.0.0"
+document_type: shared_service_assessment_scope_schema
+schema_id: SHARED-SERVICE-ASSESSMENT-SCOPE
+lifecycle_status: active
+owner: Cloud Architecture Team
+---
+purpose: >-
+  Govern per-shared-service assessment participation without removing the service
+  from dependency inventory, architecture relationships, operating-model context,
+  connectivity context, or cross-service reasoning.
+context_contract:
+  context_document_type: application_architecture_context
+  context_root: architecture_context.shared_service_assessment_scope
+  canonical_key_source: dependency_standard_registry
+  required_common_fields: [contract_version, default_scope, canonical_key_source, services]
+allowed_scope_values: [in_scope, out_of_scope, informational_only, architecture_only]
+scope_definitions:
+  in_scope:
+    inventory: required
+    architecture_reasoning: allowed
+    control_evaluation: allowed
+    findings: allowed
+    observations: allowed
+    remediation_planning: allowed
+    implementation: allowed_when_approved
+  out_of_scope:
+    inventory: required
+    architecture_reasoning: allowed
+    control_evaluation: prohibited
+    findings: prohibited
+    observations: prohibited
+    remediation_planning: prohibited
+    implementation: prohibited
+  informational_only:
+    inventory: required
+    architecture_reasoning: allowed
+    control_evaluation: prohibited
+    findings: prohibited
+    observations: allowed
+    remediation_planning: prohibited
+    implementation: prohibited
+  architecture_only:
+    inventory: required
+    architecture_reasoning: required_when_applicable
+    control_evaluation: prohibited
+    findings: prohibited
+    observations: optional
+    remediation_planning: prohibited
+    implementation: prohibited
+service_entry_schema:
+  required_fields: [assessment_scope, rationale, scope_owner]
+  optional_fields: [external_assessment_reference, limitations, lifecycle_status, approved_by, approved_at]
+consistency_rules:
+  - rule_id: SCOPE-001
+    rule: Only in_scope services may generate findings, priorities, remediation, or implementation work.
+  - rule_id: SCOPE-002
+    rule: Non-in-scope services remain visible in inventory and architecture reasoning.
+  - rule_id: SCOPE-003
+    rule: Informational observations are not findings and receive no finding ID or P0-P3 priority.
+  - rule_id: SCOPE-004
+    rule: Repository evidence cannot silently expand approved service scope.
+  - rule_id: SCOPE-005
+    rule: Scope conflicts route to architecture_governance_review and do not create code findings.
+  - rule_id: SCOPE-006
+    rule: Service keys must be canonical dependency-standard registry identifiers.
+default_behavior:
+  missing_section: {effective_scope: in_scope, record_context_limitation: true}
+  missing_service_entry: {effective_scope: in_scope, scope_source: default_scope}
+  invalid_entry: {evaluation_status: blocked, findings: prohibited, route_to: architecture_governance_review}
+reporting_rules:
+  scope_summary_required: true
+  non_finding_scope_records_excluded_from: [finding_counts, priority_counts, full_finding_matrix, remediation_roadmap, implementation_selectors]
+handoff_rules:
+  source_of_truth: authoritative_step_1_inventory
+  downstream_recalculation_prohibited: true
+  preserve: [service_key, assessment_scope, scope_source, rationale, scope_owner, production_use_status, conflicts]
+validation:
+  required_checks:
+    - context_root_valid
+    - scope_values_valid
+    - service_keys_canonical
+    - required_fields_present
+    - non_in_scope_services_not_control_evaluated
+    - non_in_scope_services_not_prioritized
+    - scope_summary_reconciles
+  status_values: [passed, failed, partial]

@@ -46,6 +46,12 @@ default_rules:
   standalone_test_finding_inherits_behavior_priority: false
   behavior_validation_tests_inherit_behavior_priority: true
 
+regional_survival_rules:
+
+  P0_conditions:
+
+    - required_mirrored_topic_absent
+
 cache_rules:
 
   default_priority: P3

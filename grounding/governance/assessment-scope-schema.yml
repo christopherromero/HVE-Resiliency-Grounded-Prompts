@@ -86,3 +86,9 @@ finding_classification_output:
   include_non_resiliency_findings: {type: boolean, default: true}
   report_section_order: {required_value: [resiliency, non_resiliency]}
   priority_order_within_each_class: {required_value: [P0, P1, P2, P3]}
+
+shared_service_scope_boundary:
+  schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+  context_path: architecture_context.shared_service_assessment_scope
+  separate_from_artifact_domain_scope: true
+  separate_from_repository_exclusions: true

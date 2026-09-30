@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.15.0"
+  schema_version: "1.16.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -1299,3 +1299,8 @@ schema_conformance_additions:
 - Architecture Context must describe only target-architecture relevance.
 - Repository Evidence should be limited to concise traceability references.
 - Implementation steps, change specifications, code examples, acceptance tests, selector information, and detailed remediation procedures must not appear in the report body.
+### Shared-service assessment-scope rendering contract
+
+Assessment Overview must include a shared-service scope summary sourced from the authoritative Step 1 inventory. Columns: Shared service, Repository usage, Assessment scope, Scope owner, Rationale. Out-of-scope, informational-only, and architecture-only records remain visible but are not findings. Informational observations receive no finding ID or P0-P3 priority. Non-in-scope scope records are excluded from finding counts, priority counts, detailed recommendation sections, the Full Finding Matrix, finding mappings in Standards Alignment, the Implementation Roadmap, Appendix A finding traceability, and implementation selectors. Architecture-only services may still explain processing chains, authoritative state, Kafka scenario selection, and cross-service relationships.
+
+

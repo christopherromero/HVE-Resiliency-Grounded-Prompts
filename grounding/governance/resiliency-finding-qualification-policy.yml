@@ -38,6 +38,13 @@ If evidence supports the violation but one or more resiliency criteria are not m
 - overload_protection
 - graceful_termination
 
+qualifying_failure_scenarios:
+
+  kafka_topic_mirroring_absent:
+    domain:
+      regional_failover
+```
+
 ## Finding output contract
 ```yaml
 finding_classification:

@@ -1,5 +1,5 @@
 ---
-schema_version: "3.0.0"
+schema_version: "3.1.0"
 document_type: application_architecture_context
 lifecycle_status: approved  #Must match the Architecture context lifecycle status
 ---
@@ -13,7 +13,7 @@ architecture_context:
     approved_by: Ecommerce  #update the approver
     approved_at: 2026-01-01  #update the approval date
     lifecycle_status: approved
-    version: "3.0.0"
+    version: "3.1.0"
 
   runtime_expectations:
     contract_version: "1.0.0"
@@ -121,6 +121,37 @@ architecture_context:
       target_state_must_not_be_reported_as_current: true
       source_and_target_regions_must_not_be_merged: true
       source_target_difference_is_not_a_finding: true
+
+
+  architecture_decisions:
+
+    - decision_id: ADR-KAFKA-001
+
+      title: Active-Active Kafka Requires Topic Mirroring
+
+      status: approved
+
+      rationale: >
+        Business processing must continue when one region becomes
+        unavailable.
+
+        Required Kafka topics must therefore remain available in
+        both approved regions.
+
+      applies_to:
+
+        - confluent-kafka
+
+      requirements:
+
+        - topic_mirroring_required
+
+        - offset_recovery_required
+
+        - local_region_affinity_required
+
+      evidence_owner:
+        platform_team
 
 # The authoritative state section defines the source of truth for the application's database deployment model, independent of the current or target states.
 # This follows the rules for database to kafka
@@ -247,7 +278,6 @@ architecture_context:
         source: {operating_model: not_applicable, lifecycle_status: current}
         target: {operating_model: not_applicable, lifecycle_status: approved_target}
 
-
   shared_service_connectivity_contracts:
     services:
 
@@ -271,6 +301,144 @@ architecture_context:
           - account regional topology
           - write region configuration
           - automatic failover configuration
+
+
+
+      confluent-kafka:
+        dependency_standard_id: confluent-kafka
+        operating_model_reference:
+          service_key: confluent-kafka
+          state: target
+          field: operating_model
+        source:
+          connectivity_model: independent_regional_clusters
+          lifecycle_status: current
+        target:
+          connectivity_model: independent_regional_clusters
+          lifecycle_status: approved_target
+          mirroring_contract:
+            topic_mirroring_required: true
+            accepted_mechanisms:
+              - cluster_linking
+              - approved_replication_platform
+            mirror_scope:
+              - business_topics
+              - compacted_topics
+            internal_topics_mirroring_required: false
+            offset_translation_required: true
+            failover_requires_topic_availability: true
+
+  shared_service_assessment_scope:
+    contract_version: "1.0.0"
+    default_scope: in_scope
+    canonical_key_source: dependency_standard_registry
+    rules:
+      - Scope is separate from dependency presence, operating model, and connectivity model.
+      - Every used service remains inventoried and available for architecture reasoning.
+      - Only in_scope services may produce control results, findings, priorities, remediation, or implementation work.
+      - Repository evidence cannot silently expand an approved service scope.
+      - Scope conflicts route to architecture governance and do not create code findings.
+    services:
+      aks-istio:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      apim:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      appgateway-glb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-functions:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-managed-redis:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-sql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      confluent-kafka:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      cosmosdb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      dse-cassandra:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      eventhubs:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      keyvault:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      postgresql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      storage-blob:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      databricks:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Databricks is used by the solution but assessed separately by the data platform team.
+        scope_owner: data_platform_team
+        external_assessment_reference: not_provided
+      elasticsearch:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Elasticsearch usage is retained for dependency context, but controls are not evaluated.
+        scope_owner: search_platform_team
+        external_assessment_reference: not_provided
+      mongo-atlas:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Mongo Atlas participates in authoritative-state and processing-chain reasoning but is assessed separately.
+        scope_owner: database_platform_team
+        external_assessment_reference: not_provided
+    reporting:
+      render_scope_summary: true
+      non_in_scope_records_are_findings: false
+      non_in_scope_records_receive_priority: false
 
   external_side_effects:
     present: true
@@ -318,6 +486,10 @@ architecture_context:
     missing_dependency_expectation_status: unknown
     missing_runtime_expectation_status: unknown
     aliases_prohibited: true
+    shared_service_scope_keys_must_use_registry_ids: true
+    every_modeled_shared_service_must_have_effective_scope: true
+    non_in_scope_services_must_remain_architecturally_visible: true
+    non_in_scope_services_must_not_generate_findings: true
 
   # assessment_guidance provides instructions on how to interpret the application context and deployment evolution information.
   # It helps ensure consistent evaluation of the application's current and target deployment states.
@@ -332,6 +504,13 @@ architecture_context:
       assess_code_against: target
       do_not_infer_operating_model_from_dependency_grounding_title: true
       do_not_create_findings_from_source_target_delta_alone: true
+    shared_service_scope_interpretation:
+      authoritative_path: architecture_context.shared_service_assessment_scope.services
+      schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+      default_scope: in_scope
+      downstream_recalculation_prohibited: true
+      non_in_scope_services_remain_architecturally_visible: true
+      repository_evidence_cannot_silently_expand_scope: true
     shared_service_contract_interpretation:
       operating_model_path: architecture_context.shared_service_operating_models.services
       connectivity_contract_path: architecture_context.shared_service_connectivity_contracts.services
@@ -376,13 +555,16 @@ architecture_context:
       path: grounding/governance/resiliency-finding-qualification-policy.yml
     preserve_finding_classes: [resiliency, non_resiliency]
     report_section_order: [resiliency, non_resiliency]
-    priority_order_within_each_class: [P0, P1, P2, P3]
+    priority_order_within_each_class:
+      resiliency: [P0, P1, P2, P3]
+      non_resiliency: [P2, P3]
     qualifying_architecture_paths:
       - architecture_context.deployment_evolution.target
       - architecture_context.authoritative_state.target
       - architecture_context.kafka_operating_model.target
       - architecture_context.shared_service_operating_models.services
       - architecture_context.shared_service_connectivity_contracts.services
+      - architecture_context.shared_service_assessment_scope.services
       - architecture_context.runtime_expectations.runtimes
     finding_rules:
       repository_evidence_required: true

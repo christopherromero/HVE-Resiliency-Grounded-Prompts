@@ -189,3 +189,7 @@ Use `source.operating_model` only to describe current state. Use `target.operati
 For each concrete upstream dependency, use that dependency standard ID to locate the matching service entry. If no service entry exists, continue common HTTP controls and record the operating-model context gap; do not assume active-active.
 
 .
+
+### Shared-service scope for concrete HTTP dependencies
+
+`http-client` is a cross-cutting client standard, not a declaration that every upstream service is in scope. For each concrete upstream service, resolve its canonical service key through the registry and apply `architecture_context.shared_service_assessment_scope.services`. Evaluate service-specific HTTP controls only when that concrete service is `in_scope`; otherwise preserve only the behavior allowed by its scope. Common application-owned HTTP client defects not attributable to an excluded service may still be evaluated under the application or cross-cutting scope.

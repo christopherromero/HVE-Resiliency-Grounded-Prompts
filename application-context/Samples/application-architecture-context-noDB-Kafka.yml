@@ -1,33 +1,33 @@
 ---
-schema_version: 3.1.0
+schema_version: "3.1.0"
 document_type: application_architecture_context
-lifecycle_status: draft
-
+lifecycle_status: approved  #Must match the Architecture context lifecycle status
+---
 architecture_context:
   metadata:
-    application_name: Replace with application name
-    repository_name: Replace with repository name
-    business_role: Kafka-based processing with no application database
-    context_owner: Replace with context owner
-    approved_by: not_provided
-    approved_at: not_provided
-    lifecycle_status: draft
-    version: 3.1.0
+    application_name: Ecommerce Platform  #update the application name
+    repository_name: Cart Service  #update the repository name
+    business_role: Cart management  #update the business role
+    context_owner: Albertsons Ecommerce  #update the context owner
+    approved_by: Albertsons  #update the approver
+    approved_at: 2026-01-01  #update the approval date
+    lifecycle_status: approved
+    version: "3.1.0"
 
   runtime_expectations:
-    contract_version: 1.0.0
+    contract_version: "1.0.0"
     canonical_key_source: dependency_standard_registry
     runtimes:
       jvm-runtime:
         expected_status: required
         production_use_expected: true
         assessment_scope:
-        - build_configuration
-        - container_entrypoint
-        - repository_owned_jvm_options
-        - repository_owned_workload_configuration
-        - application_lifecycle
-        - runtime_tests
+          - build_configuration
+          - container_entrypoint
+          - repository_owned_jvm_options
+          - repository_owned_workload_configuration
+          - application_lifecycle
+          - runtime_tests
         source:
           lifecycle_status: current
           runtime_family: jvm
@@ -49,19 +49,19 @@ architecture_context:
             runtime_observability: required
           virtual_threads:
             adoption_status: optional
-            minimum_jdk_version: '21'
+            minimum_jdk_version: "21"
             enablement_requires:
-            - repository_evidence
-            - library_compatibility_validation
-            - pinning_analysis
-            - representative_load_testing
-            - downstream_concurrency_protection
+              - repository_evidence
+              - library_compatibility_validation
+              - pinning_analysis
+              - representative_load_testing
+              - downstream_concurrency_protection
         grounding:
           standard_id: JVM-RUNTIME-RESILIENCY
           registry_id: jvm-runtime
           path: grounding/dependencies/jvm-runtime-resiliency.md
-          version: 1.0.0
-
+          version: "1.0.0"
+# This section defines the deployment evolution of the application across different regions and states.
   deployment_evolution:
     source:
       state_label: current_deployment
@@ -71,26 +71,26 @@ architecture_context:
       primary_region: westus
       disaster_recovery_region: eastus
       regions:
-      - region: westus
-        role: primary
-        processing_state: active
-      - region: eastus
-        role: disaster_recovery
-        processing_state: standby
+        - region: westus
+          role: primary
+          processing_state: active
+        - region: eastus
+          role: disaster_recovery
+          processing_state: standby
       same_application_artifact_across_regions: true
-      description: West US is active and East US is reserved for disaster recovery.
+      description: West US is the active production region and East US is reserved for disaster recovery.
     target:
       state_label: approved_target_deployment
       lifecycle_status: approved_target
       operating_model: active_active
       traffic_model: multi_active
       regions:
-      - region: westus2
-        role: active
-        processing_state: active
-      - region: westus
-        role: active
-        processing_state: active
+        - region: westus2
+          role: active
+          processing_state: active
+        - region: westus
+          role: active
+          processing_state: active
       same_application_artifact_across_regions: true
       description: The approved target runs the same application artifact actively in West US 2 and West US.
     transition:
@@ -98,18 +98,62 @@ architecture_context:
       source_to_target_assessment: true
       assessment_focus: target_state_code_readiness
       source_state_used_for:
-      - current_state_description
-      - migration_context
-      - existing_behavior_baseline
+        - current_state_description
+        - migration_context
+        - existing_behavior_baseline
       target_state_used_for:
-      - resiliency_control_applicability
-      - gap_assessment
-      - remediation_planning
-      - implementation_target
-      - implementation_review
+        - resiliency_control_applicability
+        - gap_assessment
+        - remediation_planning
+        - implementation_target
+        - implementation_review
       target_state_must_not_be_reported_as_current: true
       source_and_target_regions_must_not_be_merged: true
       source_target_difference_is_not_a_finding: true
+
+
+  architecture_decisions:
+
+    - decision_id: ADR-KAFKA-001
+
+      title: Active-Active Kafka Requires Topic Mirroring
+
+      status: approved
+
+      rationale: >
+        Business processing must continue when one region becomes
+        unavailable.
+
+        Required Kafka topics must therefore remain available in
+        both approved regions.
+
+      applies_to:
+
+        - confluent-kafka
+
+      requirements:
+
+        - topic_mirroring_required
+
+        - offset_recovery_required
+
+        - local_region_affinity_required
+
+      evidence_owner:
+        platform_team
+
+# The authoritative state section defines the source of truth for the application's database deployment model, independent of the current or target states.
+# This follows the rules for database to kafka
+#       If CosmosDB is used in the repo and no SQL, then COSMOSDB is active-active and Kafka is Active-Active
+#       If SQL is used in the repo and no CosmosDB, then SQL is active-standby and Kafka is active-standby 
+#       If both CosmosDB and SQL are used, then CosmosDB follows active-active and SQL follows active-standby, with Kafka follows SQL as Active-Standby. 
+#       If no database but Kafka is used, then Kafka is active-standby  
+# Example:
+#       CosmosDB only -> Kafka active-active
+#       SQL only -> Kafka active-standby
+#       CosmosDB + SQL -> Kafka follows SQL as active-standby 
+#       No database but Kafka used -> Kafka active-standby
+# The above rules help determine the appropriate operating model for Kafka based on the database deployment model.  
 
   authoritative_state:
     dependency: none
@@ -170,21 +214,21 @@ architecture_context:
       mean Kafka multi-active processing.
 
   shared_service_operating_models:
-    contract_version: 1.1.0
+    contract_version: "1.1.0"
     authoritative_for: shared_service_target_operating_model
     default_assessment_state: target
     allowed_operating_models:
-    - active_active
-    - active_standby
-    - single_region
-    - externally_managed
-    - not_applicable
-    - unresolved
+      - active_active
+      - active_standby
+      - single_region
+      - externally_managed
+      - not_applicable
+      - unresolved
     rules:
-    - Source records current service operating model when known.
-    - Target records the approved model used for control applicability.
-    - A source-target difference is migration context, not a finding.
-    - Missing or conflicting target model makes scenario-specific controls not_assessed.
+      - Source records current service operating model when known.
+      - Target records the approved model used for control applicability.
+      - A source-target difference is migration context, not a finding.
+      - Missing or conflicting target model makes scenario-specific controls not_assessed.
     services:
       aks-istio:
         dependency_standard_id: aks-istio
@@ -306,18 +350,133 @@ architecture_context:
 # writes files, or creates other externally observable effects, update that section before 
 # approving the context. This determines whether Kafka processing can eventually be approved 
 # as multi-active or should remain single-active.
+  shared_service_assessment_scope:
+    contract_version: "1.0.0"
+    default_scope: in_scope
+    canonical_key_source: dependency_standard_registry
+    rules:
+      - Scope is separate from dependency presence, operating model, and connectivity model.
+      - Every used service remains inventoried and available for architecture reasoning.
+      - Only in_scope services may produce control results, findings, priorities, remediation, or implementation work.
+      - Repository evidence cannot silently expand an approved service scope.
+      - Scope conflicts route to architecture governance and do not create code findings.
+    services:
+      aks-istio:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      apim:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      appgateway-glb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-functions:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-managed-redis:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-sql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      confluent-kafka:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      cosmosdb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      dse-cassandra:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      eventhubs:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      keyvault:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      postgresql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      storage-blob:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      databricks:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Databricks is used by the solution but assessed separately by the data platform team.
+        scope_owner: data_platform_team
+        external_assessment_reference: not_provided
+      elasticsearch:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Elasticsearch usage is retained for dependency context, but controls are not evaluated.
+        scope_owner: search_platform_team
+        external_assessment_reference: not_provided
+      mongo-atlas:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Mongo Atlas participates in authoritative-state and processing-chain reasoning but is assessed separately.
+        scope_owner: database_platform_team
+        external_assessment_reference: not_provided
+    reporting:
+      render_scope_summary: true
+      non_in_scope_records_are_findings: false
+      non_in_scope_records_receive_priority: false
+
   external_side_effects:
     present: unknown
     types: []
     classification_required: true
     note: For no-database Kafka applications, classify external side effects before confirming whether regional
       processing can be multi-active.
-
+# Define the expected dependencies and platform capabilities for this repository.
+# Keys must match dependency-standard registry IDs.
+# Allowed statuses are required, optional, not_expected, and unknown.
+# Expectations guide discovery but do not override repository evidence.
   allowed_expected_statuses:
-  - required
-  - optional
-  - not_expected
-  - unknown
+    - required
+    - optional
+    - not_expected
+    - unknown
   dependency_expectations:
     azure-managed-redis: not_expected
     azure-sql: not_expected
@@ -348,6 +507,10 @@ architecture_context:
     database_independent_kafka_requires_processing_model_classification: true
     database_independent_kafka_requires_external_side_effect_classification: true
     aliases_prohibited: true
+
+  # assessment_guidance provides instructions on how to interpret the application context and deployment evolution information.
+  # It helps ensure consistent evaluation of the application's current and target deployment states.
+  # This guidance should be followed by architects and reviewers when assessing the application's architecture.  
   assessment_guidance:
     application_context_is_primary_architecture_authority: true
     solution_context_required: false
@@ -377,27 +540,40 @@ architecture_context:
       authoritative_path: architecture_context.runtime_expectations.runtimes
       assess_code_against: target
       runtime_operating_model_prohibited: true
+
+      rules:
+        - Runtime expectations are separate from shared-service operating models.
+        - JVM runtime does not have an active-active or active-standby operating model.
+        - Apply JVM controls to each application instance in every target region.
+        - Use source runtime information to describe current behavior.
+        - Use target runtime information for control applicability and remediation planning.
+        - Repository evidence determines the effective JDK, flags, heap configuration, and lifecycle implementation.
+        - Missing deployed CPU or memory limits are evidence gaps unless repository-owned manifests are in scope.
+        - A source-target runtime difference is not a finding by itself.
+        - Runtime upgrades require compatibility, regression, load, rollback, and deployment validation.
+        - Virtual-thread adoption is never implied solely by using JDK 21 or later.
+
   resiliency_assessment_context:
     qualification_policy:
       policy_id: RESILIENCY-FINDING-QUALIFICATION
-      version: 1.1.0
+      version: "1.1.0"
       path: grounding/governance/resiliency-finding-qualification-policy.yml
     preserve_finding_classes:
-    - resiliency
-    - non_resiliency
+      - resiliency
+      - non_resiliency
     report_section_order:
-    - resiliency
-    - non_resiliency
+      - resiliency
+      - non_resiliency
     priority_order_within_each_class:
-    - P0
-    - P1
-    - P2
-    - P3
+      - P0
+      - P1
+      - P2
+      - P3
     qualifying_architecture_paths:
-    - architecture_context.deployment_evolution.target
-    - architecture_context.kafka_operating_model.target
-    - architecture_context.shared_service_operating_models.services
-    - architecture_context.runtime_expectations.runtimes
+      - architecture_context.deployment_evolution.target
+      - architecture_context.kafka_operating_model.target
+      - architecture_context.shared_service_operating_models.services
+      - architecture_context.runtime_expectations.runtimes
     finding_rules:
       repository_evidence_required: true
       control_violation_required: true
@@ -422,9 +598,9 @@ architecture_context:
         source: architecture_context.kafka_operating_model
         label: Kafka operating model
     prohibited_collapsing:
-    - Do not treat Kafka as an application database.
-    - Do not infer Kafka multi-active processing from active-active application deployment.
-    - Do not describe database-independent Kafka as database-backed authoritative state.
+      - Do not treat Kafka as an application database.
+      - Do not infer Kafka multi-active processing from active-active application deployment.
+      - Do not describe database-independent Kafka as database-backed authoritative state.
   finding_boundary:
     source_target_difference_is_not_a_finding: true
     finding_requires_repository_evidence: true

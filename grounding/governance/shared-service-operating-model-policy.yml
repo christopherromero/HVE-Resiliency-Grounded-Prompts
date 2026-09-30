@@ -1,4 +1,4 @@
-schema_version: "1.1.0"
+schema_version: "1.2.0"
 document_type: shared_service_operating_model_policy
 policy_id: SHARED-SERVICE-OPERATING-MODEL
 lifecycle_status: active
@@ -25,6 +25,17 @@ rules:
   - Listener DNS and deployed failover-group membership are external evidence.
   - Repository hardcoding of a regional server when listener use is required is a code finding.
   - Source-target differences are migration context, not findings by themselves.
+
+active_active_requirements:
+
+  kafka:
+
+    independent_regional_clusters:
+
+      topic_mirroring_required: true
+
+      offset_failover_strategy_required: true
+
 output_contract:
   dependency_standard_id: "<registry-key>"
   context_service_key: "<service-key>"
@@ -33,3 +44,10 @@ output_contract:
   assessment_operating_model: "<allowed-value>"
   context_status: "<consistent|conflict|insufficient_evidence|not_applicable>"
   model_specific_controls_status: "<evaluate|not_assessed|not_applicable>"
+
+assessment_scope_context_path: architecture_context.shared_service_assessment_scope.services
+assessment_scope_rules:
+  - Resolve service scope independently from operating and connectivity models.
+  - Preserve operating and connectivity reasoning for every scope value.
+  - Evaluate controls and generate findings only for in_scope services.
+  - Route scope conflicts to architecture governance without creating code findings.

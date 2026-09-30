@@ -16,6 +16,7 @@ TASK_SLUG=${input:taskSlug:Task slug without the -research suffix}
 AUTHORITATIVE_PROMPT=prompts/01-create-inventory-hve-task-researcher.prompt.md
 ASSESSMENT_SCOPE_CONTEXT=application-context/assessment-scope-context.yml
 ASSESSMENT_SCOPE_SCHEMA=grounding/governance/assessment-scope-schema.yml
+SHARED_SERVICE_SCOPE_SCHEMA=grounding/governance/shared-service-assessment-scope-schema.yml
 APPLICATION_ARCHITECTURE_CONTEXT=application-context/application-architecture-context.yml
 SOLUTION_ARCHITECTURE_CONTEXT=application-context/solution-architecture-context.yml
 DEPENDENCY_STANDARD_REGISTRY=grounding/registry/dependency-standard-registry.yml

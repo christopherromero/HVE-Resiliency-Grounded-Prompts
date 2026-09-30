@@ -415,6 +415,11 @@ Line-number rules:
 - Path, symbol, excerpt, and fingerprint remain stronger evidence than line numbers.
 
 Completion validation must verify that Git metadata absence does not block evidence capture and that each applicable evidence item has a valid snapshot classification or an explicit `unknown` limitation.
+
+### Shared-Service Scope Evaluation Gate
+
+Preserve Step 1 `shared_service_scope_resolution`; do not recalculate it. Evaluate dependency controls and create findings only when effective scope is `in_scope`. For `out_of_scope`, skip controls and preserve a concise scope record. For `informational_only`, allow evidence-backed observations only; assign no finding ID, severity, or priority. For `architecture_only`, use the service only for architecture and cross-service reasoning. For unresolved or conflicting scope, block scope-dependent control evaluation and route to architecture governance. Never count skipped scope records as compliant.
+
 ### Completion validation
 
 Before completing:
