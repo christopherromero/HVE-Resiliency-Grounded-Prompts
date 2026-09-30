@@ -893,7 +893,7 @@ control_families:
       - REDIS-025
       - REDIS-026
   - family_id: regional_deployment_and_artifact
-    control_count: 13
+    control_count: 15
     controls:
       - AKS-ISTIO-005
       - APP-AA-001
@@ -904,6 +904,8 @@ control_families:
       - JVM-001
       - KAFKA-009
       - KAFKA-AA-001
+      - KAFKA-AA-007
+      - KAFKA-AA-008
       - KAFKA-DI-001
       - KAFKA-DI-002
       - PG-020
