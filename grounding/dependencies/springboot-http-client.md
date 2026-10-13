@@ -1,5 +1,5 @@
 ---
-schema_version: "2.0.0"
+schema_version: "2.1.0"
 document_type: dependency_standard
 service: http-client
 lifecycle_status: active
@@ -167,4 +167,29 @@ When the outcome cannot be established, the application must use an explicitly g
 - Unknown provider outcomes must remain distinguishable from success, failure, and duplicate outcomes.
 - An HTTP 404 establishes non-creation only when the approved provider contract explicitly defines that meaning for the supplied operation identity.
 - A failed lookup must not silently suppress the original operation or prevent an otherwise safe recovery path.
-- Fallback to another provider must not occur while the primary-provider outcome is unknown unless duplicate effects are independently prevented.
+- Fallback to another provider must not occur while the primary-provider outcome is unknown unless duplicate effects are independently prevented### Shared-service operating-model contract
+
+This standard does not select the application's shared-service topology. Resolve the operating model from:
+
+```text
+architecture_context.shared_service_operating_models.services.<dependency-service-key>
+```
+
+Use `source.operating_model` only to describe current state. Use `target.operating_model` for control applicability and target-state code-readiness assessment.
+
+- Evaluate common client controls whenever production use is confirmed.
+- Evaluate model-specific controls only for the resolved target operating model.
+- `not_applicable` plus no repository production use makes this standard not applicable.
+- `not_applicable` plus confirmed repository production use is a context conflict, not an automatic code finding.
+- Missing, unresolved, or conflicting target model makes model-specific controls `not_assessed` and routes to architecture review.
+- A source-target difference is migration context, not a finding by itself.
+- Findings require repository-owned evidence that the application is incompatible with an applicable target-state control.
+- Do not infer deployed topology from this standard's title, examples, or assumptions.
+
+For each concrete upstream dependency, use that dependency standard ID to locate the matching service entry. If no service entry exists, continue common HTTP controls and record the operating-model context gap; do not assume active-active.
+
+.
+
+### Shared-service scope for concrete HTTP dependencies
+
+`http-client` is a cross-cutting client standard, not a declaration that every upstream service is in scope. For each concrete upstream service, resolve its canonical service key through the registry and apply `architecture_context.shared_service_assessment_scope.services`. Evaluate service-specific HTTP controls only when that concrete service is `in_scope`; otherwise preserve only the behavior allowed by its scope. Common application-owned HTTP client defects not attributable to an excluded service may still be evaluated under the application or cross-cutting scope.

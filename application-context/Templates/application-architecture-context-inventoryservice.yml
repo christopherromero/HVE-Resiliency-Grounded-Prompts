@@ -1,0 +1,121 @@
+---
+schema_version: "2.0.0"
+document_type: application_architecture_context
+lifecycle_status: approved
+---
+
+architecture_context:
+
+  metadata:
+    application_name: Ecommerce Platform
+    repository_name: Inventory Service
+    business_role: Inventory tracking
+
+    context_owner: Ecommerce
+    approved_by: Ecommerce
+    approved_at: 2026-01-01
+
+    lifecycle_status: approved
+    version: "1.0.0"
+
+  deployment_model:
+
+    operating_model: active_active
+
+    regions:
+      - westus2
+      - westus
+
+    same_application_artifact_across_regions: true
+
+  authoritative_state:
+
+    dependency: azure_sql
+
+    role: authoritative_business_state
+
+    operating_model: active_standby
+
+  kafka_operating_model:
+
+    scenario: active_standby
+
+    scenario_policy_id: "KAFKA-OPERATING-SCENARIO"
+
+    expected_scenario_rule_id: KAFKA-SCENARIO-001
+
+    cluster_model:
+      type: independent_regional_clusters
+      stretched_cluster: false
+      cluster_per_region: true
+
+    regional_processing_model: single_active
+
+    stretched_cluster: false
+
+  #upstream_dependencies:
+
+  #  - service: "<upstream-service>"
+
+  #    interaction: "<kafka|rest|grpc|event_grid|event_hub|other>"
+
+  #    role: "<business_event_source|request_source|data_source|other>"
+
+  # downstream_dependencies:
+
+  #  - service: "<downstream-service>"
+
+  #    interaction: "<kafka|rest|grpc|event_grid|event_hub|other>"
+
+  #    role: "<external_side_effect|event_consumer|dependent_service|other>"
+
+  external_side_effects:
+
+    present: false
+
+    types: []
+
+    # Examples:
+    # email_delivery
+    # sms_delivery
+    # payment_processing
+    # partner_api_call
+    # inventory_update
+
+  direct_dependency_expectations:
+
+    kafka: true
+
+    azure_sql: true
+
+    cosmos_db: false
+
+    redis: true
+
+    key_vault: true
+
+ # architecture_decisions:
+
+  #  - decision_id: "ADR-001"
+
+  #    title: "<decision-title>"
+
+  #    status: "<approved|proposed>"
+
+  #architecture_evidence:
+
+  #  - reference_id: "ARCH-001"
+
+  #    description: "<architecture-reference>"
+
+  #    source: "<document-location>"
+
+  #assessment_guidance:
+
+  #  application_context_is_primary_architecture_authority: true
+
+  #  solution_context_required: false
+
+  #  repository_evidence_must_validate_implementation: true
+
+  #  conflicts_route_to_architecture_review: true

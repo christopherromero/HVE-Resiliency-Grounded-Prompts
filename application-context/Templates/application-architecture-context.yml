@@ -11,7 +11,7 @@ architecture_context:
   context_version: "1.0.0"
   lifecycle_status: approved
   context_owner: application-or-solution-architecture-team
-  approved_by: Albertsons Ecommerce Architecture Review Board
+  approved_by: Ecommerce Architecture Review Board
   approved_at: 08/01/2026
   application_name: EcommerceApp
   repository_name: "EcommerceAppRepo"

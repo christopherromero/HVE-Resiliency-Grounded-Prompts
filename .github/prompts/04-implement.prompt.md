@@ -2,7 +2,7 @@
 name: 04-implement
 description: Implement the approved remediation scope from the Step 3A plan
 argument-hint: "runDate=YYYY-MM-DD taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan priorities=P0,P1 waves= changeIds= commitMode=none"
-agent: agent
+agent: Task Implementor
 ---
 
 # Step 4: Implement Approved Remediation
@@ -22,7 +22,7 @@ PULL_REQUEST_CREATION_ALLOWED=false
 AUTHORITATIVE_PROMPT=prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/${RUN_DATE}/${TASK_SLUG}-research-review.md
-PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.md
+PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
 EXPECTED_HANDOFF_ARTIFACT=.copilot-tracking/changes/handoffs/04-implementation-summary.yml
 PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
@@ -30,7 +30,7 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
-Run the `/rpi-implement` workflow and use the Task Implementor behavior defined by `AUTHORITATIVE_PROMPT`.
+Use the Task Implementor behavior defined by `AUTHORITATIVE_PROMPT`. This prompt binds that agent through its `agent` frontmatter field. Before any other action, read `AUTHORITATIVE_PROMPT` in full and treat it as the governing specification for this phase; it overrides conflicting default agent behavior. If it cannot be read, stop and report the exact path.
 
 Resolve implementation scope from `PLAN_ARTIFACT` using the supplied approved selectors, then freeze the exact change-ID set before editing. If all selectors are empty, stop and request an explicit approval selector. Do not derive implementation scope from the assessment report.
 
@@ -50,6 +50,14 @@ For `per_change`, require an existing Git repository and a clean starting worktr
 
 Write the authoritative implementation record in the agent-authorized changes area and create the compact Step 4 handoff at `EXPECTED_HANDOFF_ARTIFACT` when permitted. Report exact paths.
 
+## Next phase
+
+End the response with the exact next command, substituting resolved values and the actual implementation record path:
+
+`/05-review runDate=${RUN_DATE} taskSlug=${TASK_SLUG} planSlug=${PLAN_SLUG} implementationArtifact=<exact-path>`
+
+Step 5 runs as `Task Reviewer` in a new conversation.
+
 ## Repository-agnostic snapshot rule
 
 Resolve source drift without requiring Git. Compare path, symbol, excerpt, and fingerprint; line numbers remain advisory.
@@ -58,3 +66,7 @@ Resolve source drift without requiring Git. Compare path, symbol, excerpt, and f
 ### Commit-mode handoff requirements
 
 Record `commit_mode`, commit status by change ID, commit SHA and subject when created, validation status, and whether push, branch creation, or pull-request creation occurred. Do not claim a commit exists unless Git confirms the SHA. If `per_change` is selected in a non-Git workspace, do not initialize Git; record `skipped_non_git_workspace` and follow the authoritative Prompt 4 rules for whether uncommitted implementation may continue.
+
+
+## Resiliency and non-resiliency finding classification contract
+Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
