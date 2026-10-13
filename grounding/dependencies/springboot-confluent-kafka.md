@@ -385,7 +385,7 @@ controls:
   finding_when: tests do not cover partial ordering, stale-active fencing, offset
     restoration, duplicate replay, both-active/both-inactive, and reverse failback
   emit_on_failure: true
-scenario_policy: assessment/grounding/governance/kafka-operating-scenario-policy.yml
+scenario_policy: grounding/governance/kafka-operating-scenario-policy.yml
 supported_operating_scenarios:
   independent_regional_active_active:
     description: Two independent regional Kafka clusters; regional applications normally

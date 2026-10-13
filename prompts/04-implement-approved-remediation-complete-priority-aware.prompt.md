@@ -34,7 +34,7 @@ Read:
 2. The authoritative Step 2 review artifact, including findings and control results.
 3. The authoritative Step 3 remediation plan.
 4. The grounded controls referenced by the changes selected for implementation.
-5. `assessment/grounding/governance/remediation-prioritization.md` for policy traceability only.
+5. `grounding/governance/remediation-prioritization.md` for policy traceability only.
 
 Do not recalculate, reinterpret, or override the priority assigned by Task Planner.
 
