@@ -9,10 +9,12 @@ description: How to run a governed resiliency assessment from start to finish.
   - [1. Create Assessment Workspace via Powershell](#1-create-assessment-workspace-via-powershell)
   - [2. Update Application Context](#2-update-application-context)
     - [Assessment scope](#assessment-scope)
+    - [Optional: Populate context with Chat](#optional-populate-context-with-chat)
 - [Running Agent and Create Assessment](#running-agent-and-create-assessment)
   - [Agent Orchestration](#agent-orchestration)
   - [Manual Run](#manual-run)
     - [Running one step at a time](#running-one-step-at-a-time)
+- [Cleanup Notes](#cleanup-notes)
 - [Other Notes](#other-notes)
   - [Values](#values)
 
@@ -81,6 +83,18 @@ assessment_scope:
 
 Do not enable `container_build`, `cicd_pipeline`, `deployment_configuration`, `infrastructure_as_code`, or `deployed_infrastructure` for our current scenario.
 
+### Optional: Populate context with Chat
+
+```text
+Let's populate this context based on what we see in the source/ folder. There might be multiple projects in the source/ folder. 
+
+Do not switch my model or permissions. We need to use Claude Opus 5. 
+
+We are targeting a westus2 westus active-active deployment
+
+Again, we are only running the app code and config scopes
+```
+
 # Running Agent and Create Assessment
 
 ## Agent Orchestration
@@ -134,6 +148,30 @@ Each command runs under its own agent. Use a fresh chat for each.
 
 Steps 1 through 3B never touch source code. Step 4 runs only after you approve scope.
 
+# Cleanup Notes
+
+```text
+Let's create a new copy of this assessment. The new archival version can have “-initial” at the end of it. 
+
+For the one without initial suffix, let’s edit:
+
+- Repo scope should only be the repo/microservice name, no additional info is needed. 
+- Remove metadata, like HTML tags or schema references or F-XXX or AA-XXX findings. These are not relevant to the reader as they won't always have access to the research.
+- Remove any references to 'source/' as the assessment had it structured there, but the actual repo does not start at that folder. 
+- Remove Appendix A: Traceability. This is again referring to the metadata and research
+- Each finding should only have the following sections, and any sections outside of this should be move to another section if applicable. 
+**Priority: 
+**Resiliency Related:** 
+**Issue:** 
+**What does this solve:** 
+**Resiliency Impact:** 
+**Recommended Fix:** 
+**File:**
+**Fix:**
+**Notes**
+***MSFT Reference**
+- Remove any AI Agent internals or comments on the reporting process. 
+```
 
 # Other Notes
 

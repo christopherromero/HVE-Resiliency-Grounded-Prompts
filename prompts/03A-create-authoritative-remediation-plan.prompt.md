@@ -22,10 +22,10 @@ Always read:
 
 1. The authoritative Step 1 application inventory.
 2. The authoritative Step 2 control results, findings, scorecard, and assessment summary.
-3. `assessment/grounding/governance/remediation-prioritization.md`.
+3. `grounding/governance/remediation-prioritization.md`.
 4. The grounded master application standard.
 5. Only the dependency standards listed in the authoritative inventory.
-6. `assessment/grounding/exclusions/pcf-code-assessment-exclusion.md`.
+6. `grounding/exclusions/pcf-code-assessment-exclusion.md`.
 7. Source files and symbols cited by the inventory or findings, only when needed to create accurate change proposals.
 
 ## Purpose
