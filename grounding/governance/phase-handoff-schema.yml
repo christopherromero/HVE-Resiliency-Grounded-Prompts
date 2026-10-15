@@ -209,3 +209,21 @@ shared_service_assessment_scope_handoff:
     - silently_expand_service_scope
     - convert_scope_record_to_finding
     - suppress_service_from_architecture_inventory
+
+
+# DSE Cassandra and Kafka active-active handoff
+dse_kafka_active_active_handoff:
+  preserve:
+    - authoritative_state_dependency
+    - dse_cassandra_scenario
+    - dse_target_operating_model
+    - local_datacenter_affinity
+    - consistency_contract
+    - kafka_scenario
+    - kafka_regional_processing_model
+    - kafka_cluster_model
+    - topic_mirroring_contract
+    - offset_recovery_contract
+    - external_side_effect_classification
+    - architecture_conflicts
+  downstream_recalculation_prohibited: true

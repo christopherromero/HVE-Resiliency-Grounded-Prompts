@@ -1,8 +1,3 @@
-
-#### Shared-service assessment-scope contract
-
-Before evaluating controls in this standard, resolve `confluent-kafka` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
-
 ---
 schema_version: 3.1.0
 document_type: dependency_behavior
@@ -25,6 +20,19 @@ infrastructure_assumptions:
 - The deployment pipeline injects region-specific configuration into the same application
   artifact.
 - The application repository does not provision or validate infrastructure.
+shared_service_assessment_scope:
+  service_key: confluent-kafka
+  context_path: architecture_context.shared_service_assessment_scope.services
+  schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+  evaluation_gate: required
+  control_evaluation_allowed_only_when: in_scope
+  architecture_reasoning_allowed_for:
+  - in_scope
+  - out_of_scope
+  - informational_only
+  - architecture_only
+  scope_conflict_behavior: architecture_governance_review
+  contract_section: Shared-service assessment-scope contract
 controls:
 - id: KAFKA-001
   title: Bootstrap, schema, and registry endpoints are deployment-injected for the
@@ -398,6 +406,10 @@ supported_operating_scenarios:
 ---
 
 # Confluent Kafka Multi-Region Application Behavior Standard
+
+### Shared-service assessment-scope contract
+
+Before evaluating controls in this standard, resolve `confluent-kafka` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
 
 ### Shared-service operating-model contract
 
@@ -1961,3 +1973,29 @@ Cite repository-relative path, symbol/property, original assessed lines, and exa
 - Missing Cosmos DB multi-region writes or Azure SQL failover group when only repository evidence is available; record external evidence required.
 - Stretched-cluster recommendations. This standard supports independent regional clusters or active-standby only.
 - PCF migration, modernization, cleanup, or findings.
+
+
+## DSE Cassandra Authoritative-State Active-Active Controls
+
+### KAFKA-DSE-AA-001: Regional Kafka processing uses local clusters and mirrored required topics
+
+**Severity:** Critical  
+**Category:** regional-failover
+
+**Applies when:** DSE Cassandra is authoritative and both DSE Cassandra and Kafka target active-active operation.
+
+**Finding condition:** Emit a finding when repository-owned configuration hardcodes one regional Kafka cluster, uses region-specific topic names, or assumes required business topics can be recreated manually during failover. Missing deployed mirroring proof is an evidence gap.
+
+### KAFKA-DSE-AA-002: Kafka replay is safe for DSE Cassandra mutations
+
+**Severity:** Critical  
+**Category:** duplicate-and-replay-safety
+
+**Finding condition:** Emit a finding when redelivery, retry, offset recovery, or regional overlap can repeat a non-idempotent Cassandra mutation without stable operation identity and approved duplicate prevention.
+
+### KAFKA-DSE-AA-003: Multi-active workload ownership is explicit
+
+**Severity:** Critical  
+**Category:** workload-ownership
+
+**Finding condition:** Emit a finding when the target is multi-active but repository-owned activation, consumer-group, scheduler, or deployment configuration can create unintended concurrent ownership or depends on a single region.

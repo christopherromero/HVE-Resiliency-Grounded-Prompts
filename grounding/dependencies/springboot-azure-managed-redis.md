@@ -1,8 +1,3 @@
-
-#### Shared-service assessment-scope contract
-
-Before evaluating controls in this standard, resolve `azure-managed-redis` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
-
 ---
 schema_version: 2.2.0
 document_type: dependency_behavior
@@ -22,6 +17,19 @@ infrastructure_assumptions:
 - Azure Managed Redis deployment, zones, active geo-replication, networking, DNS,
   private endpoints, Entra configuration, capacity, and maintenance configuration
   are external unless repository-owned evidence is explicitly in scope.
+shared_service_assessment_scope:
+  service_key: azure-managed-redis
+  context_path: architecture_context.shared_service_assessment_scope.services
+  schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+  evaluation_gate: required
+  control_evaluation_allowed_only_when: in_scope
+  architecture_reasoning_allowed_for:
+  - in_scope
+  - out_of_scope
+  - informational_only
+  - architecture_only
+  scope_conflict_behavior: architecture_governance_review
+  contract_section: Shared-service assessment-scope contract
 controls:
 - id: REDIS-001
   title: Redis role and authoritative source are explicit
@@ -400,6 +408,10 @@ controls:
 ---
 
 # Azure Managed Redis Application Behavior Standard
+
+### Shared-service assessment-scope contract
+
+Before evaluating controls in this standard, resolve `azure-managed-redis` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
 
 ### Shared-service operating-model contract
 

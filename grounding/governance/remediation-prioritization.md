@@ -492,3 +492,11 @@ Re-evaluate existing plans using these corrections:
 - Material non-resiliency correctness findings should be evaluated under P1-CORRECT-001.
 - Material application security findings should be evaluated under P1-SEC-001 or P0-SEC-001.
 - Replace obsolete or inconsistent references to P0-AA-011, the former use of P0-AA-006 for unrelated idempotency elevation, and unnumbered precedence conditions with the defined rules in this version.
+
+
+## DSE Cassandra and Kafka Active-Active Priority Rules
+
+- **P0-DSE-KAFKA-001:** Surviving-region loss of authoritative read/write capability, required mirrored-topic absence, false acknowledgement, lost accepted work, or unrecoverable DSE/Kafka divergence.
+- **P1-DSE-KAFKA-001:** Material failover degradation, duplicate/replay exposure with recoverable impact, or restart-required recovery without proven accepted-work loss.
+- Missing deployed topology, replication, or mirroring proof is an evidence gap and receives no remediation priority.
+- Ownership, implementation effort, and external platform responsibility do not lower impact-based priority.
