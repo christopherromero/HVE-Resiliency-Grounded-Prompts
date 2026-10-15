@@ -1,7 +1,7 @@
 ---
 name: Task Planner
 description: 'Implementation planner for creating actionable implementation plans - Brought to you by microsoft/hve-core'
-model: gpt-6.1-sol
+model: 'GPT-6.1 Sol (copilot)'
 agents:
   - Researcher Subagent
   - Plan Validator

@@ -125,7 +125,9 @@ Each phase must read the required authoritative artifacts rather than rely on pr
 
 ## GPT branch model policy
 
-Use `gpt-6.1-sol` for the orchestrator, each assessment or remediation step, and any internal subagent delegation. The workspace agent definitions pin this model for direct invocation and handoffs. When a delegation tool exposes a `model` parameter, set it explicitly to `gpt-6.1-sol`; otherwise require the target agent's pinned model metadata.
+Use GPT-6.1 Sol for the orchestrator, each assessment or remediation step, and any internal subagent delegation. The workspace agent definitions use the VS Code qualified model name `GPT-6.1 Sol (copilot)` for direct invocation and handoffs.
+
+Use the model identifier expected by the active tool: VS Code `runSubagent` takes `GPT-6.1 Sol (copilot)`, while the Copilot SDK `task` tool takes the runtime ID `gpt-6.1-sol`. If no model parameter is available, require the target agent's pinned model metadata. Do not use the runtime ID as a VS Code frontmatter model name.
 
 If the model is unavailable or the runtime cannot honor the pin, stop and report the limitation. Do not silently fall back to another model or provider. Leave reasoning-effort and context-tier overrides unset unless explicitly requested, and do not change permissions to run the workflow.
 

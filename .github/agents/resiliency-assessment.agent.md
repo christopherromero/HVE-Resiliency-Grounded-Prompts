@@ -1,7 +1,7 @@
 ---
 name: Resiliency Assessment
-description: 'Run GPT 6.1 sol resiliency assessments through HVE agents with an explicit implementation approval gate.'
-model: gpt-6.1-sol
+description: 'Run GPT-6.1 Sol resiliency assessments through HVE agents with an explicit implementation approval gate.'
+model: 'GPT-6.1 Sol (copilot)'
 disable-model-invocation: true
 tools: [vscode, execute, read, agent, search]
 agents:
@@ -49,8 +49,8 @@ The skill owns the routing map and defaults. The step prompts own the work and c
 * Remediation chains Step 4, then Step 5. Enter Step 4 only with an authoritative Step 3A plan and explicit approved selectors.
 * Step 3B is not a prerequisite for Step 4. An explicit implementation request may proceed from Step 3A after approval.
 * A request for one specific step runs only that step. A status or next-step request runs nothing.
-* Use `gpt-6.1-sol` for the orchestrator and every delegated workflow step. This GPT branch intentionally pins the model.
-* If `gpt-6.1-sol` is unavailable or the runtime cannot honor the pin, stop and report the limitation. Do not silently substitute a model or provider.
+* Use GPT-6.1 Sol for the orchestrator and every delegated workflow step. VS Code identifies it as `GPT-6.1 Sol (copilot)`; the Copilot SDK task tool uses `gpt-6.1-sol`.
+* If GPT-6.1 Sol is unavailable or the runtime cannot honor the pin, stop and report the limitation. Do not silently substitute a model or provider.
 * Keep permissions unchanged. Leave reasoning-effort and context-tier overrides unset unless the user explicitly requests them.
 
 ## Required Steps
@@ -75,13 +75,15 @@ When required input or approval is missing, ask the user and wait. When an autho
 
 ### Step 3: Execute one step
 
-In orchestrated mode, delegate to the bound HVE agent using this task template. Set the delegation tool's `model` parameter to `gpt-6.1-sol` when that parameter is available; otherwise use the bound agent's pinned `model` frontmatter. Do not rely on an unspecified runtime model default.
+In orchestrated mode, delegate to the bound HVE agent using this task template. For VS Code `runSubagent`, set `model` to `GPT-6.1 Sol (copilot)`. For the Copilot SDK `task` tool, set `model` to `gpt-6.1-sol`. If no model parameter is available, use the bound agent's pinned `model` frontmatter. Do not pass the SDK ID to VS Code's model-name field or rely on an unspecified runtime model default.
 
 Replace each placeholder with resolved values before invoking the tool. Intentionally empty optional selectors are allowed.
 
 ```text
 Execute only workflow Step <step>.
-Use gpt-6.1-sol for this step and any internal subagent delegation.
+Use GPT-6.1 Sol for this step and any internal subagent delegation.
+VS Code model name: GPT-6.1 Sol (copilot).
+Copilot SDK task model ID: gpt-6.1-sol.
 Stop if the runtime cannot honor that model; do not substitute another.
 Read these files in full before doing the step's work:
   Wrapper: <exact wrapper path>
@@ -102,7 +104,7 @@ results, unresolved items, and any question requiring the user.
 
 Wait for the delegated step to finish before validating or starting another step. Never run dependent steps in parallel. If the bound agent is unavailable, report it and offer handoff mode; do not substitute a different agent or perform its work yourself.
 
-In handoff mode, return the resolved slash command and bound agent, then stop. The buttons above contain command names only, not run values. Tell the user to replace the prefilled command with the fully resolved invocation before sending it in a fresh chat. The bound agent is pinned to `gpt-6.1-sol`; if the UI requires manual model selection, tell the user to select that model before sending.
+In handoff mode, return the resolved slash command and bound agent, then stop. The buttons above contain command names only, not run values. Tell the user to replace the prefilled command with the fully resolved invocation before sending it in a fresh chat. The bound agent is pinned to `GPT-6.1 Sol (copilot)`; if the UI requires manual model selection, tell the user to select GPT-6.1 Sol before sending.
 
 ### Step 4: Validate and continue
 
