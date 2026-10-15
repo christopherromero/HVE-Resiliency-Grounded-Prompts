@@ -1,158 +1,157 @@
 ---
 name: resiliency-assessment
-description: 'Orchestrates HVE Core agents through governed resiliency assessment and remediation. Use to start, resume, or check an assessment - Brought to you by microsoft/hve-core'
+description: 'Route new, resumed, or status-only resiliency assessments to HVE agents - Brought to you by microsoft/hve-core'
 user-invocable: true
-compatibility: 'Requires the HVE Core agents declared by the workspace wrapper prompts'
+compatibility: 'Requires GPT 6.1 sol and the HVE Core agents declared by the workspace wrapper prompts'
 ---
 
-# Resiliency Assessment Orchestration Skill
+# Resiliency Assessment Routing
 
 ## Overview
 
-Route the governed resiliency assessment to the HVE agent bound by each workspace wrapper prompt.
+Resolve one next step and its invocation from repository artifacts.
+The caller executes that step. This skill does not perform assessment work, launch agents, or write workflow artifacts.
+Paths below are relative to the assessment workspace root, not the installed skill folder.
+This GPT branch executes through `gpt-6.1-sol` as required by repository governance and the bound agents' model metadata. Routing never selects a fallback model.
 
-This skill resolves which step runs next and returns its invocation. It does not perform assessment work, define assessment behavior, or duplicate prompt requirements. Execution belongs to the caller: an orchestrating agent runs the step as a subagent under the bound agent, and a user runs the slash command directly.
+## Prerequisites
 
-## Sources of truth
+Read `.github/copilot-instructions.md` before routing.
+For the target step, read the wrapper and authoritative prompt listed below.
+Stop with the exact expected path if a required file is missing.
 
-Read and apply these sources directly. Do not reproduce their substantive rules in this skill or rely on memory of their contents.
+Use each source for one purpose:
 
-1. `.github/copilot-instructions.md` governs the cross-phase authority model, assessment boundary, evidence rules, approval requirements, and completion behavior.
-2. The target step's file under `prompts/` is the authoritative specification for that step's inputs, outputs, boundaries, validation, handoff, and completion criteria.
-3. The matching file under `.github/prompts/` is the invocation wrapper. Use it for the slash-command name and bound HVE agent from its frontmatter, and for invocation input names and declared artifact paths from its Inputs section. Use its declared paths only as described in Artifact path resolution.
-4. `.github/agents/resiliency-assessment.agent.md` is the workspace orchestrator that delegates step resolution to this skill. Use it for the run modes, delegation format, handoff labels, and bound agents it declares. When it implies a workflow gate that `.github/copilot-instructions.md` does not require, apply `.github/copilot-instructions.md` and report the divergence.
-5. Authoritative artifacts produced by completed steps are the source of truth for run state. Phase handoffs provide orientation only and never replace an authoritative artifact.
-6. Governing schemas and policies under `grounding/governance/` are authoritative for the contracts the step prompts cite, including `resiliency-finding-qualification-policy.yml` for resiliency and non-resiliency finding classification, `assessment-report-schema.md` for Step 3B report structure and marker vocabulary, and `phase-handoff-schema.yml` for handoff summaries. Route to them by path and let the owning step apply them.
+* Repository instructions govern boundaries, evidence, authority, and approvals.
+* Authoritative step prompts govern work, prerequisites, completion, and handoffs.
+* Wrapper frontmatter binds the HVE agent. Wrapper inputs bind argument names and caller-supplied paths.
+* Completed authoritative artifacts establish run state. Handoff summaries are non-authoritative indexes only.
+* The owning step applies the schemas and policies referenced by its authoritative prompt.
 
-When sources conflict, follow the precedence rules in `.github/copilot-instructions.md` and the Artifact path resolution order below. Do not resolve any other conflict by inventing a value or by adding a new workflow rule.
-
-Verify `.github/copilot-instructions.md` exists before routing. Verify a step's wrapper and authoritative prompt exist at the paths in Step map once that step is resolved as the target.
+Do not load the orchestrator agent to resolve routing. It consumes this skill, not the reverse.
+Do not duplicate assessment, priority, classification, report, or closure rules here.
 
 ## Quick start
 
-For a new assessment, read the Step 1 authoritative prompt in full and the wrapper's invocation metadata, collect only the inputs they require, and return the fully resolved Step 1 invocation.
+* `Start a new assessment`: resolve new-run inputs and return Step 1.
+* `Resume the assessment`: identify the existing run and return its next eligible step.
+* `Check assessment status`: validate existing artifacts and report state without running anything.
+* A named step: resolve that step only, validate its prerequisites, and confirm any overwrite.
 
-For a resumed assessment, follow Required procedure to resolve the target step from authoritative artifacts, then return that step's fully resolved invocation.
+The orchestrator chains Steps 1 through 3B, stops for approval, then chains Steps 4 and 5 after approval.
+Manual execution uses a fresh chat for each step.
 
 ## Step map
 
-Each entry pairs an invocation wrapper with its authoritative specification.
+Read the bound agent and argument contract from the wrapper rather than maintaining another agent/input map.
 
-1. Step 1
-   * Wrapper: `.github/prompts/01-inventory.prompt.md`
-   * Authority: `prompts/01-create-inventory-hve-task-researcher.prompt.md`
-2. Step 2
-   * Wrapper: `.github/prompts/02-findings.prompt.md`
-   * Authority: `prompts/02-generate-findings-from-hve-research.prompt.md`
-3. Step 3A
-   * Wrapper: `.github/prompts/03a-plan.prompt.md`
-   * Authority: `prompts/03A-create-authoritative-remediation-plan.prompt.md`
-4. Step 3B
-   * Wrapper: `.github/prompts/03b-report.prompt.md`
-   * Authority: `prompts/03B-create-code-level-resiliency-assessment-report-schema-governed.prompt.md`
-5. Step 4
-   * Wrapper: `.github/prompts/04-implement.prompt.md`
-   * Authority: `prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md`
-6. Step 5
-   * Wrapper: `.github/prompts/05-review.prompt.md`
-   * Authority: `prompts/05-review-implemented-remediation-complete-priority-aware.prompt.md`
+| Step   | Wrapper                                        | Authoritative prompt                                                                     |
+| ------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 1      | `.github/prompts/01-inventory.prompt.md`       | `prompts/01-create-inventory-hve-task-researcher.prompt.md`                              |
+| 2      | `.github/prompts/02-findings.prompt.md`        | `prompts/02-generate-findings-from-hve-research.prompt.md`                               |
+| 3A     | `.github/prompts/03a-plan.prompt.md`           | `prompts/03A-create-authoritative-remediation-plan.prompt.md`                            |
+| 3B     | `.github/prompts/03b-report.prompt.md`         | `prompts/03B-create-code-level-resiliency-assessment-report-schema-governed.prompt.md`   |
+| 4      | `.github/prompts/04-implement.prompt.md`       | `prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md`            |
+| 5      | `.github/prompts/05-review.prompt.md`          | `prompts/05-review-implemented-remediation-complete-priority-aware.prompt.md`            |
 
-## Artifact path resolution
+## Run identity
 
-A step's authoritative prompt does not always declare a concrete output path. Resolve the location of an artifact in this order:
+Resolve intent before assigning defaults. Ask when new versus resume is unclear.
 
-1. When the step's authoritative prompt declares a concrete path, use it.
-2. When the authoritative prompt declares the path as caller-supplied, such as `PLAN_ARTIFACT=<exact authoritative Step 3A output artifact path>`, use the path declared in that step's wrapper Inputs section.
-3. When the wrapper and another step's authoritative prompt declare different paths for the same artifact, use the wrapper path for invocation, check both locations when validating, and report both exact paths as a divergence.
+For a new run:
 
-This order locates artifacts only. It never changes an artifact's role, required structure, validation, or completion criteria, which remain governed by the authoritative prompt.
+1. Use user-supplied values first. Default `runDate` to the current date in `YYYY-MM-DD` format.
+2. If application files are directly under `source/`, use `source` as `sourceRoot`. If the application is in one child folder, use that folder. Ask when several application roots are plausible; stop if no application source exists.
+3. Default `taskSlug` to the final segment of `sourceRoot`, and `planSlug` to `<taskSlug>-remediation-plan` when a plan is needed.
+4. Check for an existing run with the same date and task slug before creating anything. Do not overwrite it or silently merge two runs.
 
-Some declared paths are not run-scoped, including handoff summaries. Never infer run identity from a non-run-scoped path. Resolve run identity from run-scoped artifact folders, from declared run defaults, or from the user.
+For a resumed run:
 
-The Step 3B report filename carries an `MM-DD-YYYY` prefix derived from the resolved run date. That prefix is a naming convention, not a run-scoped folder, so it records run identity rather than establishing it. Resolve run identity first, then build the report filename from it.
+1. Inspect run-scoped artifacts under `.copilot-tracking/research/`, `reviews/`, `plans/`, and `changes/`.
+2. Match the user's date, slug, or exact artifact path. If one run matches, state its identity and use it. If several match, ask the user to select one.
+3. Recover values from that run's authoritative artifacts and declared paths. Ask for values that cannot be recovered uniquely. Do not apply today's date or new-run slug defaults to an existing run.
+4. Keep an explicitly supplied implementation artifact tied to its own run and plan. Never choose an implementation record by newest timestamp alone.
 
-## Required procedure
+For Step 3B, derive `reportDate` from the resolved `runDate` as `MM-DD-YYYY`.
+Derive `microserviceSlug` by lowercasing `taskSlug` and removing a trailing `-inventory` suffix.
+These derived names never establish run identity.
+Handoff paths are not run-scoped and cannot establish run identity either.
 
-### Stage A: Load governance
+## Routing procedure
 
-Read `.github/copilot-instructions.md` in full. Preserve its phase boundaries and authority model.
+### 1. Classify existing artifacts
 
-### Stage B: Establish run intent
+For each artifact needed to determine the current state:
 
-Determine whether the user is starting a new assessment, resuming one, checking status, asking what comes next, or requesting a specific step.
+1. Read its owning authoritative prompt and resolve its exact path using Artifact paths below.
+2. Validate the artifact against that prompt's completion requirements, not file presence alone.
+3. Classify it as absent, complete, or blocked/incomplete. Preserve the prompt's own statuses and reasons.
 
-When intent or run identity is ambiguous, inspect existing run-scoped `.copilot-tracking/` phase artifacts and present the matching runs for the user to choose from. Do not select among multiple runs or invent an artifact path, approval, or selector. Resolve run date and slug defaults from the orchestrator's Run Defaults when the caller declares them, and state the resolved values rather than leaving them blank.
+Stop on blocked, partial, invalid, or conflicting artifacts unless their authority explicitly permits continuation.
+Do not treat unresolved findings as an incomplete artifact when the owning prompt permits them.
+If downstream artifacts exist but a required upstream artifact is missing, report the inconsistency instead of regenerating the missing step.
 
-### Stage C: Resolve the target step
+### 2. Select one target
 
-When the user explicitly requests a specific step, treat that step as the target, including a step whose output already exists. Confirm before routing a re-run that would overwrite an existing authoritative artifact.
+An explicit step request takes precedence over automatic routing but never bypasses prerequisites or approval.
+For an explicit implementation request, target Step 4 after Step 3A and scope approval; a Step 3B report is not required.
+For an explicit review request, target Step 5 using the exact implementation record.
+Confirm before rerunning a step whose authoritative output already exists.
 
-Otherwise evaluate steps in workflow order and take the earliest step whose output is not complete as the target.
+For automatic routing, apply the following rows from top to bottom within the selected run and implementation scope.
+An absent next output is eligible only when its actual required prerequisites are complete.
 
-For each candidate step:
+| Validated state                                                                    | Next action                                |
+| ---------------------------------------------------------------------------------- | ------------------------------------------ |
+| Implementation record exists; its required Step 5 review is absent                 | Resolve Step 5                             |
+| Implementation record and its Step 5 review are complete                           | Report remediation complete; stop          |
+| Step 1 inventory is absent and no downstream artifact exists                       | Resolve Step 1                             |
+| Step 1 is complete; Step 2 findings are absent                                     | Resolve Step 2                             |
+| Step 2 is complete; Step 3A plan is absent                                         | Resolve Step 3A                            |
+| Step 3A is complete; Step 3B report is absent; no implementation request was made  | Resolve Step 3B                            |
+| Step 3A and Step 3B are complete; no implementation request was made               | Report assessment complete; await approval |
 
-1. Read its authoritative prompt in full.
-2. Locate its output using Artifact path resolution.
-3. Use only that prompt's declared artifact role, required structure, handoff rules, and completion validation to validate the output.
-4. Treat a missing, partial, blocked, invalid, or nonconforming output exactly as that prompt instructs.
+Do not start Step 4 merely because a plan or report exists.
+Explicit user-supplied implementation selectors can establish an implementation request, but must still satisfy the approval gate.
+For status or next-step requests, describe the selected action without executing it or requesting approval to execute it.
+If no row applies, report the unresolved state and required input rather than guessing.
 
-Validate prerequisites from the inputs the target step's authoritative prompt declares as required, not from step numbering. A step whose output the target step does not require is not a prerequisite. Apply a workflow gate only when `.github/copilot-instructions.md` or the target step's authoritative prompt declares it.
+### 3. Resolve invocation and approval
 
-Use handoff summaries only as indexes to candidate authoritative artifacts. Validate completion from the authoritative artifact and that step's prompt, not from a handoff summary or file presence alone.
+1. Read the target wrapper's bound `agent`, input names, defaults, and path bindings.
+2. Resolve only that step's required values from the request and validated run artifacts. Ask for missing values in one focused interaction.
+3. Validate all prerequisites declared by the authoritative prompt. Step numbering alone does not create a prerequisite.
+4. Before Step 4, require explicit approved `priorities`, `waves`, or `changeIds` from the user and apply the plan's approval conditions. All three cannot be empty.
+5. Preserve selectors literally. Step 4, not the router, resolves and freezes change IDs according to its authoritative prompt. Use `commitMode=none` unless the user explicitly chooses the supported `per_change` mode.
+6. Before Step 5, use `implementationArtifact` exactly as reported by Step 4 and validated against the selected run. Preserve its frozen change IDs; do not reselect scope.
+7. Return the resolved invocation. The caller executes, validates the resulting artifact, then asks this skill to resolve again.
 
-### Stage D: Resolve invocation
+## Artifact paths
 
-Read the target step's wrapper frontmatter and Inputs section. Derive only the invocation metadata from that file:
+Resolve locations in this order:
 
-* Slash-command name
-* Bound HVE agent
-* Input names and casing
-* Required and optional inputs
-* Default values explicitly declared by the wrapper
-* Declared artifact paths, used only as described in Artifact path resolution
+1. Use a concrete path declared by the artifact's authoritative prompt.
+2. If the authority makes the path caller-supplied, use the wrapper's Inputs binding with resolved run values.
+3. For Steps 4 and 5 agent-authorized output locations, use the exact path reported by the owning agent. On resume, a handoff may locate candidates, but validate the actual artifact, run identity, and scope before using one.
 
-When VS Code reports the bound agent unavailable, stop and report the exact agent name without selecting a substitute.
+If another step's prompt references a different location for the same input artifact, retain the wrapper's invocation binding, check both declared locations, and report both paths as a divergence.
+Do not rename, copy, or choose an unrelated artifact to hide a conflict. Stop if the correct authoritative artifact cannot be established.
+For non-path conflicts, apply repository governance precedence; stop when no declared rule resolves the conflict.
 
-Resolve phase transitions and handoff behavior only from `.github/copilot-instructions.md` and the authoritative prompt. Resolve input values from the user's request and validated authoritative artifacts. Ask for missing required values. Do not create defaults, normalize values, or reinterpret selectors unless the wrapper or authoritative prompt explicitly instructs it.
+## Troubleshooting
 
-### Stage E: Return the resolved step
-
-Return the target step's bound HVE agent, its wrapper and authoritative prompt paths, and its slash command with every required value resolved.
-
-The caller executes. An orchestrating agent runs the step as a subagent under the bound agent and then validates the resulting artifact. A user runs the slash command directly, in a new conversation when the authoritative prompt requires a new session.
-
-Do not claim a step completed without validating its authoritative artifact. Do not advance past a gate declared by `.github/copilot-instructions.md` or the target step's authoritative prompt.
-
-## Approval gate
-
-Before routing Step 4, apply the approval requirements from `.github/copilot-instructions.md`, the Step 3A authoritative artifact, and the Step 4 authoritative prompt. Never infer approval or implementation scope. Stop and ask the user for any approval input required by those sources.
-
-## Failure handling
-
-* If a required wrapper, authoritative prompt, governing file, schema, or artifact is missing, report its exact expected path from the source that requires it.
-* If an artifact conflicts with a handoff summary, use the authoritative artifact and report the handoff exception as required by `.github/copilot-instructions.md`.
-* If a wrapper and an authoritative prompt declare different paths for the same artifact, apply Artifact path resolution and report the divergence. Do not edit either prompt.
-* If authoritative sources conflict on anything other than an artifact path, apply their declared precedence and conflict behavior. When no rule resolves the conflict, stop and report it without choosing a value.
-* If the current step or run cannot be identified uniquely, present the supported candidates and ask the user to choose.
-* If VS Code cannot resolve the wrapper's bound HVE agent, report the exact `agent` value and stop without substituting another agent.
-
-## Boundaries
-
-This skill adds no assessment, evidence, architecture, scenario, priority, implementation, report, testing, or closure rules. Apply those boundaries only from `.github/copilot-instructions.md`, the current authoritative prompt, its referenced governance files, and validated authoritative artifacts.
-
-Do not create a separate run index, assessment artifact, finding, plan, report, implementation record, review record, or handoff summary while routing.
-
-Preserve the approval boundaries required by the authoritative sources. Never advance past the Phase 1 to Phase 2 approval gate without explicit user-supplied selectors.
+* Missing required file: report the exact expected path and stop.
+* Multiple matching runs, plans, or implementation records: present candidates and ask the user to select one.
+* Handoff disagrees with its artifact: use the authoritative artifact and report the handoff exception.
+* Unknown bound agent: report the wrapper's exact `agent` value; do not substitute another agent.
+* Missing approval or unresolved plan condition: stop before Step 4 and request the specific decision.
+* Incomplete output: report the failed completion requirement; do not advance or automatically overwrite it.
 
 ## Response format
 
-For a resolved step, report:
+Return intent, run identity, target step or stop reason, bound agent, wrapper and authority paths, validated prerequisite paths, expected output location when known, and the resolved slash command.
+List unresolved inputs, approval requirements, path divergences, and blockers separately.
+Leave no required placeholder unresolved in a runnable command. Optional empty selectors are allowed.
+Do not claim execution or completion while routing, create a separate run index, or write assessment artifacts.
 
-* Target step
-* Bound HVE agent read from wrapper frontmatter
-* Validated prerequisite artifact paths required by the target step's authoritative prompt
-* Wrapper and authoritative prompt paths, for delegated execution
-* Exact slash command with all required values resolved
-* Any unresolved required input, path divergence, or source conflict that affects routing
-
-Do not summarize the target step's authoritative prompt's substantive instructions unless the user asks. The resolved invocation and source paths are the handoff.
+> Brought to you by microsoft/hve-core

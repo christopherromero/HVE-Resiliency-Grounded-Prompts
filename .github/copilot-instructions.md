@@ -1,3 +1,7 @@
+---
+description: 'Repository governance for resiliency assessment, remediation, evidence, and approvals.'
+---
+
 # Resiliency Assessment Framework Instructions
 
 ## Framework purpose
@@ -111,9 +115,19 @@ Step 4: Implementation
 Step 5: Post-implementation review
 ```
 
-Run one phase per conversation. Use `/clear` or start a new chat between phases.
+For manual execution, run one step per conversation. Use `/clear` or start a new chat between steps.
+
+The Resiliency Assessment orchestrator may chain Steps 1 through 3B, then stop for explicit human implementation approval. After approval, it may chain Steps 4 and 5. Each step runs in a separate subagent with a fresh context, reads its authoritative inputs from disk, and must pass its completion checks before the next step starts. A request for one specific step runs only that step.
+
+An explicit implementation request may proceed from the approved Step 3A plan without a Step 3B report. Step 4 still requires approved scope and all applicable plan approval conditions.
 
 Each phase must read the required authoritative artifacts rather than rely on prior conversation history.
+
+## GPT branch model policy
+
+Use `gpt-6.1-sol` for the orchestrator, each assessment or remediation step, and any internal subagent delegation. The workspace agent definitions pin this model for direct invocation and handoffs. When a delegation tool exposes a `model` parameter, set it explicitly to `gpt-6.1-sol`; otherwise require the target agent's pinned model metadata.
+
+If the model is unavailable or the runtime cannot honor the pin, stop and report the limitation. Do not silently fall back to another model or provider. Leave reasoning-effort and context-tier overrides unset unless explicitly requested, and do not change permissions to run the workflow.
 
 ## Authority model
 

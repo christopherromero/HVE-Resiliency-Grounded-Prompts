@@ -88,7 +88,7 @@ Do not enable `container_build`, `cicd_pipeline`, `deployment_configuration`, `i
 ```text
 Let's populate this context based on what we see in the source/ folder. There might be multiple projects in the source/ folder. 
 
-Do not switch my model or permissions. We need to use Claude Opus 5. 
+Use GPT 6.1 sol and keep my existing permissions.
 
 We are targeting a westus2 westus active-active deployment
 
@@ -108,9 +108,17 @@ Again, we are only running the app code and config scopes
    Start a new assessment
    ```
 
-5. Confirm the values it resolves, then let Steps 1 through 3B run.
-6. Reply with the scope you approve, for example `priorities=P0,P1`.
-7. Steps 4 and 5 apply the fixes and verify them.
+5. Review the resolved run values, then let Steps 1 through 3B run. Each step uses its bound HVE agent in a separate subagent context and validates its output before the next step starts.
+6. The orchestrator stops after the report. Review the Step 3A plan and reply with the scope you approve, for example `priorities=P0,P1 commitMode=none`. Approval must satisfy any additional conditions recorded in the plan.
+7. Steps 4 and 5 apply only the approved scope and verify it. The default commit mode is `none`; choose `per_change` explicitly if you want local commits.
+
+This GPT branch pins the orchestrator and all four phase-owning HVE agents to `gpt-6.1-sol`. Delegated steps and their internal subagents must use the same model. If the model is unavailable or the runtime cannot honor the pin, the workflow stops rather than falling back to another model or provider. Reasoning-effort and context-tier overrides remain unset unless explicitly requested; permissions remain unchanged.
+
+Source code may be directly under `source/` (the workspace script's default) or in a nested application folder. The orchestrator asks you to choose when multiple application roots or runs match. You can supply a descriptive `taskSlug` when assessing `source` directly; otherwise it defaults to `source`.
+
+Use `Resume the assessment` to continue an existing run without changing its date, or `Check assessment status` to inspect it without executing steps. Requesting a specific step runs only that step. Existing authoritative outputs require confirmation before a rerun.
+
+You may explicitly request implementation after Step 3A without generating the optional Step 3B report. The same scope approval gate applies. If delegation is unavailable, use handoff mode: copy the fully resolved command supplied by the orchestrator into the named agent in a fresh chat using GPT 6.1 sol. Handoff buttons contain command names only and do not fill in run values.
 
 ## Manual Run
 
@@ -122,7 +130,7 @@ Again, we are only running the app code and config scopes
    - prompt 3b - HVE Task Planner
    - prompt 4 - HVE Task Implementor
    - prompt 5 - HVE Task Reviewer
-3. Ensure you are using Claude Opus 5+
+3. Use GPT 6.1 sol (`gpt-6.1-sol`) and keep your existing permissions. The workspace agents are pinned to this model; if the UI requires manual selection, select it before sending.
 
 ### Running one step at a time
 
@@ -179,11 +187,11 @@ For the one without initial suffix, let’s edit:
 
 Everything is derived unless you override it.
 
-| Value         | Default                            |
-|---------------|------------------------------------|
-| `runDate`     | Today, or the existing run's date   |
-| `sourceRoot`  | The single folder under `source/`   |
-| `taskSlug`    | The source root folder name         |
-| `planSlug`    | Task slug plus `-remediation-plan`  |
+| Value           | Default                                   |
+| --------------- | ----------------------------------------- |
+| `runDate`       | Today, or the existing run's date         |
+| `sourceRoot`    | `source` or one nested application folder |
+| `taskSlug`      | The source root folder name               |
+| `planSlug`      | Task slug plus `-remediation-plan`        |
 
 Slugs are filename prefixes only. The date folder separates runs.

@@ -1,6 +1,7 @@
 ---
 name: Task Implementor
 description: 'Executes implementation plans from .copilot-tracking/plans with progressive tracking and change records - Brought to you by microsoft/hve-core'
+model: gpt-6.1-sol
 agents:
   - Phase Implementor
   - Researcher Subagent

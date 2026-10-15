@@ -1,6 +1,7 @@
 ---
 name: Task Researcher
 description: 'Task research specialist for comprehensive project analysis - Brought to you by microsoft/hve-core'
+model: gpt-6.1-sol
 agents:
   - Researcher Subagent
 handoffs:
