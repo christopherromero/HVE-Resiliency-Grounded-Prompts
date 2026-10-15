@@ -1,395 +1,531 @@
-# Dependency Standard Registry
-schema_version: "2.2"
+schema_version: '2.2'
 registry_type: dependency_standard_registry
-
-# Version policy
-#   Dependency standards updated with business-logic risk classification are 2.1.0.
-#   Standards not yet updated remain at their current version.
-#   Every entry declares an explicit standard.path and standard.version.
-
 standards:
-
   keyvault:
     display_name: Azure Key Vault
     grounding_file: grounding/dependencies/springboot-keyvault.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - keyvault
-        - azure-keyvault
+      - keyvault
+      - azure-keyvault
       repository_patterns:
-        - SecretClient
-        - CertificateClient
-        - KeyClient
-        - spring.cloud.azure.keyvault
-        - AZURE_KEYVAULT_URI
+      - SecretClient
+      - CertificateClient
+      - KeyClient
+      - spring.cloud.azure.keyvault
+      - AZURE_KEYVAULT_URI
     standard:
       path: grounding/dependencies/springboot-keyvault.md
-      version: "2.2.0"
-
+      version: 2.2.0
   cosmosdb:
     display_name: Azure Cosmos DB
     grounding_file: grounding/dependencies/springboot-cosmosdb.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - cosmosdb
-        - azure-cosmos
+      - cosmosdb
+      - azure-cosmos
       repository_patterns:
-        - CosmosClientBuilder
-        - CosmosAsyncClient
-        - spring.cloud.azure.cosmos
-        - ChangeFeedProcessor
+      - CosmosClientBuilder
+      - CosmosAsyncClient
+      - spring.cloud.azure.cosmos
+      - ChangeFeedProcessor
     standard:
       path: grounding/dependencies/springboot-cosmosdb.md
-      version: "2.2.0"
+      version: 2.2.0
       business_logic_risk_classification: true
-
+  mongodb:
+    display_name: MongoDB and Azure Cosmos DB for MongoDB
+    grounding_file: grounding/dependencies/springboot-mongodb.md
+    type: dependency_standard
+    api_variant_detection:
+      declared_in_standard: true
+      variants:
+      - native_mongodb
+      - cosmos_mongo_ru
+      - cosmos_mongo_vcore
+      unknown_variant_behavior: not_assessed_for_variant_conditional_controls
+    activate_when_any:
+      inventory_dependencies:
+      - mongodb
+      - spring-boot-starter-data-mongodb
+      - spring-data-mongodb
+      - mongodb-driver-sync
+      - mongodb-driver-reactivestreams
+      repository_patterns:
+      - MongoRepository
+      - ReactiveMongoRepository
+      - MongoTemplate
+      - ReactiveMongoTemplate
+      - MongoClientSettings
+      - spring.data.mongodb
+      - MONGODB_URI
+      - 'mongodb://'
+      - 'mongodb+srv://'
+      - org.springframework.data.mongodb
+    standard:
+      path: grounding/dependencies/springboot-mongodb.md
+      version: 1.0.0
+      business_logic_risk_classification: true
   eventhubs:
     display_name: Azure Event Hubs
     grounding_file: grounding/dependencies/springboot-eventhubs.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - eventhubs
-        - azure-messaging-eventhubs
+      - eventhubs
+      - azure-messaging-eventhubs
       repository_patterns:
-        - EventHubProducerClient
-        - EventHubClientBuilder
-        - EventProcessorClient
-        - spring.cloud.azure.eventhubs
-        - BlobCheckpointStore
+      - EventHubProducerClient
+      - EventHubClientBuilder
+      - EventProcessorClient
+      - spring.cloud.azure.eventhubs
+      - BlobCheckpointStore
     standard:
       path: grounding/dependencies/springboot-eventhubs.md
-      version: "2.2.0"
+      version: 2.2.0
       business_logic_risk_classification: true
-
   storage-blob:
     display_name: Azure Blob Storage
     grounding_file: grounding/dependencies/springboot-storage-blob.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - storage-blob
-        - azure-storage-blob
+      - storage-blob
+      - azure-storage-blob
       repository_patterns:
-        - BlobServiceClientBuilder
-        - BlobContainerClient
-        - BlobClient
-        - spring.cloud.azure.storage
+      - BlobServiceClientBuilder
+      - BlobContainerClient
+      - BlobClient
+      - spring.cloud.azure.storage
     standard:
       path: grounding/dependencies/springboot-storage-blob.md
-      version: "2.2.0"
+      version: 2.2.0
       business_logic_risk_classification: true
-
   azure-sql:
     display_name: Azure SQL
     grounding_file: grounding/dependencies/springboot-azure-sql.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - azure-sql
-        - mssql-jdbc
-        - r2dbc-mssql
+      - azure-sql
+      - mssql-jdbc
+      - r2dbc-mssql
       repository_patterns:
-        - jdbc:sqlserver
-        - r2dbc:mssql
-        - SQLServerDataSource
-        - spring.datasource.url
+      - jdbc:sqlserver
+      - r2dbc:mssql
+      - SQLServerDataSource
+      - spring.datasource.url
     standard:
       path: grounding/dependencies/springboot-azure-sql.md
-      version: "2.3.0"
-
+      version: 2.3.0
   postgresql:
     display_name: PostgreSQL
     grounding_file: grounding/dependencies/springboot-postgresql.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - postgresql
-        - postgres
+      - postgresql
+      - postgres
       repository_patterns:
-        - jdbc:postgresql
-        - r2dbc:postgresql
-        - PGSimpleDataSource
-        - spring.datasource.url
-        - PGHOST
+      - jdbc:postgresql
+      - r2dbc:postgresql
+      - PGSimpleDataSource
+      - spring.datasource.url
+      - PGHOST
     standard:
       path: grounding/dependencies/springboot-postgresql.md
-      version: "2.2.0"
+      version: 2.2.0
       business_logic_risk_classification: true
-
   apim:
     display_name: Azure API Management Client Behavior
     grounding_file: grounding/dependencies/springboot-apim.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - apim
-        - azure-api-management
+      - apim
+      - azure-api-management
       repository_patterns:
-        - Ocp-Apim-Subscription-Key
-        - azure-api.net
-        - WebClient.Builder
-        - RestClient.Builder
-        - FeignClient
+      - Ocp-Apim-Subscription-Key
+      - azure-api.net
+      - WebClient.Builder
+      - RestClient.Builder
+      - FeignClient
     standard:
       path: grounding/dependencies/springboot-apim.md
-      version: "2.2.0"
+      version: 2.2.0
       business_logic_risk_classification: true
-
   appgateway-glb:
     display_name: Application Gateway and Global Load Balancer Behavior
     grounding_file: grounding/dependencies/springboot-appgateway-glb.md
     type: dependency_standard
     activate_when_any:
       inventory_capabilities:
-        - ingress: application_gateway
-        - ingress: global_load_balancer
+      - ingress: application_gateway
+      - ingress: global_load_balancer
       repository_patterns:
-        - server.forward-headers-strategy
-        - ForwardedHeaderFilter
-        - X-Forwarded-For
-        - actuator/health/readiness
-        - actuator/health/liveness
+      - server.forward-headers-strategy
+      - ForwardedHeaderFilter
+      - X-Forwarded-For
+      - actuator/health/readiness
+      - actuator/health/liveness
     standard:
       path: grounding/dependencies/springboot-appgateway-glb.md
-      version: "2.2.0"
+      version: 2.2.0
       business_logic_risk_classification: true
-
   http-client:
     display_name: HTTP Client Behavior
     grounding_file: grounding/dependencies/springboot-http-client.md
     type: cross_cutting_client_standard
     activate_when_any:
       inventory_dependencies:
-        - spring-web
-        - spring-webflux
-        - apache-httpclient
-        - okhttp
-        - openfeign
+      - spring-web
+      - spring-webflux
+      - apache-httpclient
+      - okhttp
+      - openfeign
       repository_patterns:
-        - WebClient
-        - RestClient
-        - RestTemplate
-        - HttpClient
-        - FeignClient
+      - WebClient
+      - RestClient
+      - RestTemplate
+      - HttpClient
+      - FeignClient
     standard:
       path: grounding/dependencies/springboot-http-client.md
-      version: "2.1.0"
-
+      version: 2.2.0
   confluent-kafka:
     display_name: Confluent Kafka
     grounding_file: grounding/dependencies/springboot-confluent-kafka.md
     type: scenario_aware_dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - confluent-kafka
-        - spring-kafka
+      - confluent-kafka
+      - spring-kafka
       repository_patterns:
-        - KafkaTemplate
-        - KafkaListener
-        - spring.kafka.bootstrap-servers
-        - schema.registry.url
+      - KafkaTemplate
+      - KafkaListener
+      - spring.kafka.bootstrap-servers
+      - schema.registry.url
     standard:
       path: grounding/dependencies/springboot-confluent-kafka.md
-      version: "3.1.0"
+      version: 3.3.0
     scenario_policy:
       path: grounding/governance/kafka-operating-scenario-policy.yml
-      version: "3.2.0"
+      version: 3.3.0
     context_sources:
       preferred:
-        - application-context/application-architecture-context.yml
+      - application-context/application-architecture-context.yml
       fallback:
-        - repository_observed_dependency_roles
-
+      - repository_observed_dependency_roles
+    architecture_context_required: true
+    shared_service_scope_required: true
   dse-cassandra:
     display_name: DSE Cassandra
     grounding_file: grounding/dependencies/springboot-dse-cassandra.md
     type: scenario_aware_dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - dse-cassandra
+      - dse-cassandra
       repository_patterns:
-        - DseSession
-        - DseCluster
-        - spring.data.cassandra
-        - cassandra.contact-points
+      - DseSession
+      - DseCluster
+      - spring.data.cassandra
+      - cassandra.contact-points
     standard:
       path: grounding/dependencies/springboot-dse-cassandra.md
-      version: "2.2.0"
+      version: 2.1.0
     scenario_policy:
       path: grounding/governance/dse-cassandra-operating-scenario-policy.yml
-      version: "2.0.0"
+      version: 2.1.0
     context_sources:
       preferred:
-        - application-context/application-architecture-context.yml
+      - application-context/application-architecture-context.yml
       fallback:
-        - repository_observed_dependency_roles
-
+      - repository_observed_dependency_roles
+    architecture_context_required: true
+    shared_service_scope_required: true
   azure-managed-redis:
     display_name: Azure Managed Redis
     grounding_file: grounding/dependencies/springboot-azure-managed-redis.md
     type: dependency_standard
     activate_when_any:
       inventory_dependencies:
-        - azure-managed-redis
-        - redis
+      - azure-managed-redis
+      - redis
       repository_patterns:
-        - RedisTemplate
-        - ReactiveRedisTemplate
-        - RedisCacheManager
-        - LettuceConnectionFactory
-        - JedisPool
-        - RedissonClient
-        - spring.data.redis
-        - spring.session.store-type=redis
+      - RedisTemplate
+      - ReactiveRedisTemplate
+      - RedisCacheManager
+      - LettuceConnectionFactory
+      - JedisPool
+      - RedissonClient
+      - spring.data.redis
+      - spring.session.store-type=redis
     standard:
       path: grounding/dependencies/springboot-azure-managed-redis.md
-      version: "2.2.0"
-
+      version: 2.2.0
   aks-istio:
     display_name: Azure AKS with Istio
     grounding_file: grounding/dependencies/springboot-aks-istio.md
     type: dependency_standard
     activate_when_any:
       inventory_capabilities:
-        - runtime_platform: aks
-        - service_mesh: istio
+      - runtime_platform: aks
+      - service_mesh: istio
       repository_patterns:
-        - VirtualService
-        - DestinationRule
-        - ServiceEntry
-        - sidecar.istio.io
-        - proxy.istio.io
-        - istio-injection
+      - VirtualService
+      - DestinationRule
+      - ServiceEntry
+      - sidecar.istio.io
+      - proxy.istio.io
+      - istio-injection
     standard:
       path: grounding/dependencies/springboot-aks-istio.md
-      version: "2.2.0"
-
+      version: 2.2.0
   azure-functions:
     display_name: Azure Function
     grounding_file: grounding/dependencies/springboot-azure-function.md
     type: dependency_standard
     activate_when_any:
       inventory_capabilities:
-        - runtime_platform: azure-function
+      - runtime_platform: azure-function
       repository_patterns:
-        - host.json
-        - function.json
-        - FunctionName
-        - HttpTrigger
-        - TimerTrigger
-        - QueueTrigger
-        - ServiceBusTrigger
-        - EventHubTrigger
-        - BlobTrigger
-        - DurableOrchestrationContext
+      - host.json
+      - function.json
+      - FunctionName
+      - HttpTrigger
+      - TimerTrigger
+      - QueueTrigger
+      - ServiceBusTrigger
+      - EventHubTrigger
+      - BlobTrigger
+      - DurableOrchestrationContext
     standard:
       path: grounding/dependencies/springboot-azure-function.md
-      version: "2.2.0"
-
+      version: 2.2.0
   jvm-runtime:
     display_name: JVM Runtime Resiliency
     grounding_file: grounding/dependencies/jvm-runtime-resiliency.md
     type: dependency_standard
     activate_when_any:
       inventory_capabilities:
-        - runtime: jvm
-        - language: java
-        - framework: spring-boot
+      - runtime: jvm
+      - language: java
+      - framework: spring-boot
       repository_patterns:
-        - pom.xml
-        - build.gradle
-        - build.gradle.kts
-        - JAVA_TOOL_OPTIONS
-        - JAVA_OPTS
-        - JDK_JAVA_OPTIONS
-        - -Xmx
-        - -XX:MaxRAMPercentage
-        - spring.threads.virtual.enabled
-        - spring.lifecycle.timeout-per-shutdown-phase
+      - pom.xml
+      - build.gradle
+      - build.gradle.kts
+      - JAVA_TOOL_OPTIONS
+      - JAVA_OPTS
+      - JDK_JAVA_OPTIONS
+      - -Xmx
+      - -XX:MaxRAMPercentage
+      - spring.threads.virtual.enabled
+      - spring.lifecycle.timeout-per-shutdown-phase
     standard:
       path: grounding/dependencies/jvm-runtime-resiliency.md
-      version: "1.0.0"
-
-# Optional assessment-domain standards.
-# These activate only when the matching domain is enabled in
-# application-context/assessment-scope-context.yml and repository-owned
-# artifacts are present. They are not runtime application dependencies.
-
+      version: 1.1.0
+  frontend-web-client:
+    display_name: Frontend Web Client Behavior
+    grounding_file: grounding/dependencies/frontend-web-client.md
+    type: cross_cutting_client_standard
+    assessment_domain: frontend_application
+    activate_when:
+      scope_status: enabled
+    activate_when_any:
+      inventory_capabilities:
+      - language: typescript
+      - language: javascript
+      - workload_kind: browser_client
+      repository_patterns:
+      - package.json
+      - tsconfig.json
+      - index.html
+      - vite.config
+      - webpack.config
+      - angular.json
+      - next.config
+    standard:
+      path: grounding/dependencies/frontend-web-client.md
+      version: 1.0.0
+      business_logic_risk_classification: true
+  angular-rxjs:
+    display_name: Angular and RxJS
+    grounding_file: grounding/dependencies/angular-rxjs.md
+    type: dependency_standard
+    assessment_domain: frontend_application
+    requires_standard: frontend-web-client
+    version_detection:
+      framework_package: '@angular/core'
+      companion_package: rxjs
+      unknown_version_behavior: not_assessed_for_version_conditional_controls
+    activate_when:
+      scope_status: enabled
+    activate_when_any:
+      inventory_dependencies:
+      - '@angular/core'
+      - '@angular/common'
+      - '@angular/router'
+      - rxjs
+      - '@ngrx/store'
+      repository_patterns:
+      - angular.json
+      - '@angular/core'
+      - bootstrapApplication
+      - platformBrowserDynamic
+      - HttpInterceptor
+      - takeUntilDestroyed
+      - shareReplay
+      - switchMap
+      - .component.ts
+      - .module.ts
+    standard:
+      path: grounding/dependencies/angular-rxjs.md
+      version: 1.0.0
+      business_logic_risk_classification: true
+  react-ui:
+    display_name: React UI
+    grounding_file: grounding/dependencies/react-ui.md
+    type: dependency_standard
+    assessment_domain: frontend_application
+    requires_standard: frontend-web-client
+    version_detection:
+      framework_package: react
+      unknown_version_behavior: not_assessed_for_version_conditional_controls
+    data_layer_detection:
+      declared_in_standard: true
+      resolution_rule: detect_all_present_and_evaluate_each
+      layers:
+      - tanstack_query
+      - rtk_query
+      - raw_fetch
+      - http_client
+    activate_when:
+      scope_status: enabled
+    activate_when_any:
+      inventory_dependencies:
+      - react
+      - react-dom
+      - react-router-dom
+      - '@tanstack/react-query'
+      - react-query
+      - '@reduxjs/toolkit'
+      - swr
+      - axios
+      repository_patterns:
+      - from "react"
+      - useEffect
+      - useState
+      - ErrorBoundary
+      - componentDidCatch
+      - createBrowserRouter
+      - useQuery
+      - useMutation
+      - createApi
+      - .tsx
+    standard:
+      path: grounding/dependencies/react-ui.md
+      version: 1.0.0
+      business_logic_risk_classification: true
+  frontend-ssr-server:
+    display_name: Frontend Server-Side Rendering Workload
+    grounding_file: grounding/dependencies/frontend-ssr-server.md
+    type: dependency_standard
+    assessment_domain: frontend_application
+    workload_kind: server
+    requires_standard: frontend-web-client
+    activate_when:
+      scope_status: enabled
+      additional_gate: ssr_detected
+      gate_behavior: not_applicable_when_ssr_absent
+    activate_when_any:
+      inventory_dependencies:
+      - next
+      - '@angular/ssr'
+      - '@nguniversal/express-engine'
+      - '@remix-run/node'
+      - '@remix-run/server-runtime'
+      repository_patterns:
+      - next.config
+      - getServerSideProps
+      - ngExpressEngine
+      - CommonEngine
+      - provideServerRendering
+      - renderToPipeableStream
+      - renderToString
+      - createRequestHandler
+      - server.ts
+    standard:
+      path: grounding/dependencies/frontend-ssr-server.md
+      version: 1.0.0
+      business_logic_risk_classification: true
 assessment_domain_standards:
-
   cicd-pipeline-resiliency:
     display_name: CI/CD Pipeline Resiliency
     grounding_file: grounding/dependencies/cicd-pipeline-resiliency.md
     standard_id: CICD-PIPELINE-RESILIENCY
-    version: "1.0.0"
+    version: 1.0.0
     assessment_domain: cicd_pipeline
     activate_when:
       scope_status: enabled
     repository_patterns:
-      - .github/workflows/*.yml
-      - .github/workflows/*.yaml
-      - azure-pipelines.yml
-      - azure-pipelines.yaml
-      - pipelines/*.yml
-      - pipelines/*.yaml
-
+    - .github/workflows/*.yml
+    - .github/workflows/*.yaml
+    - azure-pipelines.yml
+    - azure-pipelines.yaml
+    - pipelines/*.yml
+    - pipelines/*.yaml
   container-build-resiliency:
     display_name: Container Build Resiliency
     grounding_file: grounding/dependencies/container-build-resiliency.md
     standard_id: CONTAINER-BUILD-RESILIENCY
-    version: "1.0.0"
+    version: 1.0.0
     assessment_domain: container_build
     activate_when:
       scope_status: enabled
     repository_patterns:
-      - Dockerfile
-      - Dockerfile.*
-      - docker/*.Dockerfile
-      - container/*.Dockerfile
-
+    - Dockerfile
+    - Dockerfile.*
+    - docker/*.Dockerfile
+    - container/*.Dockerfile
   kubernetes-deployment-resiliency:
     display_name: Kubernetes Deployment Resiliency
     grounding_file: grounding/dependencies/kubernetes-deployment-resiliency.md
     standard_id: KUBERNETES-DEPLOYMENT-RESILIENCY
-    version: "1.1.0"
+    version: 1.1.0
     assessment_domain: deployment_configuration
     activate_when:
       scope_status: enabled
     repository_patterns:
-      - deployment*.yml
-      - deployment*.yaml
-      - statefulset*.yml
-      - statefulset*.yaml
-      - service*.yml
-      - service*.yaml
-      - k8s/**/*.yml
-      - k8s/**/*.yaml
-      - manifests/**/*.yml
-      - manifests/**/*.yaml
-
+    - deployment*.yml
+    - deployment*.yaml
+    - statefulset*.yml
+    - statefulset*.yaml
+    - service*.yml
+    - service*.yaml
+    - k8s/**/*.yml
+    - k8s/**/*.yaml
+    - manifests/**/*.yml
+    - manifests/**/*.yaml
   helm-kustomize-resiliency:
     display_name: Helm and Kustomize Resiliency
     grounding_file: grounding/dependencies/helm-kustomize-resiliency.md
     standard_id: HELM-KUSTOMIZE-RESILIENCY
-    version: "1.0.0"
+    version: 1.1.0
     assessment_domain: deployment_configuration
     activate_when:
       scope_status: enabled
     repository_patterns:
-      - Chart.yaml
-      - values*.yml
-      - values*.yaml
-      - templates/**/*.yaml
-      - kustomization.yml
-      - kustomization.yaml
-      - overlays/**/*.yml
-      - overlays/**/*.yaml
-
-# Registry governance rules.
-
+    - Chart.yaml
+    - values*.yml
+    - values*.yaml
+    - templates/**/*.yaml
+    - kustomization.yml
+    - kustomization.yaml
+    - overlays/**/*.yml
+    - overlays/**/*.yaml
 registry_rules:
   single_authority: true
   invent_grounding_paths: false
@@ -399,10 +535,13 @@ registry_rules:
   unknown_ownership_behavior: not_assessed
   duplicate_standard_loading_prohibited: true
   risk_classification_propagates_to_findings: true
-
 shared_service_scope_contract:
   context_path: architecture_context.shared_service_assessment_scope.services
   schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
   control_evaluation_allowed_only_when: in_scope
-  architecture_reasoning_allowed_for: [in_scope, out_of_scope, informational_only, architecture_only]
+  architecture_reasoning_allowed_for:
+  - in_scope
+  - out_of_scope
+  - informational_only
+  - architecture_only
   scope_conflict_behavior: architecture_governance_review

@@ -123,6 +123,57 @@ Dependency Standards to Load:
     grounding_file: grounding/dependencies/springboot-cosmosdb.md
 ```
 
+## Workload detection
+
+A repository may contain more than one deployable workload, such as a backend service plus a browser client. Detect every workload before resolving standards, and record the exception required by the repository model when more than one deployable workload exists.
+
+For each workload record `id`, `kind`, `language`, `framework`, `root`, and the evidence that established it. Allowed `kind` values are `service`, `browser_client`, `server_rendering`, `batch`, and `library`.
+
+The existing scalar `language`, `framework`, and `runtime_platform` fields remain and describe the primary workload.
+
+### Frontend workload detection
+
+Evaluate frontend detection only when `frontend_application` is `enabled` or `inventory_only` in the active assessment scope. When the domain is `disabled`, record that frontend detection was skipped by scope and do not load frontend standards.
+
+1. Locate every `package.json` in the repository, excluding dependency and build output directories.
+2. Resolve the framework from `dependencies` and `devDependencies`:
+   - `@angular/core` indicates Angular. Record the resolved `@angular/core` and `rxjs` versions.
+   - `react` with `react-dom` indicates React. Record the resolved `react` version.
+   - Neither present with browser entry evidence indicates an unclassified browser client. Load the baseline only.
+3. Resolve the version from the lockfile when present. When only a range is declared, record the lowest version the range permits and mark it range-derived.
+4. For React, detect every data layer present using the standard's `data_layer_detection` block and record each one. More than one may be present.
+5. Detect server-side rendering using positive evidence only. Record `ssr_detected: true` with the mode and evidence, `false` with the basis for exclusion, or `unknown` with an evidence gap.
+6. Resolve standards through the registry. Framework standards require the `frontend-web-client` baseline. The SSR standard loads only when `ssr_detected` is `true`.
+
+Do not infer a frontend workload from a repository that contains only build output, and do not assume SSR because a framework supports it.
+
+Example output:
+
+```yaml
+Workloads:
+  - id: backend
+    kind: service
+    language: java
+    framework: spring-boot
+    root: source/cart-service
+  - id: frontend
+    kind: browser_client
+    language: typescript
+    framework: angular
+    framework_version: "16.2.0"
+    companion_versions: {rxjs: "7.8.1"}
+    version_basis: lockfile
+    root: source/customer-app
+    ssr_detected: false
+    ssr_detection_basis: "No server entry point; build script produces client bundle only."
+
+Dependency Standards to Load:
+  - id: frontend-web-client
+    grounding_file: grounding/dependencies/frontend-web-client.md
+  - id: angular-rxjs
+    grounding_file: grounding/dependencies/angular-rxjs.md
+```
+
 ## Kafka Operating Scenario Discovery and Resolution
 
 ### Optional architecture-context inputs
@@ -622,6 +673,15 @@ application_profile:
   framework: <value>
   runtime_platform: <value>
   repository_root: <value>
+  workloads: []
+  frontend:
+    detection_status: <skipped_by_scope|detected|not_detected|unknown>
+    framework: <angular|react|unclassified|none>
+    framework_version: <value-or-unknown>
+    version_basis: <lockfile|declared_range|unknown>
+    data_layers: []
+    ssr_detected: <true|false|unknown>
+    ssr_mode: <value-or-none>
 
 dependency_summary:
   confirmed_dependencies: []
@@ -695,3 +755,8 @@ Inventory applicable target architecture elements and credible failure scenarios
 
 Read `grounding/governance/shared-service-assessment-scope-schema.yml` and `architecture_context.shared_service_assessment_scope`. Resolve one effective scope for every confirmed or architecture-declared shared service. Inventory all services regardless of scope. Add dependency standards to the control-evaluation load list only for `in_scope` services. Preserve non-in-scope services in dependency and architecture inventories. Do not create findings in Step 1. Emit `shared_service_scope_resolution` records with service key, production-use status, effective scope, scope source, rationale, scope owner, architecture reasoning allowed, observations allowed, findings allowed, remediation allowed, and conflicts. Preserve a categorized `shared_service_assessment_scope_summary` in the authoritative inventory and Step 1 handoff. Repository evidence must not silently expand approved scope; route conflicts to architecture governance.
 
+
+
+## DSE Cassandra and Kafka Active-Active Inventory Contract
+
+When approved context selects DSE Cassandra authoritative state and active-active targets, inventory and hand off DSE scenario, datacenters, local affinity, consistency contract, Kafka scenario, regional processing model, cluster model, mirroring contract, offset recovery, external side effects, and scope. Do not infer deployed topology.

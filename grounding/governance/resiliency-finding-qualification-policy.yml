@@ -1,28 +1,30 @@
----
 schema_version: "1.1.0"
 document_type: resiliency_finding_qualification_policy
 policy_id: RESILIENCY-FINDING-QUALIFICATION
 policy_version: "1.1.0"
 lifecycle_status: active
 owner: Cloud Architecture Team
----
-title: Resiliency Finding Qualification Policy
 
 purpose: >-
   Classify every evidence-backed, applicable control violation as either a
   resiliency finding or a non-resiliency finding without discarding either class.
 
+purpose: >-
+  Classify every evidence-backed, applicable control violation as either a resiliency
+  finding or a non-resiliency finding without discarding either class.
+
 required_classification_gate:
-  rule: A finding may be classified `resiliency` only when all criteria are established.
-  criteria:
+  description: >-
+    A finding may be classified `resiliency` only when all are established:
+  requirements:
     - Repository-owned evidence demonstrates the control violation.
     - A credible failure scenario is stated.
     - The scenario affects an approved resiliency domain.
     - The repository behavior has a causal, material impact on the target architecture or operational recovery objective.
     - The impact is more specific than general quality, security, correctness, performance, compatibility, or maintainability concern.
-  when_not_met: >-
-    If evidence supports the violation but one or more resiliency criteria are
-    not met, retain it as `non_resiliency`; do not suppress or discard it.
+  non_resiliency_rule: >-
+    If evidence supports the violation but one or more resiliency criteria are not met,
+    retain it as `non_resiliency`; do not suppress or discard it.
 
 approved_resiliency_domains:
   - availability
@@ -42,24 +44,22 @@ approved_resiliency_domains:
   - graceful_termination
 
 qualifying_failure_scenarios:
-
   kafka_topic_mirroring_absent:
-    domain:
-      regional_failover
+    domain: regional_failover
 
-finding_output_contract:
-  finding_classification:
-    type: "resiliency | non_resiliency"
-    qualification_status: "qualified | not_qualified"
-    policy_id: RESILIENCY-FINDING-QUALIFICATION
-    policy_version: "1.1.0"
-    resiliency_domains: []
-    failure_scenario: required_for_resiliency_or_not_applicable
-    target_architecture_element: required_for_resiliency_or_not_applicable
-    causal_mechanism: required_for_resiliency_or_not_applicable
-    material_impact: required_for_resiliency_or_not_applicable
-    non_resiliency_category: "security | correctness | performance | compatibility | contract | maintainability | modernization | assessment_quality | other | not_applicable"
-    classification_rationale: required
+# Finding output contract
+finding_classification:
+  type: resiliency | non_resiliency
+  qualification_status: qualified | not_qualified
+  policy_id: RESILIENCY-FINDING-QUALIFICATION
+  policy_version: "1.1.0"
+  resiliency_domains: []
+  failure_scenario: required_for_resiliency_or_not_applicable
+  target_architecture_element: required_for_resiliency_or_not_applicable
+  causal_mechanism: required_for_resiliency_or_not_applicable
+  material_impact: required_for_resiliency_or_not_applicable
+  non_resiliency_category: security | correctness | performance | compatibility | contract | maintainability | modernization | assessment_quality | other | not_applicable
+  classification_rationale: required
 
 report_ordering:
   - Preserve both finding classes.
@@ -70,16 +70,15 @@ report_ordering:
   - Never intermix classes within one recommendation section.
 
 testing_controls: >-
-  A missing-test finding inherits the classification of the specific failure
-  behavior it leaves unverified. Generic test absence without an identified
-  applicable failure scenario is non-resiliency.
+  A missing-test finding inherits the classification of the specific failure behavior
+  it leaves unverified. Generic test absence without an identified applicable failure
+  scenario is non-resiliency.
 
 separation_from_business_logic_risk: >-
   Finding classification identifies impact type. Business-logic risk governs
   implementation approval. Neither field overrides the other.
 
 qualification_exclusions:
-
   scheduled_runs:
     default_classification: non_resiliency
 
@@ -88,7 +87,6 @@ qualification_exclusions:
 
   observability_only:
     default_classification: non_resiliency
-
     exception:
       qualifies_as_resiliency_when:
         - cannot_detect_service_failure
@@ -97,9 +95,7 @@ qualification_exclusions:
         - blocks_incident_recovery
 
 logging_only_fixes:
-
   default_classification: non_resiliency
-
   rules:
     - Logging-only changes are not resiliency findings.
     - Logging-only changes cannot be P0.
@@ -111,3 +107,15 @@ logging_only_fixes:
       - logging_absence_prevents_recovery_validation
       - logging_absence_blocks_failover_verification
       - logging_absence_blocks_incident_recovery
+
+## DSE Cassandra and Kafka active-active qualification
+dse_kafka_active_active_failure_scenarios:
+  - surviving_region_cannot_read_or_write_authoritative_state
+  - incorrect_local_datacenter_routing
+  - kafka_topic_unavailable_in_surviving_region
+  - replay_or_overlap_causes_duplicate_cassandra_mutation
+  - unrecoverable_kafka_cassandra_state_divergence
+  - failed_regional_recovery_requires_restart_or_redeploy
+qualification_boundary:
+  missing_deployed_topology_proof: evidence_gap
+  repository_owned_incompatibility_with_approved_target: finding_candidate

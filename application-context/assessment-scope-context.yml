@@ -12,6 +12,7 @@ assessment_scope:
   container_build: {status: disabled}
   cicd_pipeline: {status: disabled}
   deployment_configuration: {status: enabled}
+  frontend_application: {status: disabled}
   infrastructure_as_code: {status: disabled}
   deployed_infrastructure: {status: disabled}
 scope_rules:

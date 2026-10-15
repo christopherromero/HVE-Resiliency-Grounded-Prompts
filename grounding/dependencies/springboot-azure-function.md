@@ -1,8 +1,3 @@
-
-#### Shared-service assessment-scope contract
-
-Before evaluating controls in this standard, resolve `azure-functions` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
-
 ---
 schema_version: 2.2.0
 document_type: dependency_behavior
@@ -17,6 +12,19 @@ assessment:
   emit_findings: true
   include_in_score: true
   unknown_evidence_status: not_assessed
+shared_service_assessment_scope:
+  service_key: azure-functions
+  context_path: architecture_context.shared_service_assessment_scope.services
+  schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+  evaluation_gate: required
+  control_evaluation_allowed_only_when: in_scope
+  architecture_reasoning_allowed_for:
+  - in_scope
+  - out_of_scope
+  - informational_only
+  - architecture_only
+  scope_conflict_behavior: architecture_governance_review
+  contract_section: Shared-service assessment-scope contract
 controls:
 - id: FUNC-001
   title: Function triggers and handlers are idempotent
@@ -331,9 +339,30 @@ controls:
   finding_when: tests do not prove duplicate input, retry exhaustion, poison handling,
     host recycle, scale-out, dependency outage, and recovery behavior
   emit_on_failure: true
+- id: FUNC-024
+  title: Function app health signals represent actual processing capability
+  severity: high
+  category: health
+  applies_when: the function app exposes a health endpoint, relies on host health monitoring,
+    or is deployed as a container with readiness or liveness probes
+  evidence_patterns:
+  - healthMonitor
+  - healthCheckPath
+  - WEBSITE_HEALTHCHECK_PATH
+  - health function
+  - livenessProbe
+  finding_when: a health signal reports healthy while triggers are stopped, listeners
+    have failed, or backlog is growing, host health monitoring is disabled without
+    rationale, external dependency failure drives instance recycling or restart loops,
+    or a readiness-gated containerized function app exposes no readiness signal
+  emit_on_failure: true
 ---
 
 # Azure Functions Resiliency and Processing Behavior Standard
+
+### Shared-service assessment-scope contract
+
+Before evaluating controls in this standard, resolve `azure-functions` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
 
 ### Shared-service operating-model contract
 
@@ -1124,6 +1153,41 @@ Cite the repository-relative file path, symbol or property, original assessed li
 #### Quality caveats
 
 - Mock-only tests do not prove runtime checkpoint or binding behavior.
+
+---
+
+### FUNC-024: Function app health signals represent actual processing capability
+
+**Severity:** High  
+**Category:** health  
+**Applies when:** the function app exposes a health endpoint, relies on host health monitoring, or is deployed as a container with readiness or liveness probes
+
+#### Requirement
+
+A health signal must represent whether the function app can accept and process work on its actual trigger surface. Dependency state must be reported separately from the signal that drives restart, recycling, or traffic removal.
+
+#### Repository evidence to inspect
+
+- `healthMonitor`
+- `healthCheckPath`
+- `WEBSITE_HEALTHCHECK_PATH`
+- `health function`
+- `livenessProbe`
+
+#### Finding condition
+
+Emit a finding when evidence shows that a health signal reports healthy while triggers are stopped, listeners have failed, or backlog is growing; that host health monitoring is disabled without rationale; that external dependency failure drives instance recycling or restart loops; or that a readiness-gated containerized function app exposes no readiness signal.
+
+#### Evidence rule
+
+Cite the repository-relative file path, symbol or property, original assessed line range, and exact source excerpt when available. Evaluate effective behavior rather than the presence of an annotation, resource, library, or default alone. If evidence is unavailable or external, return `not_assessed` rather than assuming noncompliance.
+
+#### Quality caveats
+
+- Consumption-plan function apps have no repository-owned probe contract. Assess the health endpoint and host health monitor instead.
+- Deployed App Service health-check configuration is external evidence unless the repository owns the definition.
+- A responding HTTP health endpoint does not prove that non-HTTP triggers are running.
+- Deduplicate with `FUNC-017` when the same root cause is already recorded as a processing-observability gap.
 
 ---
 

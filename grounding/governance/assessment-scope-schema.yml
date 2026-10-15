@@ -11,6 +11,7 @@ allowed_domains:
   container_build: [enabled, disabled]
   cicd_pipeline: [enabled, disabled]
   deployment_configuration: [enabled, disabled]
+  frontend_application: [enabled, inventory_only, disabled]
   infrastructure_as_code: [disabled, inventory_only, findings_enabled]
   deployed_infrastructure: [disabled]
 defaults:
@@ -19,8 +20,24 @@ defaults:
   container_build: disabled
   cicd_pipeline: disabled
   deployment_configuration: disabled
+  frontend_application: disabled
   infrastructure_as_code: disabled
   deployed_infrastructure: disabled
+frontend_application_domain:
+  purpose: Gates assessment of repository-owned browser client and server-rendering
+    workloads.
+  standards:
+  - FRONTEND-WEB-CLIENT
+  - ANGULAR-RXJS
+  - REACT-UI
+  - FRONTEND-SSR-SERVER
+  rules:
+  - disabled_makes_all_frontend_controls_not_applicable
+  - inventory_only_permits_inventory_and_evidence_without_findings
+  - framework_standards_require_frontend_web_client_baseline
+  - ssr_standard_requires_positive_ssr_detection
+  - absent_ssr_evidence_makes_ssr_controls_not_applicable
+  - frontend_findings_use_same_priority_governance_as_backend_findings
 allowed_testing_output_modes:
   - full
   - summary

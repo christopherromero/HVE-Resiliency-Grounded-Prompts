@@ -1,8 +1,3 @@
-
-#### Shared-service assessment-scope contract
-
-Before evaluating controls in this standard, resolve `dse-cassandra` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
-
 ---
 schema_version: 2.2.0
 document_type: dependency_behavior
@@ -25,6 +20,19 @@ infrastructure_assumptions:
 - The deployment pipeline injects region-specific configuration into the same application
   artifact.
 - The application repository does not provision or validate infrastructure.
+shared_service_assessment_scope:
+  service_key: dse-cassandra
+  context_path: architecture_context.shared_service_assessment_scope.services
+  schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+  evaluation_gate: required
+  control_evaluation_allowed_only_when: in_scope
+  architecture_reasoning_allowed_for:
+  - in_scope
+  - out_of_scope
+  - informational_only
+  - architecture_only
+  scope_conflict_behavior: architecture_governance_review
+  contract_section: Shared-service assessment-scope contract
 controls:
 - id: DSE-001
   title: Contact points, local datacenter, and keyspace are deployment-injected
@@ -108,6 +116,10 @@ controls:
 ---
 
 # DSE Cassandra Target-State Application Behavior Standard
+
+### Shared-service assessment-scope contract
+
+Before evaluating controls in this standard, resolve `dse-cassandra` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
 
 ### Shared-service operating-model contract
 
@@ -375,3 +387,43 @@ Cite the file path, symbol, property, and line range when available. If the repo
 # Non-findings
 
 Do not create infrastructure findings such as missing second-region resources, private endpoints, zone redundancy, geo-replication, capacity, DNS, or global load-balancer configuration. Those are assumed platform responsibilities and are outside this repository assessment.
+
+
+## DSE Cassandra and Kafka Active-Active Scenario Controls
+
+### DSE-AA-001: Local datacenter is explicit and region-aligned
+
+**Severity:** Critical  
+**Category:** regional-routing
+
+**Applies when:** DSE Cassandra target operating model is `active_active`.
+
+**Finding condition:** Emit a finding when repository-owned driver configuration omits or hardcodes an incorrect local datacenter, permits remote-datacenter normal routing, or cannot inject the regional datacenter identity.
+
+### DSE-AA-002: Multi-active mutations preserve stable identity and duplicate safety
+
+**Severity:** Critical  
+**Category:** data-correctness-and-recovery
+
+**Finding condition:** Emit a finding when Kafka replay, redelivery, retry, or regional overlap can repeat a Cassandra mutation without a stable operation identity or approved idempotent/conditional-write strategy. Do not invent new business uniqueness rules.
+
+### DSE-AA-003: Consistency and concurrency behavior is approved
+
+**Severity:** Critical  
+**Category:** consistency
+
+**Finding condition:** Emit a finding when repository-owned consistency levels, serial consistency, LWT use, timestamp use, or retry behavior contradicts the approved multi-datacenter contract. Missing deployed replication details are an evidence gap.
+
+### DSE-AA-004: Regional failure and restoration are application-recoverable
+
+**Severity:** High  
+**Category:** recovery
+
+**Finding condition:** Emit a finding when the application requires restart, redeployment, hardcoded endpoint replacement, or unsafe retry to recover after loss and restoration of a Cassandra datacenter.
+
+### DSE-AA-005: DSE and Kafka state transitions are reconciliation-safe
+
+**Severity:** Critical  
+**Category:** cross-service-correctness
+
+**Finding condition:** Emit a finding when publish/persist ordering, detached asynchronous work, false acknowledgement, or ambiguous completion can create unrecoverable divergence between Kafka and DSE Cassandra. Remediation must preserve existing business semantics.

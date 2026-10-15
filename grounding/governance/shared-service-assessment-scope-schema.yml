@@ -85,3 +85,9 @@ validation:
     - non_in_scope_services_not_prioritized
     - scope_summary_reconciles
   status_values: [passed, failed, partial]
+
+# Scenario requirement: both services must be in scope before scenario-specific controls generate findings.
+dse_kafka_active_active_scope_rule:
+  required_in_scope_services: [dse-cassandra, confluent-kafka]
+  partial_scope_behavior: architecture_reasoning_only
+  scenario_specific_findings_when_partial_scope: prohibited
