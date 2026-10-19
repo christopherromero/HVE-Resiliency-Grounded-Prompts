@@ -4125,3 +4125,7 @@ Emit a finding when repository evidence demonstrates that a required process can
 - Return `not_assessed` when evidence is insufficient.
 - Deduplicate overlapping controls under one root-cause finding.
 - Do not create deployment, infrastructure, or PCF findings from this master.
+
+
+## Finding qualification metadata contract
+All controls in this standard are subject to `RESILIENCY-FINDING-QUALIFICATION` version `1.0.0`. `emit_on_failure: true` means an evidence-backed violation may produce a finding; it does not predetermine the finding class. The evaluator must classify each emitted finding as `resiliency` or `non_resiliency` using the central policy. Categories such as security, correctness, performance, compatibility, contract, maintainability, supply-chain, and assessment-quality are non-resiliency by default unless repository evidence establishes the required credible failure scenario, causal mechanism, target-architecture impact, approved resiliency domain, and material impact. Testing controls inherit the class of the specific failure behavior left unverified; generic test absence is non-resiliency. Preserve both classes for Step 3A and Step 3B.
