@@ -831,9 +831,13 @@ schema_conformance_additions:
 - Recommendation must describe only the corrective action.
 - Architecture Context must describe only target-architecture relevance.
 - Repository Evidence should be limited to concise traceability references.
-- Implementation steps, change specifications, code examples, acceptance tests, selector information, and detailed remediation procedures must not appear in the report body.
+- Implementation steps, change specifications, acceptance tests, selector information, and detailed remediation procedures must not appear in the report body.
+
 ### Shared-service assessment-scope rendering contract
 
 Assessment Overview must include a shared-service scope summary sourced from the authoritative Step 1 inventory. Columns: Shared service, Repository usage, Assessment scope, Scope owner, Rationale. Out-of-scope, informational-only, and architecture-only records remain visible but are not findings. Informational observations receive no finding ID or P0-P3 priority. Non-in-scope scope records are excluded from finding counts, priority counts, detailed recommendation sections, the Full Finding Matrix, finding mappings in Standards Alignment, the Implementation Roadmap, Appendix A finding traceability, and implementation selectors. Architecture-only services may still explain processing chains, authoritative state, Kafka scenario selection, and cross-service relationships.
 
 
+## DSE Cassandra and Kafka Active-Active Scenario Rendering
+
+When applicable, Assessment Overview must render authoritative state, DSE target operating model, DSE local-datacenter requirement, Kafka target scenario, regional processing model, cluster model, topic-mirroring requirement, offset-recovery requirement, validation status, and external evidence gaps. Application deployment, DSE topology, and Kafka topology must remain separate.

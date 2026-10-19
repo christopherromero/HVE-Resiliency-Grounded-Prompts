@@ -5,6 +5,7 @@ standards:
     display_name: Azure Key Vault
     grounding_file: grounding/dependencies/springboot-keyvault.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - keyvault
@@ -22,6 +23,7 @@ standards:
     display_name: Azure Cosmos DB
     grounding_file: grounding/dependencies/springboot-cosmosdb.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - cosmosdb
@@ -39,6 +41,7 @@ standards:
     display_name: MongoDB and Azure Cosmos DB for MongoDB
     grounding_file: grounding/dependencies/springboot-mongodb.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     api_variant_detection:
       declared_in_standard: true
       variants:
@@ -72,6 +75,7 @@ standards:
     display_name: Azure Event Hubs
     grounding_file: grounding/dependencies/springboot-eventhubs.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - eventhubs
@@ -90,6 +94,7 @@ standards:
     display_name: Azure Blob Storage
     grounding_file: grounding/dependencies/springboot-storage-blob.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - storage-blob
@@ -107,6 +112,7 @@ standards:
     display_name: Azure SQL
     grounding_file: grounding/dependencies/springboot-azure-sql.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - azure-sql
@@ -124,6 +130,7 @@ standards:
     display_name: PostgreSQL
     grounding_file: grounding/dependencies/springboot-postgresql.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - postgresql
@@ -142,6 +149,7 @@ standards:
     display_name: Azure API Management Client Behavior
     grounding_file: grounding/dependencies/springboot-apim.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - apim
@@ -160,6 +168,7 @@ standards:
     display_name: Application Gateway and Global Load Balancer Behavior
     grounding_file: grounding/dependencies/springboot-appgateway-glb.md
     type: dependency_standard
+    activation_evidence_class: architecture_declared_capability
     activate_when_any:
       inventory_capabilities:
       - ingress: application_gateway
@@ -178,6 +187,7 @@ standards:
     display_name: HTTP Client Behavior
     grounding_file: grounding/dependencies/springboot-http-client.md
     type: cross_cutting_client_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - spring-web
@@ -198,6 +208,7 @@ standards:
     display_name: Confluent Kafka
     grounding_file: grounding/dependencies/springboot-confluent-kafka.md
     type: scenario_aware_dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - confluent-kafka
@@ -209,7 +220,7 @@ standards:
       - schema.registry.url
     standard:
       path: grounding/dependencies/springboot-confluent-kafka.md
-      version: 3.3.0
+      version: 3.1.0
     scenario_policy:
       path: grounding/governance/kafka-operating-scenario-policy.yml
       version: 3.3.0
@@ -224,6 +235,7 @@ standards:
     display_name: DSE Cassandra
     grounding_file: grounding/dependencies/springboot-dse-cassandra.md
     type: scenario_aware_dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - dse-cassandra
@@ -249,6 +261,7 @@ standards:
     display_name: Azure Managed Redis
     grounding_file: grounding/dependencies/springboot-azure-managed-redis.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     activate_when_any:
       inventory_dependencies:
       - azure-managed-redis
@@ -269,6 +282,7 @@ standards:
     display_name: Azure AKS with Istio
     grounding_file: grounding/dependencies/springboot-aks-istio.md
     type: dependency_standard
+    activation_evidence_class: architecture_declared_capability
     activate_when_any:
       inventory_capabilities:
       - runtime_platform: aks
@@ -287,6 +301,7 @@ standards:
     display_name: Azure Function
     grounding_file: grounding/dependencies/springboot-azure-function.md
     type: dependency_standard
+    activation_evidence_class: architecture_declared_capability
     activate_when_any:
       inventory_capabilities:
       - runtime_platform: azure-function
@@ -308,6 +323,7 @@ standards:
     display_name: JVM Runtime Resiliency
     grounding_file: grounding/dependencies/jvm-runtime-resiliency.md
     type: dependency_standard
+    activation_evidence_class: repository_pattern_evidence
     activate_when_any:
       inventory_capabilities:
       - runtime: jvm
@@ -331,6 +347,7 @@ standards:
     display_name: Frontend Web Client Behavior
     grounding_file: grounding/dependencies/frontend-web-client.md
     type: cross_cutting_client_standard
+    activation_evidence_class: repository_pattern_evidence
     assessment_domain: frontend_application
     activate_when:
       scope_status: enabled
@@ -355,6 +372,7 @@ standards:
     display_name: Angular and RxJS
     grounding_file: grounding/dependencies/angular-rxjs.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     assessment_domain: frontend_application
     requires_standard: frontend-web-client
     version_detection:
@@ -389,6 +407,7 @@ standards:
     display_name: React UI
     grounding_file: grounding/dependencies/react-ui.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     assessment_domain: frontend_application
     requires_standard: frontend-web-client
     version_detection:
@@ -433,6 +452,7 @@ standards:
     display_name: Frontend Server-Side Rendering Workload
     grounding_file: grounding/dependencies/frontend-ssr-server.md
     type: dependency_standard
+    activation_evidence_class: production_code_evidence
     assessment_domain: frontend_application
     workload_kind: server
     requires_standard: frontend-web-client
@@ -526,6 +546,37 @@ assessment_domain_standards:
     - kustomization.yaml
     - overlays/**/*.yml
     - overlays/**/*.yaml
+activation_signals:
+  signal_classes:
+    production_code_evidence:
+      source: inventory_dependencies
+      requires: repository production-code evidence of effective interaction
+      evaluation_mode: full
+    repository_pattern_evidence:
+      source: repository_patterns
+      requires: repository-owned file, configuration key, manifest, or build element match
+      evaluation_mode: full
+    architecture_declared_capability:
+      source: inventory_capabilities
+      requires: approved architecture context or resolved inventory capability
+      evaluation_mode: repository_verifiable_controls_only
+  resolution_rule: activate_when_any_is_an_or_across_all_signal_classes
+  multi_signal_behavior: record_every_matched_signal_and_use_the_strongest_evaluation_mode
+  evaluation_mode_strength_order:
+  - full
+  - repository_verifiable_controls_only
+  unmatched_behavior: standard_not_activated
+  declared_only_dependency_behavior: standard_not_activated
+  restricted_mode_rules:
+  - evaluate_controls_whose_evidence_is_repository_owned
+  - mark_integration_dependent_controls_not_assessed
+  - never_emit_non_compliant_from_a_declaration_alone
+  - record_the_activation_signal_on_every_finding_and_control_status
+  - all_not_assessed_is_a_valid_outcome_not_an_assessment_gap
+  activation_authority_separation:
+    activation_establishes: applicability
+    activation_never_establishes: defect
+    non_compliant_requires: repository_evidence
 registry_rules:
   single_authority: true
   invent_grounding_paths: false

@@ -157,6 +157,8 @@ Do not rewrite or normalize original source evidence.
 
 Redact protected values while preserving the surrounding evidence required to demonstrate the finding.
 
+Standard activation and finding authority are separate decisions. A standard may activate through production-code evidence, repository-pattern evidence, or an architecture-declared capability. Only repository evidence may produce a `non_compliant` finding. An architecture-declared capability establishes applicability and never establishes a defect. A standard activated only by a declared capability is evaluated in `repository_verifiable_controls_only` mode, where integration-dependent controls are `not_assessed`.
+
 ## Assessment scope
 
 Read this optional file:
@@ -187,6 +189,9 @@ cicd_pipeline:
   status: disabled
 
 deployment_configuration:
+  status: disabled
+
+frontend_application:
   status: disabled
 
 infrastructure_as_code:
@@ -504,3 +509,8 @@ Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1
 
 Resolve per-service scope from `architecture_context.shared_service_assessment_scope.services` and validate it with `grounding/governance/shared-service-assessment-scope-schema.yml`. This is separate from repository artifact-domain scope and from repository exclusions. All used services remain inventoried and architecturally visible. Only `in_scope` services may receive control evaluation, findings, priorities, remediation, implementation, and closure. `informational_only` records may produce observations but never findings or priorities. Scope conflicts route to architecture governance and must not silently expand or suppress scope.
 
+
+
+## DSE Cassandra and Kafka Active-Active Scenario
+
+When approved context selects DSE Cassandra authoritative state with DSE and Kafka active-active targets, preserve the DSE scenario, Kafka scenario, local-affinity contracts, topic-mirroring contract, consistency contract, and scope through all phases. Do not infer deployed topology from code, and do not invent conflict resolution or business uniqueness rules.
