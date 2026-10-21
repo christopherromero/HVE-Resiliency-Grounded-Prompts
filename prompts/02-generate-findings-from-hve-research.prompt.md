@@ -1,3 +1,7 @@
+---
+description: Evaluate inventoried controls with preserved scenario and variant provenance
+---
+
 # Prompt 2: Generate Findings from the HVE Research Inventory
 
 ## Agent
@@ -28,6 +32,26 @@ Read dependency-specific standards only for identifiers listed under `Dependency
 ### Step 1 scope and architecture resolution
 
 Preserve the Step 1 `assessment_scope_resolution`, `assessment_snapshot`, `architecture_relationship_context`, `architecture_conflict`, `dependency_standard_gaps`, and standards-to-load lists. Do not recalculate them.
+
+Preserve Step 1 `cosmos_mongodb_variant_resolution` when present. For activated
+Cosmos MongoDB or related Kafka evaluation, read the referenced
+`grounding/governance/cosmos-mongodb-variant-policy.yml` as governance, not as an
+additional dependency standard. Use the recorded variant for selected-state
+applicability, including `approved_organization_default` RU, and carry the model,
+resolution source, default-applied flag, observed model, policy identity, exception
+reference, and deployed-verification flag into the review and handoff.
+
+Do not mark a variant-conditional control `not_assessed` solely because a valid
+governed RU target default lacks repository-observed RU confirmation. A default
+establishes applicability only; a finding still requires repository-owned defect
+evidence. A resolved vCore exception never satisfies an RU-only predicate.
+
+Do not apply this policy retroactively to an older inventory that omitted the
+resolution record. Preserve that inventory's scenario and variant decision, record
+an inventory handoff exception, and request a separate Step 1 refresh when the new
+rules are needed. Never recalculate a variant or scenario during Step 2. Same-state
+variant conflicts block affected controls and route to architecture governance;
+approved source-to-target variant differences alone do not constitute a conflict.
 
 If `architecture_conflict.detected: true`:
 
@@ -149,8 +173,8 @@ dependency_context:
   context_id: <id-or-not_applicable>
   context_version: <version-or-not_applicable>
   scenario_policy_id: KAFKA-OPERATING-SCENARIO
-  scenario_policy_version: "3.2.0"
-  scenario_rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004
+  scenario_policy_version: "3.3.0"
+  scenario_rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004|KAFKA-SCENARIO-005
   scenario_validation_status: consistent|inferred|conditionally_inferred|conflict|insufficient_evidence
   architecture_confirmation_required: true|false
   processing_model: <value-or-not_applicable>
@@ -185,6 +209,9 @@ For each entry:
 ```yaml
 - id: keyvault
   grounding_file: grounding/dependencies/springboot-keyvault.md
+  activation_route: production_dependency
+  activation_signal: production_code_evidence
+  evaluation_mode: full
 ```
 
 Load the exact grounding_file specified.
@@ -193,6 +220,27 @@ Only load standards listed in the inventory.
 
 Do not add additional dependencies.
 Do not perform dependency rediscovery.
+
+## Activation-signal evaluation rules
+
+Honor the `activation_route`, `activation_signal`, and `evaluation_mode` Step 1 recorded for each standard. Do not recalculate activation and do not drop a standard because production integration is unconfirmed. Preserve the Step 1 `standard_resolution` records, including exclusion reasons, without change.
+
+When `evaluation_mode` is `full`:
+
+- Evaluate every applicable control normally.
+
+When `evaluation_mode` is `repository_verifiable_controls_only`, read `capability_activation_control_classes` from the standard's front matter and evaluate each control by class:
+
+- `application_side`: evaluate from application code, application configuration, and tests. Do not require a platform SDK, a service-mesh or platform manifest, or deployed-state evidence, and never mark the control `not_assessed` because that evidence is absent. Record manifest-only sub-criteria as `not_assessed` sub-criteria without changing the control status.
+- `repository_manifest_conditional`: evaluate only from repository-owned manifests when `deployment_configuration` is enabled. Use `not_applicable` when no such manifest exists, and `not_assessed` when one exists but the domain is disabled.
+- `integration_dependent`: mark `not_assessed` with reason `integration_unconfirmed_in_repository`.
+- Unclassified control: record a `dependency_standard_gap` and treat it as `integration_dependent`.
+- Never emit `non_compliant` from an architecture declaration alone.
+- Record `activation_route`, `activation_signal`, `evaluation_mode`, and `capability_control_class` on every finding and control status.
+
+An all-`not_assessed` result for a capability-activated standard is valid only when no `application_side` control applies. Otherwise record an evaluation exception.
+
+If Step 1 omitted `activation_signal` or `evaluation_mode` for an entry, treat the entry as `repository_verifiable_controls_only` and record an inventory handoff exception. Do not infer a stronger mode.
 
 ## No re-inventory rule
 
@@ -426,6 +474,7 @@ Before completing:
 - Verify the inventory run ID and exact task-slug-driven inventory path are preserved.
 - Verify no new dependencies were added and no dependency rediscovery or broad re-inventory occurred.
 - Verify only Step 1 `Dependency Standards to Load` and `Assessment Domain Standards to Load` entries were loaded.
+- Verify every `application_side` control of a capability-activated standard was evaluated from application evidence and none was marked `not_assessed` for a missing platform SDK, manifest, or deployed state.
 - Verify runtime dependency standards and assessment-domain standards remain separate.
 - Verify missing registry entries remain governance gaps and no substitute path was invented.
 - Verify Step 1 assessment scope, snapshot, architecture relationships, Kafka scenario, and conflict records were preserved without recalculation.
@@ -447,3 +496,8 @@ Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1
 
 ### Phase-specific rule
 For every emitted finding, populate the complete finding_classification contract. Retain not-qualified violations as non_resiliency findings.
+
+
+## DSE Cassandra and Kafka Active-Active Evaluation Gate
+
+Evaluate scenario-specific controls only when both services are in scope and Step 1 selected the approved DSE/Kafka active-active scenario. Treat missing deployed replication or mirroring proof as an evidence gap. Findings require repository-owned incompatibility and full resiliency qualification.

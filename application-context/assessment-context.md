@@ -1,7 +1,7 @@
 # Application Assessment Context
 
 Application:
-Ecommerce Platform - Inventory Service
+Ecommerce Platform - Cart Service
 
 Language:
 Java

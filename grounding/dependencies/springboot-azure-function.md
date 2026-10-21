@@ -25,6 +25,35 @@ shared_service_assessment_scope:
   - architecture_only
   scope_conflict_behavior: architecture_governance_review
   contract_section: Shared-service assessment-scope contract
+capability_activation_control_classes:
+  contract_section: Capability-activation contract
+  application_side:
+  - FUNC-001
+  - FUNC-002
+  - FUNC-003
+  - FUNC-004
+  - FUNC-005
+  - FUNC-006
+  - FUNC-007
+  - FUNC-008
+  - FUNC-009
+  - FUNC-010
+  - FUNC-011
+  - FUNC-012
+  - FUNC-013
+  - FUNC-014
+  - FUNC-015
+  - FUNC-016
+  - FUNC-017
+  - FUNC-018
+  - FUNC-019
+  - FUNC-020
+  - FUNC-021
+  - FUNC-022
+  - FUNC-023
+  - FUNC-024
+  repository_manifest_conditional: []
+  integration_dependent: []
 controls:
 - id: FUNC-001
   title: Function triggers and handlers are idempotent
@@ -363,6 +392,12 @@ controls:
 ### Shared-service assessment-scope contract
 
 Before evaluating controls in this standard, resolve `azure-functions` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
+
+### Capability-activation contract
+
+When this standard is activated through `approved_target_platform_capability`, evaluate each control by its class in `capability_activation_control_classes`. All controls are `application_side`: evaluate them from function code, repository-owned `host.json` and `function.json`, application configuration, and tests. Do not require an Azure Functions SDK, deployment manifest, or deployed-state evidence, and do not mark these controls `not_assessed` because that evidence is absent.
+
+Capability activation satisfies the production-use condition below for application-side controls only. It does not confirm a deployed Function App, hosting plan, or network state.
 
 ### Shared-service operating-model contract
 

@@ -26,6 +26,29 @@ shared_service_assessment_scope:
   - architecture_only
   scope_conflict_behavior: architecture_governance_review
   contract_section: Shared-service assessment-scope contract
+capability_activation_control_classes:
+  contract_section: Capability-activation contract
+  application_side:
+  - AKS-ISTIO-001
+  - AKS-ISTIO-002
+  - AKS-ISTIO-003
+  - AKS-ISTIO-004
+  - AKS-ISTIO-005
+  - AKS-ISTIO-006
+  - AKS-ISTIO-012
+  - AKS-ISTIO-013
+  - AKS-ISTIO-014
+  - AKS-ISTIO-015
+  - AKS-ISTIO-016
+  - AKS-ISTIO-018
+  repository_manifest_conditional:
+  - AKS-ISTIO-010
+  - AKS-ISTIO-017
+  integration_dependent:
+  - AKS-ISTIO-007
+  - AKS-ISTIO-008
+  - AKS-ISTIO-009
+  - AKS-ISTIO-011
 controls:
 - id: AKS-ISTIO-001
   title: Readiness and liveness responsibilities are separated
@@ -289,6 +312,16 @@ controls:
 ### Shared-service assessment-scope contract
 
 Before evaluating controls in this standard, resolve `aks-istio` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
+
+### Capability-activation contract
+
+When this standard is activated through `approved_target_platform_capability`, evaluate each control by its class in `capability_activation_control_classes`.
+
+- Evaluate `application_side` controls from application code, application configuration, and tests. Do not require a platform SDK, an Istio or Kubernetes manifest, or deployed-state evidence, and do not mark these controls `not_assessed` because that evidence is absent. Record manifest-only sub-criteria, such as probe timing or `preStop`, as `not_assessed` sub-criteria without changing the control status.
+- Evaluate `repository_manifest_conditional` controls only from repository-owned manifests when `deployment_configuration` is enabled. When no such manifest exists, the control is `not_applicable`.
+- Mark `integration_dependent` controls `not_assessed` with reason `integration_unconfirmed_in_repository` unless the production-dependency route also activated this standard.
+
+Capability activation satisfies the production-use condition below for application-side controls only. It does not confirm deployed AKS, Istio, or network state.
 
 ### Shared-service operating-model contract
 

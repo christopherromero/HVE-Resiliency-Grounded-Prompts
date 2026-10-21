@@ -1,4 +1,4 @@
-schema_version: '2.2'
+schema_version: '2.3'
 registry_type: dependency_standard_registry
 standards:
   keyvault:
@@ -169,6 +169,7 @@ standards:
     grounding_file: grounding/dependencies/springboot-appgateway-glb.md
     type: dependency_standard
     activation_evidence_class: architecture_declared_capability
+    capability_activation_allowed: true
     activate_when_any:
       inventory_capabilities:
       - ingress: application_gateway
@@ -283,6 +284,7 @@ standards:
     grounding_file: grounding/dependencies/springboot-aks-istio.md
     type: dependency_standard
     activation_evidence_class: architecture_declared_capability
+    capability_activation_allowed: true
     activate_when_any:
       inventory_capabilities:
       - runtime_platform: aks
@@ -302,6 +304,7 @@ standards:
     grounding_file: grounding/dependencies/springboot-azure-function.md
     type: dependency_standard
     activation_evidence_class: architecture_declared_capability
+    capability_activation_allowed: true
     activate_when_any:
       inventory_capabilities:
       - runtime_platform: azure-function
@@ -549,34 +552,124 @@ assessment_domain_standards:
 activation_signals:
   signal_classes:
     production_code_evidence:
+      route: production_dependency
       source: inventory_dependencies
       requires: repository production-code evidence of effective interaction
       evaluation_mode: full
     repository_pattern_evidence:
-      source: repository_patterns
-      requires: repository-owned file, configuration key, manifest, or build element match
+      route: production_dependency
+      source: repository_patterns, or inventory_capabilities matched against a repository-derived application profile
+      requires: repository-owned production file, configuration key, manifest, or build element match that identifies the specific dependency or platform
+      excluded_matches:
+      - test_only
+      - documentation_only
+      - generated_or_build_output
+      - generic_pattern_without_dependency_specific_corroboration
       evaluation_mode: full
     architecture_declared_capability:
-      source: inventory_capabilities
-      requires: approved architecture context or resolved inventory capability
+      route: approved_target_platform_capability
+      source: inventory_capabilities matched against approved application architecture context
+      requires: approved architecture context declares the capability and the registry entry sets capability_activation_allowed true
       evaluation_mode: repository_verifiable_controls_only
+  activation_routes:
+    production_dependency:
+      signal_classes:
+      - production_code_evidence
+      - repository_pattern_evidence
+      requires_all:
+      - repository_evidence_confirms_production_use
+      - shared_service_effective_scope_in_scope_or_standard_declares_no_shared_service
+      evaluation_mode: full
+    approved_target_platform_capability:
+      signal_classes:
+      - architecture_declared_capability
+      requires_all:
+      - approved_application_architecture_context_declares_the_capability
+      - registry_entry_sets_capability_activation_allowed_true
+      - shared_service_effective_scope_in_scope
+      evaluation_mode: repository_verifiable_controls_only
+      confirms_deployed_infrastructure: false
+      confirms_production_integration: false
+      prohibited_activation_prerequisites:
+      - platform_sdk_dependency
+      - service_mesh_or_platform_manifest
+      - deployed_state_evidence
+      control_classification_key: capability_activation_control_classes
+  capability_activation_default: false
+  activation_evidence_class_role: informational_primary_signal_not_an_activation_gate
   resolution_rule: activate_when_any_is_an_or_across_all_signal_classes
   multi_signal_behavior: record_every_matched_signal_and_use_the_strongest_evaluation_mode
+  multi_route_behavior: record_both_routes_and_use_production_dependency_as_primary
   evaluation_mode_strength_order:
   - full
   - repository_verifiable_controls_only
-  unmatched_behavior: standard_not_activated
-  declared_only_dependency_behavior: standard_not_activated
+  unmatched_behavior: standard_not_activated_and_recorded
+  declared_only_dependency_behavior: standard_not_activated_and_recorded
   restricted_mode_rules:
-  - evaluate_controls_whose_evidence_is_repository_owned
+  - evaluate_application_side_controls_from_application_code_configuration_and_tests
+  - evaluate_repository_manifest_conditional_controls_only_when_a_repository_owned_manifest_exists_and_its_domain_is_enabled
   - mark_integration_dependent_controls_not_assessed
+  - never_require_platform_sdk_mesh_manifest_or_deployed_state_to_evaluate_application_side_controls
   - never_emit_non_compliant_from_a_declaration_alone
   - record_the_activation_signal_on_every_finding_and_control_status
-  - all_not_assessed_is_a_valid_outcome_not_an_assessment_gap
+  - all_not_assessed_is_valid_only_when_no_application_side_control_applies
+  capability_control_classes:
+    application_side:
+      evaluate_from: application code, application configuration, and tests
+      status_basis: application evidence; missing platform SDK, mesh manifest, or deployed state never justifies not_assessed
+      manifest_sub_criteria: record as not_assessed sub-criteria without changing the application-side control status
+    repository_manifest_conditional:
+      evaluate_from: repository-owned Kubernetes, Helm, Kustomize, or mesh manifests
+      when_manifest_absent: not_applicable
+      when_manifest_present_and_domain_disabled: not_assessed
+    integration_dependent:
+      evaluate_from: confirmed production integration or deployed platform behavior
+      status_under_capability_route_only: not_assessed
+      not_assessed_reason: integration_unconfirmed_in_repository
+    unclassified_control_behavior: record_dependency_standard_gap_and_treat_as_integration_dependent
   activation_authority_separation:
     activation_establishes: applicability
     activation_never_establishes: defect
     non_compliant_requires: repository_evidence
+candidate_resolution:
+  required_for:
+  - every entry under standards
+  - every entry under assessment_domain_standards
+  silent_omission_prohibited: true
+  record_fields:
+  - id
+  - registry_section
+  - candidate_status
+  - activation_route
+  - matched_signals
+  - evaluation_mode
+  - shared_service_effective_scope
+  - exclusion_reason
+  - rationale
+  allowed_candidate_status:
+  - activated
+  - not_activated
+  - not_applicable
+  allowed_activation_route:
+  - production_dependency
+  - approved_target_platform_capability
+  - assessment_domain_scope
+  - none
+  allowed_exclusion_reasons:
+  - none
+  - no_signal_matched
+  - declared_only_dependency
+  - pattern_match_not_production_evidence
+  - pattern_not_dependency_specific
+  - assessment_domain_disabled
+  - additional_gate_not_met
+  - required_standard_not_activated
+  - capability_activation_not_accepted_by_registry
+  - capability_context_not_approved
+  - shared_service_not_in_scope
+  - shared_service_scope_unresolved
+  - registry_entry_invalid
+  capability_supported_entry_rule: an entry with capability_activation_allowed true whose capability is declared in approved context must be activated or carry an exclusion_reason other than no_signal_matched
 registry_rules:
   single_authority: true
   invent_grounding_paths: false

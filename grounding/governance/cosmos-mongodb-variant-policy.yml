@@ -1,0 +1,150 @@
+schema_version: "1.0.0"
+document_type: cosmos_mongodb_variant_policy
+policy_id: COSMOS-MONGODB-VARIANT
+policy_version: "1.0.0"
+lifecycle_status: active
+owner: Cloud Architecture Team
+purpose: >-
+  Resolve Cosmos DB for MongoDB assessment applicability using RU as the governed
+  target-state default and vCore as an explicit exception. Keep architecture intent,
+  repository-observed product identity, and verified deployed state separate.
+
+context_contract:
+  optional_context_path: architecture_context.dependency_variants.cosmosdb
+  source_path: architecture_context.dependency_variants.cosmosdb.source
+  target_path: architecture_context.dependency_variants.cosmosdb.target
+  fields:
+    api:
+      allowed_values: [mongodb, nosql, unknown]
+    throughput_model:
+      allowed_values: [ru, vcore, unknown]
+    exception_reference:
+      required: false
+      purpose: Reference an existing approved vCore exception when supplied; never invent an approval or identifier.
+  rules:
+    - The source and target objects are optional; existing approved contexts remain valid without them.
+    - Read only the variant declaration for the selected assessment state.
+    - A declared variant in an approved application context is authoritative architecture intent.
+    - Approved solution context may supply a missing declaration but must not silently override application context.
+    - Different source and target variants are migration intent, not a conflict by themselves.
+    - A conflict requires contradictory evidence about the same assessment state.
+    - Invalid declarations or same-state conflicts block defaulting and route to architecture_governance_review.
+    - Do not write a default into an approved context or silently change its approval metadata.
+
+resolution:
+  selected_assessment_state_values: [source, target]
+  eligible_provider: cosmosdb
+  eligible_api: mongodb
+  production_use_required: true
+  default:
+    throughput_model: ru
+    enabled_for_assessment_states: [target]
+    resolution_source: approved_organization_default
+    default_applied: true
+    establishes: target_state_control_applicability_only
+  precedence:
+    - approved_application_architecture_context
+    - approved_solution_architecture_context
+    - repository_observed_production_behavior
+    - approved_organization_default
+  terminal_gates:
+    - invalid_declaration
+    - same_state_conflict
+    - provider_or_api_not_eligible
+  rules:
+    - Confirm Cosmos DB production use and the MongoDB API before applying this policy's RU default.
+    - Absence of a vCore signal is not positive repository proof of RU.
+    - A missing or unknown declaration permits fallback; an invalid declaration does not.
+    - Positive vCore evidence prevents the RU default and is retained as a vCore exception signal.
+    - A vCore declaration or evidence signal never satisfies an RU-only Kafka predicate.
+    - Generic MongoDB URI syntax and retryWrites=false alone do not establish the provider or variant.
+    - Compare declarations and repository evidence only when they describe the same assessment state; preserve approved migration boundaries.
+    - For a source-state assessment without a declaration or positive variant evidence, retain unknown rather than applying the target default.
+    - Applying the governed target default does not require separate per-application RU confirmation when no contradictory evidence exists.
+    - The default does not establish multi-region writes, Kafka topology, consistency, local affinity, mirroring, or recovery behavior.
+    - Architecture declarations and defaults establish applicability only; findings still require repository-owned defect evidence.
+
+repository_signals:
+  ru:
+    positive_product_hostname_suffix: .mongo.cosmos.azure.com
+  vcore:
+    positive_product_hostname_suffix: .mongocluster.cosmos.azure.com
+  standard_variant_mapping:
+    ru: cosmos_mongo_ru
+    vcore: cosmos_mongo_vcore
+  evidence_boundary: >-
+    Use only permitted production evidence and redact protected values. An endpoint
+    in a repository establishes configured product identity, not deployed topology.
+
+output_contract:
+  required_fields:
+    - throughput_model
+    - resolution_source
+    - default_applied
+    - resolution_status
+    - selected_assessment_state
+    - observed_throughput_model
+    - deployed_variant_verified
+    - policy_id
+    - policy_version
+    - evidence
+    - exception_reference
+  throughput_model_values: [ru, vcore, unknown]
+  resolution_source_values:
+    - approved_application_architecture_context
+    - approved_solution_architecture_context
+    - repository_observed_production_behavior
+    - approved_organization_default
+    - unresolved
+  resolution_status_values: [resolved, conflict, invalid_declaration, not_applicable, insufficient_evidence]
+  rules:
+    - Preserve the selected model and provenance in Step 1 and all downstream applicability decisions.
+    - Set observed_throughput_model from positive repository evidence only; otherwise use unknown.
+    - Keep deployed_variant_verified false unless separately supplied authoritative deployed-state evidence verifies it.
+    - Record this policy path as policy provenance, never as repository source evidence.
+    - Use not_available for an absent exception_reference; do not require a fabricated exception approval.
+    - When a same-state conflict exists, emit unknown with resolution_status conflict and request architecture review.
+
+validation_cases:
+  - id: default_ru_target
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: unknown, solution: unknown, repository: unknown}
+    expected: {model: ru, source: approved_organization_default, default_applied: true, status: resolved, observed: unknown}
+  - id: explicit_ru_target
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: ru, solution: unknown, repository: unknown}
+    expected: {model: ru, source: approved_application_architecture_context, default_applied: false, status: resolved, observed: unknown}
+  - id: explicit_vcore_exception
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: vcore, solution: unknown, repository: unknown}
+    expected: {model: vcore, source: approved_application_architecture_context, default_applied: false, status: resolved, observed: unknown}
+  - id: repository_vcore_exception
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: unknown, solution: unknown, repository: vcore}
+    expected: {model: vcore, source: repository_observed_production_behavior, default_applied: false, status: resolved, observed: vcore}
+  - id: solution_vcore_exception
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: unknown, solution: vcore, repository: unknown}
+    expected: {model: vcore, source: approved_solution_architecture_context, default_applied: false, status: resolved, observed: unknown}
+  - id: repository_ru_evidence
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: unknown, solution: unknown, repository: ru}
+    expected: {model: ru, source: repository_observed_production_behavior, default_applied: false, status: resolved, observed: ru}
+  - id: declaration_repository_conflict
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: ru, solution: unknown, repository: vcore}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: conflict, observed: vcore}
+  - id: approved_context_conflict
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: ru, solution: vcore, repository: unknown}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: conflict, observed: unknown}
+  - id: invalid_declaration_blocks_default
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: true, application: invalid, solution: unknown, repository: unknown}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: invalid_declaration, observed: unknown}
+  - id: native_mongodb_not_eligible
+    input: {state: target, provider: mongodb, api: mongodb, production_use: true, application: unknown, solution: unknown, repository: unknown}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: not_applicable, observed: unknown}
+  - id: cosmos_nosql_not_eligible
+    input: {state: target, provider: cosmosdb, api: nosql, production_use: true, application: unknown, solution: unknown, repository: unknown}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: not_applicable, observed: unknown}
+  - id: unknown_api_not_eligible
+    input: {state: target, provider: cosmosdb, api: unknown, production_use: true, application: unknown, solution: unknown, repository: unknown}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: not_applicable, observed: unknown}
+  - id: unconfirmed_production_use_not_eligible
+    input: {state: target, provider: cosmosdb, api: mongodb, production_use: false, application: unknown, solution: unknown, repository: unknown}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: not_applicable, observed: unknown}
+  - id: source_without_evidence_remains_unknown
+    input: {state: source, provider: cosmosdb, api: mongodb, production_use: true, application: unknown, solution: unknown, repository: unknown}
+    expected: {model: unknown, source: unresolved, default_applied: false, status: insufficient_evidence, observed: unknown}
