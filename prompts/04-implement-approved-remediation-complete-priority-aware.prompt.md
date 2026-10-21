@@ -273,6 +273,7 @@ Rules:
 - `inventory_only` permits inspection but not modification.
 - Never modify deployed infrastructure.
 - A Step 3A proposal cannot expand a disabled Step 1 assessment domain. Stop the affected target and record a scope conflict.
+- Never modify files under a declared external configuration mirror `root_path`. For `external_config_owned` targets, write a proposed patch artifact under `.copilot-tracking/changes/external-config/` with `source_id`, target server-side file, key, and proposed value, and record it in the implementation record as `external_patch_proposed`. Apply a repo-local override only when Step 3A explicitly approves it.
 
 ## Approved-Library Implementation Rule
 
@@ -659,3 +660,8 @@ Implementation selectors may include either class. Do not reinterpret classifica
 
 Before implementing each resolved change, verify from frozen Step 1 and Step 3A records that every affected shared service is `in_scope` and remediation is allowed. Do not implement changes for `out_of_scope`, `informational_only`, or `architecture_only` services. If the plan contains such a change, stop that change, record a scope inconsistency, and route it to Step 3A correction. Implementation must not expand service scope.
 
+
+
+## DSE Cassandra and Kafka Active-Active Implementation Guardrail
+
+Implement only approved change IDs. Preserve consistency semantics, business identity, mutation behavior, Kafka contracts, and external side effects. Do not add custom conflict resolution, new uniqueness rules, or synchronous cross-region dual writes without approved architecture and business decisions.

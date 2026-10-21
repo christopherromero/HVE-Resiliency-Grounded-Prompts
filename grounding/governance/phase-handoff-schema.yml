@@ -194,6 +194,26 @@ resiliency_qualification_handoff:
     - suppress_non_resiliency_findings
     - reclassify_findings_in_handoff
 
+external_configuration_resolution_handoff:
+  source_of_truth: authoritative_step_1_inventory
+  policy_path: grounding/governance/external-configuration-resolution-policy.yml
+  downstream_recalculation_prohibited: true
+  preserve:
+    - source_id
+    - application_name
+    - profiles
+    - label
+    - local_equivalent_status
+    - authority
+    - root_path
+    - computed_fingerprint
+    - key_counts_by_provenance
+    - conflicts
+    - external_config_owned_change_ids
+  prohibited_behavior:
+    - upgrade_unresolved_keys_to_authoritative
+    - recompute_effective_configuration
+
 shared_service_assessment_scope_handoff:
   source_of_truth: authoritative_step_1_inventory
   downstream_recalculation_prohibited: true

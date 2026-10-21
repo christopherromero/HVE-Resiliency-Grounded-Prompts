@@ -36,6 +36,21 @@ The research artifact itself is the inventory. Do not create a second inventory 
 
 Inspect Maven and Gradle files, production and test Java source, Spring configuration, repository-owned Kubernetes or Helm application settings, Dockerfiles, deployment scripts, tests, and application documentation. Exclude generated build directories, binaries, `.git`, IDE caches, `target`, `build`, and `.gradle`.
 
+When `external_configuration_sources` declares a local equivalent with `status: present`, its `root_path` is in scope even when it lies outside the source root. Do not exclude it as documentation, test, or non-production content.
+
+## External configuration source resolution
+
+Read `grounding/governance/external-configuration-resolution-policy.yml`.
+
+1. Detect Spring Cloud Config Client usage using the policy `detection_signals`. Record the evidence file, key, and line range.
+2. Resolve application name, profiles, and label using the policy `resolution_inputs`.
+3. Match each detected client to a declared `external_configuration_sources` entry. Apply ECR-CONFLICT-002 when no entry matches.
+4. For each matched entry with `local_equivalent.status: present`, verify every listed file exists and compute the fingerprint as declared. On mismatch or missing metadata, apply the policy failure results.
+5. Build the effective configuration map using the policy `merge_semantics`. Record per-key provenance (`repo_owned`, `config_server_local_equivalent`, `unresolved`), winning file, winning line range, and overridden values. Redact protected values.
+6. Apply ECR-CONFLICT-001 to conflicts that precedence cannot explain.
+
+A validated local equivalent is authoritative configuration evidence. Cite it in later sections exactly like repository-owned configuration, adding `evidence_origin: config_server_local_equivalent` and `source_id`.
+
 ## Inventory objectives
 
 Record application modules, Java and Spring Boot versions, production dependencies, client construction, regional endpoint configuration, retries, timeouts, circuit breakers, bulkheads, Actuator configuration, readiness, liveness, health indicators, state and session handling, transaction behavior, messaging behavior, idempotency, concurrency controls, graceful shutdown, regional telemetry, fault tests, and historical PCF references.
@@ -73,6 +88,7 @@ Use these exact top-level headings:
 10. `## Lifecycle and Recovery`
 11. `## Observability`
 12. `## Test Coverage`
+12a. `## External Configuration Sources`
 13. `## Historical PCF References`
 13. `## Uncertainties`
 14. `## Dependency Standards to Load`
@@ -646,6 +662,46 @@ assessment_snapshot:
 ```
 
 Use `git_revision` only when valid Git metadata is available. Otherwise classify the input as a workspace snapshot, uploaded archive, source drop, or unknown source with explicit limitations.
+
+### External configuration sources record
+
+Under `## External Configuration Sources`, emit:
+
+```yaml
+external_configuration_resolution:
+  policy_id: EXTERNAL-CONFIG-RESOLUTION
+  policy_version: "<active-version>"
+  config_client_detected: "<true|false>"
+  detection_evidence: []
+  sources:
+    - source_id: CFG-SRC-001
+      application_name: "<value>"
+      profiles: []
+      label: "<value-or-not_provided>"
+      local_equivalent_status: "<validated|missing_metadata|fingerprint_mismatch|missing_file|none>"
+      authority: "<authoritative|unresolved>"
+      root_path: "<path-or-not_applicable>"
+      files_in_precedence_order: []
+      provenance_origin: "<value-or-not_available>"
+      declared_fingerprint: "<value-or-not_available>"
+      computed_fingerprint: "<value-or-not_available>"
+  effective_configuration:
+    - key: "<property.key>"
+      provenance: "<repo_owned|config_server_local_equivalent|unresolved>"
+      source_id: "<id-or-not_applicable>"
+      winning_file: "<path-or-not_available>"
+      winning_line_range: {start_line: 1, end_line: 1, status: "<exact|advisory|not_available>"}
+      value: "<value-or-redacted>"
+      overridden_values: []
+  key_counts_by_provenance:
+    repo_owned: 0
+    config_server_local_equivalent: 0
+    unresolved: 0
+  conflicts: []
+  inventory_exceptions: []
+```
+
+List only keys relevant to resiliency controls and loaded standards. Emit `config_client_detected: false` and empty lists when no Config Client is detected.
 
 ### Application architecture relationships
 

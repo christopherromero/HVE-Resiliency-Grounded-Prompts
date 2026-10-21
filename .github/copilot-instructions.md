@@ -221,6 +221,18 @@ Use the evidence-gap section for externally owned architecture or deployment fac
 
 Do not create findings against assets outside the repository assessment boundary.
 
+## External configuration sources
+
+When repository evidence shows a Spring Cloud Config Client (for example `bootstrap.yml`, `spring.config.import: configserver:`, or `spring.cloud.config.uri`), resolve server-delivered keys using:
+
+```text
+grounding/governance/external-configuration-resolution-policy.yml
+```
+
+A local equivalent declared under `external_configuration_sources` in assessment scope, with all required metadata and a matching fingerprint, is authoritative configuration evidence. It may produce `non_compliant` findings, support `compliant` results, and support closure. This is the governed exception to treating externally owned configuration as `not_assessed`.
+
+Build the effective configuration using Spring Cloud Config precedence and record per-key provenance. Keys without a valid local equivalent remain `not_assessed` and appear as evidence gaps. Route unexplained mirror and repo-owned conflicts to architecture governance. Mirror evidence never proves deployed runtime state. Never query a live Config Server, and never modify mirror files as a substitute for changing the external config repository.
+
 ## Optional delivery assessment
 
 When `container_build` is enabled, evaluate repository-owned container build definitions using the applicable container-build grounding standard.

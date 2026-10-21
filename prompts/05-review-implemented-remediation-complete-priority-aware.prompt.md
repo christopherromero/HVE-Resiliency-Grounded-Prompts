@@ -301,6 +301,8 @@ Confirm that:
 
 If implementation intent and effective configuration differ, do not mark the change fully remediated. Keep associated findings partially closed or open and identify the affected files and keys.
 
+For findings with `evidence_origin: config_server_local_equivalent`, apply the `closure_rules` in `grounding/governance/external-configuration-resolution-policy.yml`. Close only when a refreshed, validated mirror with a new fingerprint shows the remediated value, or when an approved repo-local override is effective under merge semantics. A proposed patch artifact alone keeps the finding open.
+
 ## Required status model
 
 Assign each resolved change one status:
@@ -560,3 +562,8 @@ Validate closure against the finding causal mechanism for resiliency findings an
 
 For every implemented shared-service change, verify that Step 1 classified the service `in_scope`, Step 3A allowed remediation, and Step 4 did not expand scope. A change affecting an `out_of_scope`, `informational_only`, or `architecture_only` service without an approved scope amendment is an implementation-scope violation and prevents closure. Preserve scope provenance and conflicts; do not reclassify scope in Step 5.
 
+
+
+## DSE Cassandra and Kafka Active-Active Review
+
+Validate local Cassandra datacenter affinity, local Kafka cluster affinity, stable identity, duplicate/replay safety, mirrored-topic assumptions, offset recovery, regional-loss recovery, and business-behavior preservation. Missing platform evidence remains an evidence gap and does not close application findings by itself.

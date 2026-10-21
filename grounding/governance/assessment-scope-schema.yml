@@ -109,3 +109,35 @@ shared_service_scope_boundary:
   context_path: architecture_context.shared_service_assessment_scope
   separate_from_artifact_domain_scope: true
   separate_from_repository_exclusions: true
+
+external_configuration_sources_schema:
+  policy_path: grounding/governance/external-configuration-resolution-policy.yml
+  context_key: external_configuration_sources
+  type: list
+  default: []
+  item:
+    source_id: {required: true, pattern: "^CFG-SRC-[0-9]{3}$"}
+    type: {required: true, allowed_values: [spring_cloud_config_server]}
+    detected_via: {required: true}
+    application_name: {required: true}
+    profiles: {required: true, type: list}
+    label: {required: false}
+    server_availability: {required: true, allowed_values: [available, unavailable]}
+    local_equivalent:
+      status: {required: true, allowed_values: [present, none]}
+      authority: {required_when: "status == present", allowed_values: [authoritative]}
+      root_path: {required_when: "status == present"}
+      files: {required_when: "status == present", type: list}
+      provenance:
+        origin: {required_when: "status == present"}
+        captured_on: {required: false}
+      fingerprint:
+        algorithm: {required_when: "status == present", allowed_values: [sha256]}
+        scope: {required_when: "status == present", allowed_values: [concatenated_listed_files_in_order]}
+        value: {required_when: "status == present"}
+  validation_rules:
+    - source_ids_must_be_unique
+    - local_equivalent_files_must_exist_under_root_path
+    - fingerprint_must_match_computed_value_of_listed_files
+    - mirror_root_path_is_in_assessment_boundary_when_status_present
+    - failed_validation_sets_affected_key_provenance_unresolved

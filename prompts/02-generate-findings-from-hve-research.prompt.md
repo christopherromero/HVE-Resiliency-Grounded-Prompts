@@ -63,6 +63,16 @@ If `architecture_conflict.detected: true`:
 
 If Step 1 recorded a dependency or assessment-domain registry gap, do not load a substitute standard. Mark controls dependent on the missing standard `not_assessed` and preserve the governance gap.
 
+### External configuration evidence
+
+Preserve the Step 1 `external_configuration_resolution` record. Do not recalculate provenance or fingerprints. Read `grounding/governance/external-configuration-resolution-policy.yml` as governance.
+
+- Evaluate configuration-dependent controls against the Step 1 effective configuration, not only repository-owned files.
+- Keys with provenance `config_server_local_equivalent` from a source with `authority: authoritative` are authoritative configuration evidence. They may produce `non_compliant` findings and support `compliant` results.
+- Keys with provenance `unresolved` remain `not_assessed` and are recorded as evidence gaps.
+- Preserve Step 1 conflicts. Controls affected by ECR-CONFLICT-001 are `not_assessed` and route to architecture governance.
+- Opening mirror files cited by Step 1 is evidence validation, not re-inventory.
+
 ### Machine-readable output convention
 
 Pipe-delimited placeholders in this prompt describe allowed values only. Generated artifacts must contain one concrete value. For example, emit `status: consistent`, never `status: consistent|inferred|conflict`.
@@ -339,6 +349,7 @@ Rules:
 - Path, symbol, excerpt, and fingerprint are stronger locators than snapshot metadata and line numbers.
 - A coincidental line-number match is not sufficient evidence.
 - This evidence becomes immutable authoritative input for Steps 3A and 3B.
+- For mirror-sourced configuration, `repository_path` is the mirror file path. Add `evidence_origin: config_server_local_equivalent`, `source_id`, and `mirror_fingerprint`. For all other evidence, set `evidence_origin: repository_owned`.
 
 Completion validation must verify that each applicable source/configuration finding has a path, symbol or element, exact excerpt or explicit unavailability, snapshot classification, fingerprint when computable, and line-range status.
 

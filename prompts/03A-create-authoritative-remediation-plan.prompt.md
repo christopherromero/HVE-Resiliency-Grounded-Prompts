@@ -263,6 +263,14 @@ Examples may include:
 - JUnit, Mockito, WireMock, Testcontainers, or repository-native tests
 - Application-owned Kubernetes probe-path settings when those files are present in the repository
 
+When a finding's evidence has `evidence_origin: config_server_local_equivalent`, apply the `remediation_rules` in `grounding/governance/external-configuration-resolution-policy.yml`:
+
+- Mark the target `external_config_owned` with `source_id` and the target server-side file name.
+- Specify the exact key and proposed value.
+- Do not authorize edits to mirror files.
+- Propose a repo-local override only when merge semantics make it effective, and cite the precedence basis.
+- Record closure evidence as a refreshed mirror with a new fingerprint or an effective repo-local override.
+
 Label every example:
 
 > Illustrative proposal only. 
@@ -1096,3 +1104,8 @@ Assign priority to both classes. Resiliency may use P0-P3. Non-resiliency may us
 
 Before creating each change, verify that every shared service affected by the source finding is `in_scope` in the authoritative Step 1 inventory and that remediation is allowed. Do not plan changes for `out_of_scope`, `informational_only`, or `architecture_only` services. If Step 2 contains a finding for a non-in-scope service, preserve the inconsistency, stop planning that finding, and route it to Step 2 correction rather than hiding it. Include `remediation_scope_validation` on every shared-service change.
 
+
+
+## DSE Cassandra and Kafka Active-Active Planning Boundary
+
+Plan behavior-preserving remediation for local affinity, configuration injection, bounded recovery, stable identity, duplicate/replay safety, and testing. Do not invent Cassandra conflict resolution, business uniqueness, custom cross-region dual writes, or workflow changes. Approval is required for changes to consistency, LWT semantics, timestamp ownership, or business reconciliation.

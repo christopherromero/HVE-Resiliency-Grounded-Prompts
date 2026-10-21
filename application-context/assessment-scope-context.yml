@@ -22,6 +22,27 @@ scope_rules:
   unknown_ownership_behavior: not_assessed
   deployed_infrastructure_findings_allowed: false
   pcf_findings_allowed: false
+# Schema: grounding/governance/assessment-scope-schema.yml#external_configuration_sources_schema
+external_configuration_sources: []
+#  - source_id: CFG-SRC-001
+#    type: spring_cloud_config_server
+#    detected_via: source/cart-service/src/main/resources/bootstrap.yml
+#    application_name: cart-service
+#    profiles: [prod]
+#    label: main
+#    server_availability: unavailable
+#    local_equivalent:
+#      status: present
+#      authority: authoritative
+#      root_path: <repo-relative mirror folder>
+#      files: [application.yml, application-prod.yml, cart-service.yml, cart-service-prod.yml]
+#      provenance:
+#        origin: "<config repo>@<commit or export date>"
+#        captured_on: <YYYY-MM-DD>
+#      fingerprint:
+#        algorithm: sha256
+#        scope: concatenated_listed_files_in_order
+#        value: <sha256>
 report_preferences:
   finding_selection:
     mode: all_priorities
