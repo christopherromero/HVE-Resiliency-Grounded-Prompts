@@ -163,22 +163,22 @@ Note that each Step uses a HVE Agent that is different
 
 1) To execute step one prompt
 2) Set your agent to Task Reasearcher
-3) Use GPT-6.1 Sol. The VS Code agent frontmatter uses `model: 'GPT-6.1 Sol (copilot)'`; only the Copilot SDK task tool uses `gpt-6.1-sol`. This GPT branch pins the orchestrator and all phase-owning HVE agents to that model, including delegated execution and handoffs. Stop if the model is unavailable rather than substituting another.
+3) Use Claude Opus 5.5. The VS Code agent frontmatter uses `model: 'Claude Opus 5.5 (copilot)'`; only the Copilot SDK task tool uses `claude-opus-5.5`. This branch pins the orchestrator and all phase-owning HVE agents to that model, including delegated execution and handoffs. Stop if the model is unavailable rather than substituting another.
 4) If you are using MS EMU license, Enable Allow All so you do not have to approve anything (status bar under the agent selection)
 5) Paste the following prompt into the chat window and modify it to todays date
 
 /01-inventory runDate=2026-09-09 sourceRoot=source/customer-app taskSlug=springboot-active-active-inventory
 
 6) The output files have the todays date in the name, you must ensure the instructions are updated with todays date in the paths. For example Step 1 produces the inventory file INVENTORY_ARTIFACT=.copilot-tracking/research/2026-09-02/springboot-active-active-inventory-research.md
-7) When Step 1 Prompt is done, click the KEEP button, run /clear, keep GPT-6.1 Sol and your existing permissions, change agent to Task Reviewer, and run the step 2 prompt
+7) When Step 1 Prompt is done, click the KEEP button, run /clear, keep Claude Opus 5.5 and your existing permissions, change agent to Task Reviewer, and run the step 2 prompt
 
 /02-findings  runDate=2026-09-09  taskSlug=springboot-active-active-inventory
 
-8) When Step 2 prompt is done, click the KEEP button, run /clear, keep GPT-6.1 Sol and your existing permissions, change agent to Task Planner, and run step 3A prompt
+8) When Step 2 prompt is done, click the KEEP button, run /clear, keep Claude Opus 5.5 and your existing permissions, change agent to Task Planner, and run step 3A prompt
 
 /03A-plan runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
 
-9) When Step 3A is done, click the KEEP button, run /clear, keep GPT-6.1 Sol and your existing permissions, leave the agent as Task Planner, and run step 3B prompt
+9) When Step 3A is done, click the KEEP button, run /clear, keep Claude Opus 5.5 and your existing permissions, leave the agent as Task Planner, and run step 3B prompt
 
 /03B-report runDate=2026-09-09  taskSlug=springboot-active-active-inventory planSlug=springboot-active-active-remediation-plan
 

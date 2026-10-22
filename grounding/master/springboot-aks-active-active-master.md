@@ -2377,6 +2377,7 @@ Emit a finding when repository evidence demonstrates that bootstrap uses a regio
 ### Quality guidance
 
 - Apply the global quality caveats and evidence-only rules.
+- Evaluate client bootstrap keys from repository-owned files. Resolve server-delivered keys for all other controls per `grounding/governance/external-configuration-resolution-policy.yml`.
 
 ### Evaluation constraints
 

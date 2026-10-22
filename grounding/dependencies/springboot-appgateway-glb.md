@@ -32,6 +32,29 @@ shared_service_assessment_scope:
   - architecture_only
   scope_conflict_behavior: architecture_governance_review
   contract_section: Shared-service assessment-scope contract
+capability_activation_control_classes:
+  contract_section: Capability-activation contract
+  application_side:
+  - GLB-001
+  - GLB-002
+  - GLB-003
+  - GLB-004
+  - GLB-005
+  - GLB-006
+  - GLB-007
+  - GLB-008
+  - GLB-009
+  - GLB-011
+  - GLB-012
+  - GLB-014
+  - GLB-015
+  - GLB-017
+  - GLB-018
+  repository_manifest_conditional: []
+  integration_dependent:
+  - GLB-010
+  - GLB-013
+  - GLB-016
 controls:
 - id: GLB-001
   title: Application exposes Spring Boot readiness and liveness endpoints
@@ -387,6 +410,15 @@ business_logic_risk_classification:
 ### Shared-service assessment-scope contract
 
 Before evaluating controls in this standard, resolve `appgateway-glb` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
+
+### Capability-activation contract
+
+When this standard is activated through `approved_target_platform_capability`, evaluate each control by its class in `capability_activation_control_classes`.
+
+- Evaluate `application_side` controls from application code, application configuration, and tests. Do not require a gateway or load-balancer SDK, a platform manifest, or deployed-state evidence, and do not mark these controls `not_assessed` because that evidence is absent. Record manifest-only sub-criteria, such as probe timing or `preStop`, as `not_assessed` sub-criteria without changing the control status.
+- Mark `integration_dependent` controls `not_assessed` with reason `integration_unconfirmed_in_repository` unless the production-dependency route also activated this standard.
+
+Capability activation satisfies the production-use condition below for application-side controls only. It does not confirm deployed gateway, load-balancer, or network state.
 
 ### Shared-service operating-model contract
 

@@ -28,6 +28,8 @@ context_contract:
     regional_processing_model.
   - Kafka source and target values are nested under kafka_operating_model.source and
     kafka_operating_model.target.
+  - Optional Cosmos MongoDB source and target variant declarations follow the
+    context_contract in grounding/governance/cosmos-mongodb-variant-policy.yml.
 source_requirements:
   approved_context:
     required_document_fields:
@@ -63,6 +65,12 @@ source_requirements:
     - dependency_expectations.confluent-kafka
     - assessment_guidance.deployment_state_interpretation.assess_code_against
     - finding_boundary.source_target_difference_is_not_a_finding
+    - dependency_variants.cosmosdb.source.api
+    - dependency_variants.cosmosdb.source.throughput_model
+    - dependency_variants.cosmosdb.source.exception_reference
+    - dependency_variants.cosmosdb.target.api
+    - dependency_variants.cosmosdb.target.throughput_model
+    - dependency_variants.cosmosdb.target.exception_reference
   repository_fallback:
     required_evidence:
     - effective production use rather than dependency presence alone
@@ -108,6 +116,26 @@ kafka_model_mapping:
   cluster_per_region:
     source_path: kafka_operating_model.source.cluster_model.cluster_per_region
     target_path: kafka_operating_model.target.cluster_model.cluster_per_region
+cosmos_mongodb_variant_resolution:
+  policy_path: grounding/governance/cosmos-mongodb-variant-policy.yml
+  policy_id: COSMOS-MONGODB-VARIANT
+  policy_version: "1.0.0"
+  inventory_record: cosmos_mongodb_variant_resolution
+  resolve_before_scenario_selection: true
+  input_mapping:
+    cosmosdb.api: kafka_scenario_inputs.cosmos_db.api
+    cosmosdb.throughput_model: cosmos_mongodb_variant_resolution.throughput_model
+    cosmosdb.variant_resolution_status: cosmos_mongodb_variant_resolution.resolution_status
+    cosmosdb.variant_resolution_source: cosmos_mongodb_variant_resolution.resolution_source
+    cosmosdb.variant_default_applied: cosmos_mongodb_variant_resolution.default_applied
+    cosmosdb.observed_throughput_model: cosmos_mongodb_variant_resolution.observed_throughput_model
+    cosmosdb.deployed_variant_verified: cosmos_mongodb_variant_resolution.deployed_variant_verified
+  rules:
+  - Apply the shared policy only to confirmed Cosmos DB for MongoDB use; do not infer the provider or API from the default.
+  - A resolved RU target default satisfies the throughput-model predicate without a separate per-application RU confirmation request.
+  - A vCore exception or same-state conflict prevents the RU default; do not silently select Rule 002.
+  - The variant default alone cannot select a Kafka scenario or establish multi-region writes or deployed topology.
+  - Preserve variant provenance separately from the Kafka scenario source and its architecture-confirmation status.
 scenario_resolution:
   preferred_sources:
   - approved_application_architecture_context
@@ -197,6 +225,7 @@ consistency_rules:
   - authoritative_state.dependency: cosmosdb
   - cosmosdb.api: mongodb
   - cosmosdb.throughput_model: ru
+  - cosmosdb.variant_resolution_status: resolved
   - authoritative_azure-sql_present: false
   expected_target:
     scenario: independent_regional_active_active
@@ -326,6 +355,8 @@ quality_rules:
 - Azure SQL authoritative-state presence takes precedence over Cosmos DB.
 - Cosmos DB used only as a failure queue, cache, or optional store does not select
   active-active.
+- Resolve Cosmos MongoDB variants through the shared variant policy before applying
+  RU-only predicates; a target applicability default is not observed production identity.
 - Database-independent Kafka does not automatically mean stateless or multi-active.
 - Context and repository conflict is a governance follow-up, not automatically a code
   finding.
@@ -345,6 +376,10 @@ completion_validation:
 - Verify source and target region or topology values are not merged.
 - Verify source-target differences do not create code findings by themselves.
 - Verify missing deployed topology remains an evidence gap.
+- Verify eligible target RU defaults and explicit vCore exceptions preserve the shared
+  variant-policy provenance, observed variant, and deployed-verification boundary.
+- Verify same-state variant conflicts block defaulting while approved source-to-target
+  migrations remain distinct from conflicts.
 finding_qualification_policy:
   policy_id: RESILIENCY-FINDING-QUALIFICATION
   version: 1.1.0

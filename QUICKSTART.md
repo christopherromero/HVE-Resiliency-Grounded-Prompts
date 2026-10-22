@@ -88,7 +88,7 @@ Do not enable `container_build`, `cicd_pipeline`, `deployment_configuration`, `i
 ```text
 Let's populate this context based on what we see in the source/ folder. There might be multiple projects in the source/ folder. 
 
-Use GPT-6.1 Sol and keep my existing permissions.
+Use Claude Opus 5.5 and keep my existing permissions.
 
 We are targeting a westus2 westus active-active deployment
 
@@ -112,7 +112,7 @@ Again, we are only running the app code and config scopes
 6. The orchestrator stops after the report. Review the Step 3A plan and reply with the scope you approve, for example `priorities=P0,P1 commitMode=none`. Approval must satisfy any additional conditions recorded in the plan.
 7. Steps 4 and 5 apply only the approved scope and verify it. The default commit mode is `none`; choose `per_change` explicitly if you want local commits.
 
-This GPT branch pins the orchestrator and all four phase-owning HVE agents to `GPT-6.1 Sol (copilot)`, the qualified VS Code model name. The Copilot SDK task tool instead uses the runtime ID `gpt-6.1-sol`; that ID is not a VS Code frontmatter model name.
+This branch pins the orchestrator and all four phase-owning HVE agents to `Claude Opus 5.5 (copilot)`, the qualified VS Code model name. The Copilot SDK task tool instead uses the runtime ID `claude-opus-5.5`; that ID is not a VS Code frontmatter model name.
 
 Delegated steps and their internal subagents must use the same model. If the model is unavailable or the runtime cannot honor the pin, the workflow stops rather than falling back to another model or provider. Reasoning-effort and context-tier overrides remain unset unless explicitly requested; permissions remain unchanged.
 
@@ -120,7 +120,7 @@ Source code may be directly under `source/` (the workspace script's default) or 
 
 Use `Resume the assessment` to continue an existing run without changing its date, or `Check assessment status` to inspect it without executing steps. Requesting a specific step runs only that step. Existing authoritative outputs require confirmation before a rerun.
 
-You may explicitly request implementation after Step 3A without generating the optional Step 3B report. The same scope approval gate applies. If delegation is unavailable, use handoff mode: copy the fully resolved command supplied by the orchestrator into the named agent in a fresh chat using GPT-6.1 Sol. Handoff buttons contain command names only and do not fill in run values.
+You may explicitly request implementation after Step 3A without generating the optional Step 3B report. The same scope approval gate applies. If delegation is unavailable, use handoff mode: copy the fully resolved command supplied by the orchestrator into the named agent in a fresh chat using Claude Opus 5.5. Handoff buttons contain command names only and do not fill in run values.
 
 ## Manual Run
 
@@ -132,7 +132,7 @@ You may explicitly request implementation after Step 3A without generating the o
    - prompt 3b - HVE Task Planner
    - prompt 4 - HVE Task Implementor
    - prompt 5 - HVE Task Reviewer
-3. Use GPT-6.1 Sol and keep your existing permissions. The workspace agents use `model: 'GPT-6.1 Sol (copilot)'`; if the UI requires manual selection, select GPT-6.1 Sol before sending.
+3. Use Claude Opus 5.5 and keep your existing permissions. The workspace agents use `model: 'Claude Opus 5.5 (copilot)'`; if the UI requires manual selection, select Claude Opus 5.5 before sending.
 
 ### Running one step at a time
 

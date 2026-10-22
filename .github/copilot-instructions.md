@@ -237,6 +237,22 @@ Use the evidence-gap section for externally owned architecture or deployment fac
 
 Do not create findings against assets outside the repository assessment boundary.
 
+## External configuration sources
+
+When repository evidence shows a Spring Cloud Config Client (for example `bootstrap.yml`, `spring.config.import: configserver:`, or `spring.cloud.config.uri`), or assessment scope explicitly selects `activation_mode: customer_declared_mirror`, resolve server-delivered keys using:
+
+```text
+grounding/governance/external-configuration-resolution-policy.yml
+```
+
+A local equivalent declared under `external_configuration_sources` in assessment scope is authoritative configuration evidence after required declaration, binding, file, and fingerprint checks pass. Omitted activation mode retains the detected-client requirement. A `customer_declared_mirror` requires a real customer owner and approval or evidence-handoff reference plus source provenance, but does not require locally detected client code. Absence of detection is an observation; actual application/profile/label contradictions block affected evidence and route to governance. Never invent a customer declaration.
+
+With `fingerprint.value: compute_at_inventory`, Step 1 captures SHA256 over the raw listed files in declaration order and records it in the inventory without changing inputs. A supplied SHA256 must match. Preserve the activation mode, authority basis, declaration reference, fingerprint handling/result, and per-file manifest through downstream artifacts. A captured hash identifies supplied contents and does not independently verify origin or deployed consumption. Changed mirror contents require refreshed inventory resolution; completed assessments remain historical.
+
+A validated mirror may produce `non_compliant` findings, support `compliant` results, and support closure. This is the governed exception to treating externally owned configuration as `not_assessed`. Prefer a dedicated directory for authentic files copied from the external configuration repository rather than reclassifying application-local resources as server delivery.
+
+Build the effective configuration using Spring Cloud Config precedence and record per-key provenance. Keys without a valid local equivalent remain `not_assessed` and appear as evidence gaps. Route unexplained mirror and repo-owned conflicts to architecture governance. Mirror evidence never proves deployed runtime state. Never query a live Config Server, and never modify mirror files as a substitute for changing the external config repository.
+
 ## Optional delivery assessment
 
 When `container_build` is enabled, evaluate repository-owned container build definitions using the applicable container-build grounding standard.

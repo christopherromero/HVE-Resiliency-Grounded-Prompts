@@ -703,6 +703,21 @@ Columns:
 - Application resiliency interpretation
 - Related findings
 
+### Resolved via local configuration equivalent
+
+Include only when Step 1 recorded an external configuration source.
+
+Columns:
+
+- Source ID
+- Application name, profiles, and label
+- Mirror path and provenance
+- Fingerprint
+- Keys resolved
+- Related findings
+
+Mirror-sourced keys are authoritative configuration evidence. They do not prove deployed runtime state.
+
 ### Not available or externally owned
 
 Columns:
