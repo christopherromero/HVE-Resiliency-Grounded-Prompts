@@ -72,6 +72,11 @@ Preserve the Step 1 `external_configuration_resolution` record. Do not recalcula
 - Keys with provenance `unresolved` remain `not_assessed` and are recorded as evidence gaps.
 - Preserve Step 1 conflicts. Controls affected by ECR-CONFLICT-001 are `not_assessed` and route to architecture governance.
 - Opening mirror files cited by Step 1 is evidence validation, not re-inventory.
+- Accept either Step 1 activation mode: `detected_config_client` or `customer_declared_mirror`. Do not reject a validated customer-declared mirror merely because `config_client_detected` is false.
+- Preserve `authority_basis`, declaration owner/reference, binding observation references, `fingerprint_handling`, `fingerprint_validation`, computed fingerprint, and per-file fingerprints. A captured hash is not a matched customer-supplied hash or proof of external origin.
+- Do not rerun the resolution helper to replace Step 1 provenance. If cited mirror bytes have changed, record an inventory exception and request a refreshed Step 1; do not silently accept a new fingerprint or merge map.
+- Keep unresolved placeholders and ECR-CONFLICT-003 binding contradictions `not_assessed` for affected controls. Declaration-based applicability never proves a repository or mirror defect by itself.
+- Preserve policy versions on older inventory artifacts. Policy 1.1.0 does not retroactively grant authority to a mirror rejected under an earlier policy.
 
 ### Machine-readable output convention
 

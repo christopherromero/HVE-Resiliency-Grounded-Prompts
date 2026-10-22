@@ -1,9 +1,9 @@
 ---
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: assessment_scope_context
 lifecycle_status: active
 context_id: default-assessment-scope
-context_version: "1.0.0"
+context_version: "1.1.0"
 owner: Cloud Architecture Team
 ---
 assessment_scope:
@@ -23,26 +23,29 @@ scope_rules:
   deployed_infrastructure_findings_allowed: false
   pcf_findings_allowed: false
 # Schema: grounding/governance/assessment-scope-schema.yml#external_configuration_sources_schema
-external_configuration_sources: []
-#  - source_id: CFG-SRC-001
-#    type: spring_cloud_config_server
-#    detected_via: source/cart-service/src/main/resources/bootstrap.yml
-#    application_name: cart-service
-#    profiles: [prod]
-#    label: main
-#    server_availability: unavailable
-#    local_equivalent:
-#      status: present
-#      authority: authoritative
-#      root_path: <repo-relative mirror folder>
-#      files: [application.yml, application-prod.yml, cart-service.yml, cart-service-prod.yml]
-#      provenance:
-#        origin: "<config repo>@<commit or export date>"
-#        captured_on: <YYYY-MM-DD>
-#      fingerprint:
-#        algorithm: sha256
-#        scope: concatenated_listed_files_in_order
-#        value: <sha256>
+external_configuration_sources:
+  - source_id: CFG-SRC-001
+    type: spring_cloud_config_server
+    activation_mode: customer_declared_mirror
+    declaration:
+      owner: "customer configuration owner"
+      reference: "evidence-handoff reference"
+    application_name: cart-service
+    profiles: [prod]
+    label: main
+    server_availability: unavailable
+    local_equivalent:
+      status: present
+      authority: authoritative
+      root_path: application-context/config-mirrors/cart-service
+      files: [application.yml, application-prod.yml]
+      provenance:
+        origin: "configserver/cart-service"
+        captured_on: "2026-06-01"
+      fingerprint:
+        algorithm: sha256
+        scope: concatenated_listed_files_in_order
+        value: compute_at_inventory
 report_preferences:
   finding_selection:
     mode: all_priorities

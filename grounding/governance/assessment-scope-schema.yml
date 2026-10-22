@@ -1,5 +1,5 @@
 ---
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: assessment_scope_schema
 schema_id: ASSESSMENT-SCOPE-CONTEXT
 lifecycle_status: active
@@ -118,7 +118,14 @@ external_configuration_sources_schema:
   item:
     source_id: {required: true, pattern: "^CFG-SRC-[0-9]{3}$"}
     type: {required: true, allowed_values: [spring_cloud_config_server]}
-    detected_via: {required: true}
+    activation_mode:
+      required: false
+      default: detected_config_client
+      allowed_values: [detected_config_client, customer_declared_mirror]
+    detected_via: {required_when: "activation_mode == detected_config_client"}
+    declaration:
+      owner: {required_when: "activation_mode == customer_declared_mirror"}
+      reference: {required_when: "activation_mode == customer_declared_mirror"}
     application_name: {required: true}
     profiles: {required: true, type: list}
     label: {required: false}
@@ -131,13 +138,24 @@ external_configuration_sources_schema:
       provenance:
         origin: {required_when: "status == present"}
         captured_on: {required: false}
+        source_revision: {required: false}
       fingerprint:
         algorithm: {required_when: "status == present", allowed_values: [sha256]}
         scope: {required_when: "status == present", allowed_values: [concatenated_listed_files_in_order]}
-        value: {required_when: "status == present"}
+        value: {required_when: "status == present", pattern: "^(compute_at_inventory|[A-Fa-f0-9]{64})$"}
   validation_rules:
     - source_ids_must_be_unique
+    - omitted_activation_mode_uses_detected_config_client
+    - customer_declared_mirror_requires_present_local_equivalent_and_nonplaceholder_owner_reference_and_origin
+    - absent_config_client_does_not_invalidate_customer_declared_mirror
+    - contradictory_application_profile_or_label_binding_blocks_affected_source
+    - local_equivalent_file_list_must_be_nonempty_and_unique
+    - local_equivalent_paths_must_resolve_inside_workspace_and_declared_root
     - local_equivalent_files_must_exist_under_root_path
-    - fingerprint_must_match_computed_value_of_listed_files
+    - local_equivalent_files_must_be_readable_valid_configuration_documents
+    - compute_at_inventory_captures_sha256_without_expected_hash_comparison
+    - supplied_sha256_must_match_computed_value_of_listed_files
+    - fingerprint_uses_raw_bytes_in_listed_order_without_normalization
+    - missing_or_invalid_fingerprint_remains_unresolved
     - mirror_root_path_is_in_assessment_boundary_when_status_present
     - failed_validation_sets_affected_key_provenance_unresolved

@@ -42,12 +42,14 @@ When `external_configuration_sources` declares a local equivalent with `status: 
 
 Read `grounding/governance/external-configuration-resolution-policy.yml`.
 
-1. Detect Spring Cloud Config Client usage using the policy `detection_signals`. Record the evidence file, key, and line range.
-2. Resolve application name, profiles, and label using the policy `resolution_inputs`.
-3. Match each detected client to a declared `external_configuration_sources` entry. Apply ECR-CONFLICT-002 when no entry matches.
-4. For each matched entry with `local_equivalent.status: present`, verify every listed file exists and compute the fingerprint as declared. On mismatch or missing metadata, apply the policy failure results.
-5. Build the effective configuration map using the policy `merge_semantics`. Record per-key provenance (`repo_owned`, `config_server_local_equivalent`, `unresolved`), winning file, winning line range, and overridden values. Redact protected values.
-6. Apply ECR-CONFLICT-001 to conflicts that precedence cannot explain.
+1. Detect Spring Cloud Config Client usage using the policy `detection_signals`. Record the evidence file, key, and line range separately from customer declarations. Never query a live Config Server.
+2. Validate every declared source. An omitted `activation_mode` means `detected_config_client`, which still requires a matching detected client. `customer_declared_mirror` requires a nonplaceholder declaration owner, approval or evidence-handoff reference, source origin, application name, ordered profiles, and a present mirror; it does not require detected client code. Never invent the customer declaration.
+3. Resolve observed application name, profiles, and label from cited repository evidence. Match detected clients and retain ECR-CONFLICT-002 for unmatched detected clients. For customer-declared sources, use the declared binding where observation is unavailable; absence of detection is an observation, not a rejection. Route actual binding contradictions to ECR-CONFLICT-003 and block only the affected source. An Azure Key Vault import alone is not contradictory Config Server evidence.
+4. Validate local file existence, readability, syntax, unique ordered paths, and workspace/root containment. Use `tools/validate_external_configuration_sources.py` for local YAML declaration and integrity checks, supplying cited per-source observations when available. Its default is read-only and it does not perform detection or merge configuration. For other supported configuration formats, use an appropriate structured parser and record equivalent checks rather than treating unsupported tool input as invalid configuration.
+5. When `fingerprint.value` is `compute_at_inventory`, compute SHA256 over the raw listed-file bytes in their declared order and record `fingerprint_handling: computed_at_inventory`, `fingerprint_validation: captured`, the computed hash, and per-file fingerprints. Do not compare the directive to the computed hash. When a 64-character hash is supplied, compare it and record `supplied_hash_verified` and `matched` only on success. Missing or malformed hashes, mismatches, missing/unreadable files, or invalid configuration leave authority unresolved. Do not rewrite input or mirror files.
+6. Set `authority: authoritative` only after activation, binding, metadata, file, and fingerprint checks pass. Record `authority_basis: customer_declaration` or `detected_config_client` separately from actual client detection. A captured hash identifies bytes; it does not prove external origin or deployed consumption.
+7. Build the effective configuration map using the policy `merge_semantics`. Record per-key provenance (`repo_owned`, `config_server_local_equivalent`, `unresolved`), winning file, winning line range, and overridden values. Honor profile order, redact protected values, and keep unresolved placeholders unresolved even in an authoritative mirror.
+8. Apply ECR-CONFLICT-001 to conflicts that precedence cannot explain. Preserve every unresolved declaration and its failure reason instead of dropping it from the inventory.
 
 A validated local equivalent is authoritative configuration evidence. Cite it in later sections exactly like repository-owned configuration, adding `evidence_origin: config_server_local_equivalent` and `source_id`.
 
@@ -675,16 +677,30 @@ external_configuration_resolution:
   detection_evidence: []
   sources:
     - source_id: CFG-SRC-001
+      activation_mode: "<detected_config_client|customer_declared_mirror>"
+      authority_basis: "<detected_config_client|customer_declaration|unresolved>"
+      declaration_owner: "<value-or-not_applicable>"
+      declaration_reference: "<value-or-not_applicable>"
+      config_client_detected: "<true|false>"
+      client_match_status: "<matched|customer_declaration_only|client_unconfirmed|binding_conflict>"
       application_name: "<value>"
       profiles: []
       label: "<value-or-not_provided>"
-      local_equivalent_status: "<validated|missing_metadata|fingerprint_mismatch|missing_file|none>"
+      local_equivalent_status: "<validated|missing_metadata|invalid_metadata|fingerprint_mismatch|missing_file|unreadable_file|invalid_configuration|client_unconfirmed|binding_conflict|none>"
       authority: "<authoritative|unresolved>"
       root_path: "<path-or-not_applicable>"
       files_in_precedence_order: []
       provenance_origin: "<value-or-not_available>"
+      provenance_source_revision: "<value-or-not_available>"
       declared_fingerprint: "<value-or-not_available>"
       computed_fingerprint: "<value-or-not_available>"
+      fingerprint_handling: "<computed_at_inventory|supplied_hash_verified|not_available>"
+      fingerprint_validation: "<captured|matched|mismatch|not_assessed>"
+      file_fingerprints:
+        - {repository_path: "<workspace-relative-path>", size_bytes: "<integer>", sha256: "<value>"}
+      binding_observation_refs: []
+      observations: []
+      validation_errors: []
   effective_configuration:
     - key: "<property.key>"
       provenance: "<repo_owned|config_server_local_equivalent|unresolved>"
@@ -701,7 +717,13 @@ external_configuration_resolution:
   inventory_exceptions: []
 ```
 
-List only keys relevant to resiliency controls and loaded standards. Emit `config_client_detected: false` and empty lists when no Config Client is detected.
+List only keys relevant to resiliency controls and loaded standards. Emit the actual
+`config_client_detected` result, but retain declared sources and valid customer-declared
+mirror keys even when it is false. Source validation is not control evaluation. Emit
+empty source/effective-configuration lists only when no applicable declarations or
+resolved keys exist. Preserve older inventory policy versions without retroactively
+upgrading their authority. A changed mirror requires a new Step 1 resolution, not an
+in-place edit to historical assessment evidence.
 
 ### Application architecture relationships
 
