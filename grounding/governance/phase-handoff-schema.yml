@@ -1,4 +1,4 @@
-schema_version: "1.3.0"
+schema_version: "1.4.0"
 document_type: phase_handoff_schema
 schema_id: ASSESSMENT-PHASE-HANDOFF
 lifecycle_status: active
@@ -200,19 +200,39 @@ external_configuration_resolution_handoff:
   downstream_recalculation_prohibited: true
   preserve:
     - source_id
+    - policy_id
+    - policy_version
+    - activation_mode
+    - authority_basis
+    - declaration_owner
+    - declaration_reference
+    - config_client_detected
+    - client_match_status
     - application_name
     - profiles
     - label
     - local_equivalent_status
     - authority
     - root_path
+    - files_in_precedence_order
+    - provenance_origin
+    - provenance_source_revision
+    - declared_fingerprint
     - computed_fingerprint
+    - fingerprint_handling
+    - fingerprint_validation
+    - file_fingerprints
+    - binding_observation_refs
+    - validation_errors
     - key_counts_by_provenance
     - conflicts
     - external_config_owned_change_ids
   prohibited_behavior:
     - upgrade_unresolved_keys_to_authoritative
     - recompute_effective_configuration
+    - reject_valid_customer_declared_mirror_only_for_absent_client_detection
+    - silently_refresh_mirror_fingerprints
+    - upgrade_historical_inventory_authority_without_step_1_refresh
 
 shared_service_assessment_scope_handoff:
   source_of_truth: authoritative_step_1_inventory

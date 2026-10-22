@@ -1,8 +1,8 @@
 ---
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: governance_policy
 policy_id: EXTERNAL-CONFIG-RESOLUTION
-policy_version: "1.0.0"
+policy_version: "1.1.0"
 lifecycle_status: active
 owner: Cloud Architecture Team
 ---
@@ -16,6 +16,26 @@ declaration:
   context_key: external_configuration_sources
   schema_path: grounding/governance/assessment-scope-schema.yml
   schema_key: external_configuration_sources_schema
+
+source_activation:
+  default_mode: detected_config_client
+  modes:
+    detected_config_client:
+      requires: [detected_client_evidence, matching_application_profiles_and_label]
+      authority_basis: detected_config_client
+    customer_declared_mirror:
+      requires: [declaration.owner, declaration.reference, application_name, profiles, local_equivalent.provenance.origin, present_local_equivalent]
+      authority_basis: customer_declaration
+      detected_client_required: false
+  rules:
+    - Validate every declared source, not only sources attached to a detected client.
+    - An omitted activation_mode retains detected_config_client behavior.
+    - Customer declarations establish assessment binding and authority, not observed client usage or deployed configuration.
+    - Record declaration owner and approval or evidence-handoff reference; never invent either value.
+    - Empty values, angle-bracket placeholders, TODO, unknown, not_available, required_customer_input, and pending_customer_input do not satisfy required metadata.
+    - Missing client detection is an observation for customer_declared_mirror, not an authority failure.
+    - An Azure Key Vault import alone neither detects nor disproves a separate Config Server integration.
+    - Cited contradictory application, ordered profiles, or known label evidence blocks the affected source under ECR-CONFLICT-003.
 
 detection_signals:
   build:
@@ -57,6 +77,35 @@ local_equivalent_authority:
   missing_required_metadata_result: unresolved
   fingerprint_mismatch_result: unresolved
   missing_listed_file_result: unresolved
+  unreadable_or_invalid_configuration_result: unresolved
+  binding_conflict_result: unresolved
+  integrity_is_not_origin_verification: true
+
+fingerprint_resolution:
+  algorithm: sha256
+  scope: concatenated_listed_files_in_order
+  input_values:
+    compute_at_inventory:
+      fingerprint_handling: computed_at_inventory
+      fingerprint_validation: captured
+      expected_hash_comparison_required: false
+    supplied_sha256:
+      pattern: "^[A-Fa-f0-9]{64}$"
+      fingerprint_handling: supplied_hash_verified
+      fingerprint_validation_on_match: matched
+      expected_hash_comparison_required: true
+  rules:
+    - Hash the raw bytes of every listed file in declaration order; do not sort, trim, reencode, or normalize line endings.
+    - Require a nonempty unique file list whose resolved files remain inside the workspace and declared root, including through symbolic links.
+    - Missing, unreadable, or invalid configuration files leave authority unresolved; never fingerprint only the available subset.
+    - Missing or malformed fingerprint declarations remain unresolved; do not silently default them to compute_at_inventory.
+    - Preserve the declaration and mirror files unchanged; write computed_fingerprint and per-file path, size, and SHA256 only to assessment artifacts.
+    - A captured fingerprint identifies supplied contents and is not an independent verification of external repository origin.
+    - A supplied hash mismatch leaves authority unresolved even when a customer declaration is present.
+    - Preserve fingerprint_handling and fingerprint_validation alongside authority_basis and declaration provenance.
+    - Changed mirror bytes require a refreshed Step 1 resolution; downstream phases never silently refresh fingerprints or effective configuration.
+  validation_tool: tools/validate_external_configuration_sources.py
+  tool_boundary: Validates source declarations, supplied binding observations, local YAML syntax, and raw-byte integrity; it does not discover clients, query services, resolve placeholders, or build effective configuration.
 
 merge_semantics:
   model: spring_cloud_config_client
@@ -101,6 +150,12 @@ conflict_rules:
     when: Detected Config Client name, profile, or label does not match any declared source.
     result: record_inventory_exception
     affected_keys_provenance: unresolved
+  - id: ECR-CONFLICT-003
+    when: Cited source-binding evidence contradicts the declared application name, ordered profiles, or known label.
+    result: route_to_architecture_governance
+    affected_control_status: not_assessed
+    affected_source_authority: unresolved
+    code_finding_created_for_conflict: false
 
 evidence_rules:
   - Cite the mirror file path, key, line range, exact excerpt, source_id, and mirror fingerprint.
@@ -108,6 +163,10 @@ evidence_rules:
   - Redact protected values using the same rules as repository evidence.
   - Mirror evidence proves configured intent only and never proves deployed runtime state.
   - Keys with provenance unresolved remain not_assessed and are reported as evidence gaps.
+  - Customer-declared mirrors may support compliant and non_compliant results without detected client code once declaration, binding, file, and fingerprint checks pass.
+  - Prefer a dedicated mirror directory distinct from application-owned resources; copy authentic external configuration files, not invented equivalents or client-side defaults.
+  - Preserve the selected application, ordered profiles, label, source origin, declaration reference, and per-file fingerprint manifest with every source resolution.
+  - Do not treat placeholder or unresolved secret values as resolved merely because the containing mirror is authoritative.
 
 remediation_rules:
   - Mark targets whose effective key is mirror-sourced as external_config_owned.
@@ -118,6 +177,7 @@ remediation_rules:
 closure_rules:
   - Close a mirror-sourced finding only when a refreshed mirror with a new fingerprint shows the remediated value, or an effective repo-local override exists.
   - A proposed patch artifact alone keeps the finding open.
+  - A refreshed mirror must repeat declaration, binding, file, and fingerprint validation under its recorded policy version; an old assessment is not retroactively upgraded.
 
 prohibited_behavior:
   - query_live_config_server
@@ -125,3 +185,5 @@ prohibited_behavior:
   - infer_deployed_runtime_state_from_mirror
   - silently_resolve_mirror_repo_conflicts
   - modify_mirror_files_as_remediation
+  - fabricate_customer_declaration_or_approval
+  - silently_accept_changed_mirror_contents
