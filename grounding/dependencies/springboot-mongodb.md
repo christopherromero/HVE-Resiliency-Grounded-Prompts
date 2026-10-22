@@ -25,7 +25,14 @@ infrastructure_assumptions:
   artifact.
 - The application repository does not provision or validate infrastructure.
 api_variant_detection:
-  resolution_rule: require_positive_repository_evidence
+  resolution_rule: governed_cosmos_variant_resolution_with_positive_evidence_for_observed_identity
+  policy_path: grounding/governance/cosmos-mongodb-variant-policy.yml
+  policy_id: COSMOS-MONGODB-VARIANT
+  policy_version: "1.0.0"
+  inventory_record: cosmos_mongodb_variant_resolution
+  observed_variant_rule: require_positive_repository_evidence
+  native_mongodb_rule: require_positive_repository_evidence
+  target_variant_rule: honor_recorded_governed_default_and_explicit_exceptions
   unknown_variant_behavior: not_assessed_for_variant_conditional_controls
   variants:
   - id: native_mongodb
@@ -240,7 +247,7 @@ controls:
   title: Throttling and rate-limit responses are handled
   severity: critical
   category: resilience
-  applies_when: the detected variant enforces request-unit or rate limits
+  applies_when: the resolved assessment variant enforces request-unit or rate limits
   variant_conditional: true
   required_variant: cosmos_mongo_ru
   evidence_patterns:
@@ -418,7 +425,12 @@ Evaluate repository-owned Spring Data MongoDB and MongoDB driver usage for durab
 
 Controls apply across deployment variants. The variant determines **which capability satisfies a control and which failure modes exist**, not whether the control applies.
 
-Resolve the variant using `api_variant_detection`, then apply:
+Use the Step 1 `cosmos_mongodb_variant_resolution` for confirmed Cosmos DB for
+MongoDB, following `grounding/governance/cosmos-mongodb-variant-policy.yml`.
+Use the policy's `standard_variant_mapping` to map `ru` to `cosmos_mongo_ru`
+and `vcore` to `cosmos_mongo_vcore`. Native MongoDB still requires positive
+repository evidence. Resolve applicability for the selected assessment state,
+then apply:
 
 | Concern | Native MongoDB | Cosmos DB for MongoDB, RU | Cosmos DB for MongoDB, vCore |
 |---|---|---|---|
@@ -429,10 +441,14 @@ Resolve the variant using `api_variant_detection`, then apply:
 
 Rules:
 
-- When the variant cannot be established, mark variant-conditional controls `not_assessed` and record an evidence gap.
-- Record the detected variant and its evidence in every finding produced by a variant-conditional control.
+- For confirmed Cosmos MongoDB target-state assessment, an absent variant declaration resolves to RU through the shared governed default unless positive vCore evidence or another terminal gate prevents it. Do not request separate RU confirmation solely because the variant is omitted.
+- Explicit approved declarations and positive vCore evidence prevent defaulting; same-state conflicts or invalid declarations require architecture review. Different approved source and target variants remain migration intent.
+- Preserve the inventory's model, resolution source, default-applied flag, policy identity, observed variant, and deployed-verification flag without recalculating them during evaluation.
+- When resolution genuinely remains unknown, mark variant-conditional controls `not_assessed` and record the specific unresolved predicate.
+- Record the resolved assessment variant and its full provenance in every finding produced by a variant-conditional control. Keep architecture and policy provenance outside repository source evidence.
+- A governed RU default establishes control applicability, not a deployed account fact or a defect. Findings still require repository-owned behavior incompatible with the applicable control.
 - Do not assume Cosmos behavior for a native deployment or the reverse.
-- `MONGO-012` applies only when a request-unit variant is detected.
+- `MONGO-012` applies when `cosmos_mongo_ru` is resolved for the selected assessment state, including the governed target default; it does not apply to a resolved vCore exception.
 
 ## Controls
 
@@ -802,7 +818,7 @@ Cite the repository-relative file path, symbol or property, original assessed li
 
 **Severity:** Critical  
 **Category:** resilience  
-**Applies when:** the detected variant enforces request-unit or rate limits
+**Applies when:** the resolved assessment variant enforces request-unit or rate limits
 
 #### Requirement
 
@@ -1123,7 +1139,7 @@ Cite the repository-relative file path, symbol or property, original assessed li
 ## Evidence and finding rules
 
 - Use the control `severity` and `category` declared in frontmatter; do not reassign severity per finding.
-- Record the detected API variant and the evidence that established it in every finding produced by a variant-conditional control.
+- Record the resolved assessment API variant and the architecture, repository, or governed-default provenance that established applicability in every variant-conditional finding. Preserve `observed_throughput_model` independently and never represent a default as repository evidence.
 - Return `not_assessed` when the repository lacks evidence to evaluate an applicable control.
 - Evaluate effective behavior rather than the presence of an annotation, property, or default alone.
 - Deduplicate with the master standard under one root cause; attribute the finding here when the defect is expressed in MongoDB driver or Spring Data MongoDB usage.

@@ -1,3 +1,7 @@
+---
+description: Create the authoritative repository inventory with governed scope and dependency resolution
+---
+
 # Prompt 1: Create the Repository Inventory with HVE Task Researcher
 
 ## HVE write-location constraint
@@ -32,30 +36,43 @@ The research artifact itself is the inventory. Do not create a second inventory 
 
 Inspect Maven and Gradle files, production and test Java source, Spring configuration, repository-owned Kubernetes or Helm application settings, Dockerfiles, deployment scripts, tests, and application documentation. Exclude generated build directories, binaries, `.git`, IDE caches, `target`, `build`, and `.gradle`.
 
+When `external_configuration_sources` declares a local equivalent with `status: present`, its `root_path` is in scope even when it lies outside the source root. Do not exclude it as documentation, test, or non-production content.
+
+## External configuration source resolution
+
+Read `grounding/governance/external-configuration-resolution-policy.yml`.
+
+1. Detect Spring Cloud Config Client usage using the policy `detection_signals`. Record the evidence file, key, and line range separately from customer declarations. Never query a live Config Server.
+2. Validate every declared source. An omitted `activation_mode` means `detected_config_client`, which still requires a matching detected client. `customer_declared_mirror` requires a nonplaceholder declaration owner, approval or evidence-handoff reference, source origin, application name, ordered profiles, and a present mirror; it does not require detected client code. Never invent the customer declaration.
+3. Resolve observed application name, profiles, and label from cited repository evidence. Match detected clients and retain ECR-CONFLICT-002 for unmatched detected clients. For customer-declared sources, use the declared binding where observation is unavailable; absence of detection is an observation, not a rejection. Route actual binding contradictions to ECR-CONFLICT-003 and block only the affected source. An Azure Key Vault import alone is not contradictory Config Server evidence.
+4. Validate local file existence, readability, syntax, unique ordered paths, and workspace/root containment. Use `tools/validate_external_configuration_sources.py` for local YAML declaration and integrity checks, supplying cited per-source observations when available. Its default is read-only and it does not perform detection or merge configuration. For other supported configuration formats, use an appropriate structured parser and record equivalent checks rather than treating unsupported tool input as invalid configuration.
+5. When `fingerprint.value` is `compute_at_inventory`, compute SHA256 over the raw listed-file bytes in their declared order and record `fingerprint_handling: computed_at_inventory`, `fingerprint_validation: captured`, the computed hash, and per-file fingerprints. Do not compare the directive to the computed hash. When a 64-character hash is supplied, compare it and record `supplied_hash_verified` and `matched` only on success. Missing or malformed hashes, mismatches, missing/unreadable files, or invalid configuration leave authority unresolved. Do not rewrite input or mirror files.
+6. Set `authority: authoritative` only after activation, binding, metadata, file, and fingerprint checks pass. Record `authority_basis: customer_declaration` or `detected_config_client` separately from actual client detection. A captured hash identifies bytes; it does not prove external origin or deployed consumption.
+7. Build the effective configuration map using the policy `merge_semantics`. Record per-key provenance (`repo_owned`, `config_server_local_equivalent`, `unresolved`), winning file, winning line range, and overridden values. Honor profile order, redact protected values, and keep unresolved placeholders unresolved even in an authoritative mirror.
+8. Apply ECR-CONFLICT-001 to conflicts that precedence cannot explain. Preserve every unresolved declaration and its failure reason instead of dropping it from the inventory.
+
+A validated local equivalent is authoritative configuration evidence. Cite it in later sections exactly like repository-owned configuration, adding `evidence_origin: config_server_local_equivalent` and `source_id`.
+
 ## Inventory objectives
 
 Record application modules, Java and Spring Boot versions, production dependencies, client construction, regional endpoint configuration, retries, timeouts, circuit breakers, bulkheads, Actuator configuration, readiness, liveness, health indicators, state and session handling, transaction behavior, messaging behavior, idempotency, concurrency controls, graceful shutdown, regional telemetry, fault tests, and historical PCF references.
 
-## Dependency evidence rule
+## Dependency and capability activation rule
 
-Classify a dependency as `confirmed` only when production use is supported by repository evidence such as a client builder, Spring bean, configuration binding, repository implementation, producer, consumer, listener, or invocation. A build dependency alone means `declared_only`.
+A standard activates through one of two routes. Record which route and which signal fired.
 
-Normalize confirmed dependencies to:
+1. **Production dependency** (`production_dependency`) — repository evidence confirms production use, and the service is in scope. Either signal qualifies:
+   - `production_code_evidence`: a client builder, Spring bean, configuration binding, repository implementation, producer, consumer, listener, or invocation demonstrates effective interaction. Classify the dependency `confirmed`.
+   - `repository_pattern_evidence`: a repository-owned production file, configuration key, manifest, or build element matches the registry `repository_patterns` and identifies the specific dependency or platform. Test-only, documentation-only, and generated matches do not qualify. A generic pattern shared by several standards, such as `spring.datasource.url` or `WebClient.Builder`, qualifies only with dependency-specific corroboration.
+2. **Approved target-platform capability** (`approved_target_platform_capability`) — approved application architecture context declares a capability that matches the registry `inventory_capabilities`, the registry entry sets `capability_activation_allowed: true`, and the service is in scope. The signal is `architecture_declared_capability`.
 
-- `keyvault`
-- `cosmosdb`
-- `eventhubs`
-- `storage-blob`
-- `azure-sql`
-- `postgresql`
-- `confluent-kafka`
-- `dse-cassandra`
-- `apim`
-- `appgateway-glb`
-- `http-client`
-- `azure-functions`
-- `azure-managed-redis`
-- `aks-istio`
+Capability activation does not confirm deployed infrastructure or production integration. Do not require a platform SDK, a service-mesh or platform manifest, or deployed-state evidence to activate a standard through the capability route.
+
+A build dependency alone, with no qualifying signal, is `declared_only` and activates nothing.
+
+Activation and finding authority are separate decisions. Activation establishes applicability. Only repository evidence may later establish a defect.
+
+Resolve registry keys from `grounding/registry/dependency-standard-registry.yml`. Do not hardcode or memorize the key list; it changes as standards are added.
 
 ## Required research artifact structure
 
@@ -66,13 +83,15 @@ Use these exact top-level headings:
 3. `## Application Profile`
 4. `## Confirmed Dependencies`
 5. `## Declared-Only Dependencies`
-6. `## Resilience Mechanisms`
-7. `## Health and Traffic Eligibility`
-8. `## State and Consistency`
-9. `## Lifecycle and Recovery`
-10. `## Observability`
-11. `## Test Coverage`
-12. `## Historical PCF References`
+6. `## Architecture-Activated Standards`
+7. `## Resilience Mechanisms`
+8. `## Health and Traffic Eligibility`
+9. `## State and Consistency`
+10. `## Lifecycle and Recovery`
+11. `## Observability`
+12. `## Test Coverage`
+12a. `## External Configuration Sources`
+13. `## Historical PCF References`
 13. `## Uncertainties`
 14. `## Dependency Standards to Load`
 15. `## Inventory Summary`
@@ -101,26 +120,88 @@ For every evidence item, use:
   confidence: high
 ```
 
-## Update for dependency standards from separate grounding file
+## Resolving standards to load
 
 Read: grounding/registry/dependency-standard-registry.yml
 
-When a dependency is confirmed through production-code evidence:
-1. Normalize to a registry key.
-2. Look up its grounding_file from the registry.
-3. Add both id and grounding_file to Dependency Standards to Load.
+For every entry under `standards` and `assessment_domain_standards`, perform these steps literally. Do not add a confirmation test beyond what the registry declares.
+
+1. Evaluate `activate_when.scope_status` first. If the required assessment domain is disabled, the standard is `not_applicable` with `exclusion_reason: assessment_domain_disabled`. Record it and stop.
+2. Match `inventory_dependencies` against confirmed dependencies (`production_code_evidence`).
+3. Match `repository_patterns`, and `inventory_capabilities` against the repository-derived application profile, against repository-owned production files and configuration (`repository_pattern_evidence`). Apply the registry `excluded_matches`.
+4. Match `inventory_capabilities` against approved application architecture context (`architecture_declared_capability`). Count the match only when the context status is `approved` and the entry sets `capability_activation_allowed: true`. Otherwise record `capability_context_not_approved` or `capability_activation_not_accepted_by_registry`.
+5. Resolve the route: steps 2 or 3 give `production_dependency`; step 4 alone gives `approved_target_platform_capability`. When both match, record both and use `production_dependency` as primary.
+6. Apply the shared-service scope gate from `Shared-Service Assessment Scope Resolution`. A standard whose effective scope is not `in_scope` is `not_activated` with `exclusion_reason: shared_service_not_in_scope` or `shared_service_scope_unresolved`. A standard without a `shared_service_assessment_scope` block passes this gate.
+7. Apply any `additional_gate` and `requires_standard`, resolving the required baseline with this same procedure.
+8. Record the `evaluation_mode` from the route: `full` for `production_dependency`, `repository_verifiable_controls_only` for `approved_target_platform_capability`.
+9. Write one `standard_resolution` record for the entry, whether it activated or not.
+
+A standard activated **only** by the capability route loads in `repository_verifiable_controls_only` mode. It is listed, loaded, and evaluated. Its application-side controls are evaluated from application code, configuration, and tests. Only its integration-dependent controls are later marked `not_assessed`.
+
+Do not omit a standard because production integration is unconfirmed. Never silently omit a registry entry. When a registry entry with `capability_activation_allowed: true` declares a capability that approved context also declares, it must be activated or carry a specific exclusion reason.
 
 Do not hardcode dependency mappings in this prompt.
 
-Example output:
+Record every candidate under `## Dependency Standards to Load`:
+
+```yaml
+standard_resolution:
+  - id: aks-istio
+    registry_section: standards
+    candidate_status: activated
+    activation_route: approved_target_platform_capability
+    matched_signals:
+      - {signal: architecture_declared_capability, matched: "runtime_platform: aks", evidence: "application-architecture-context.yml runtime_platform: aks"}
+    evaluation_mode: repository_verifiable_controls_only
+    shared_service_effective_scope: in_scope
+    exclusion_reason: none
+    rationale: "Approved context declares AKS; registry accepts capability activation."
+  - id: postgresql
+    registry_section: standards
+    candidate_status: not_activated
+    activation_route: none
+    matched_signals:
+      - {signal: repository_pattern_evidence, matched: "spring.datasource.url", evidence: "application.yml:12"}
+    evaluation_mode: none
+    shared_service_effective_scope: not_applicable
+    exclusion_reason: pattern_not_dependency_specific
+    rationale: "Generic datasource key without a PostgreSQL driver, URL scheme, or client."
+  - id: cicd-pipeline-resiliency
+    registry_section: assessment_domain_standards
+    candidate_status: not_applicable
+    activation_route: none
+    matched_signals: []
+    evaluation_mode: none
+    shared_service_effective_scope: not_applicable
+    exclusion_reason: assessment_domain_disabled
+    rationale: "cicd_pipeline is disabled in assessment scope."
+```
+
+Use only the `allowed_exclusion_reasons` in the registry `candidate_resolution` block. Then list activated standards:
 
 ```yaml
 Dependency Standards to Load:
+  - id: mongodb
+    grounding_file: grounding/dependencies/springboot-mongodb.md
+    activation_route: production_dependency
+    activation_signal: production_code_evidence
+    evaluation_mode: full
+    evidence: "source/cart-service/.../CartRepository.java:5 extends MongoRepository"
+
   - id: keyvault
     grounding_file: grounding/dependencies/springboot-keyvault.md
+    activation_route: production_dependency
+    activation_signal: production_code_evidence
+    evaluation_mode: full
+    evidence: "SecretClient bean construction"
 
-  - id: cosmosdb
-    grounding_file: grounding/dependencies/springboot-cosmosdb.md
+  - id: aks-istio
+    grounding_file: grounding/dependencies/springboot-aks-istio.md
+    activation_route: approved_target_platform_capability
+    activation_signal: architecture_declared_capability
+    evaluation_mode: repository_verifiable_controls_only
+    evidence: "application-architecture-context.yml runtime_platform: aks"
+    integration_status: unconfirmed_in_repository
 ```
 
 ## Workload detection
@@ -144,6 +225,15 @@ Evaluate frontend detection only when `frontend_application` is `enabled` or `in
 4. For React, detect every data layer present using the standard's `data_layer_detection` block and record each one. More than one may be present.
 5. Detect server-side rendering using positive evidence only. Record `ssr_detected: true` with the mode and evidence, `false` with the basis for exclusion, or `unknown` with an evidence gap.
 6. Resolve standards through the registry. Framework standards require the `frontend-web-client` baseline. The SSR standard loads only when `ssr_detected` is `true`.
+<!--> Enhanced rules <-->
+7. Perform explicit evaluation of critical customer journeys like Menu, User Info, or dependent features.
+8. Validate timeout, retry, cancellation, and recovery behavior.
+9. Perform assessment of UI loading, error, empty, degraded-service, and success states.
+10. Perform analysis of service startup, readiness, cache warm-up, and shutdown behavior.
+11. Perform strong evaluation of React and Angular state management and feature-flag resiliency implementations.
+12. Evaluate the robustness of API integration, including error handling, retries, and fallback mechanisms.
+13. Assess the security posture, including authentication, authorization, and data protection measures.
+
 
 Do not infer a frontend workload from a repository that contains only build output, and do not assume SSR because a framework supports it.
 
@@ -182,6 +272,7 @@ Dependency Standards to Load:
 APPLICATION_ARCHITECTURE_CONTEXT=application-context/application-architecture-context.yml
 SOLUTION_ARCHITECTURE_CONTEXT=application-context/solution-architecture-context.yml
 KAFKA_SCENARIO_POLICY=grounding/governance/kafka-operating-scenario-policy.yml
+COSMOS_MONGODB_VARIANT_POLICY=grounding/governance/cosmos-mongodb-variant-policy.yml
 ```
 
 The application and solution architecture-context files are optional.
@@ -196,6 +287,53 @@ If neither file exists:
 - Keep deployed infrastructure facts separately unresolved.
 
 Do not equate an unresolved infrastructure fact with an unresolved application operating-scenario classification.
+
+### Cosmos MongoDB variant resolution
+
+When Cosmos DB for MongoDB production use is confirmed, read
+`grounding/governance/cosmos-mongodb-variant-policy.yml` before resolving Kafka
+scenario predicates or MongoDB variant-specific applicability. This governance
+input does not activate a dependency or expand assessment scope.
+
+Store the single `cosmos_mongodb_variant_resolution` object in a fenced YAML
+document under the existing `## State and Consistency` heading. When Kafka is
+confirmed, place `kafka_scenario_inputs` in that section as well and reference the
+same resolution object; do not duplicate it or introduce a new top-level heading
+or inventory artifact. Cosmos MongoDB workloads without Kafka still record their
+variant resolution without activating Kafka.
+
+1. Resolve the selected assessment state and retain its approved declarations separately from repository observations.
+2. Read optional `architecture_context.dependency_variants.cosmosdb.source` or `.target` for that state. Each object may declare `api`, `throughput_model`, and an existing `exception_reference`; absent objects remain valid.
+3. Apply the shared policy's precedence and terminal gates. An approved application declaration takes precedence over a supplied solution declaration; same-state contradictions require review rather than silent selection.
+4. For confirmed Cosmos MongoDB target use with no declaration or positive variant evidence, resolve RU using `approved_organization_default`. Do not leave the throughput model unknown solely because no RU hostname or per-application RU declaration is available.
+5. Explicit vCore declarations or positive vCore evidence prevent the RU default. Preserve the exception signal without inventing an exception approval. A vCore result does not satisfy an RU-only Kafka rule.
+6. Keep unknown source-state identity when neither a source declaration nor positive source evidence exists. Do not treat an approved source-to-target migration as a same-state conflict.
+7. Record the complete resolution below, populate `kafka_scenario_inputs.cosmos_db.throughput_model` from it, and retain policy provenance outside repository evidence. The default does not prove deployed identity, multi-region writes, or any code defect.
+
+For an eligible target-state RU default, emit this concrete shape with actual
+evidence references populated when available:
+
+```yaml
+cosmos_mongodb_variant_resolution:
+  throughput_model: ru
+  resolution_source: approved_organization_default
+  default_applied: true
+  resolution_status: resolved
+  selected_assessment_state: target
+  observed_throughput_model: unknown
+  deployed_variant_verified: false
+  policy_id: COSMOS-MONGODB-VARIANT
+  policy_version: "1.0.0"
+  policy_path: grounding/governance/cosmos-mongodb-variant-policy.yml
+  evidence: []
+  exception_reference: not_available
+```
+
+The sample's `evidence: []` means no positive variant evidence is supplied, not
+that Cosmos production use or the MongoDB API was inferred from the default.
+Record those qualifying facts with their existing inventory evidence. Never use
+the default for native MongoDB, Cosmos NoSQL, or an unconfirmed provider or API.
+For overrides and conflicts, emit the actual concrete values defined by the policy.
 
 ### Repository-observed interaction map
 
@@ -251,6 +389,7 @@ kafka_scenario_inputs:
     used_by_production_code: true|false|unknown
     api: mongodb|nosql|unknown
     throughput_model: ru|vcore|unknown
+    throughput_model_resolution_ref: cosmos_mongodb_variant_resolution
     role: authoritative_business_state|durable_operational_state|failure_queue|cache|optional|not_applicable|unknown
     multi_region_write_evidence:
       status: confirmed_by_approved_context|repository_indicates_intent|external_evidence_required|not_applicable|unknown
@@ -338,7 +477,7 @@ architecture_confirmation_required: true
 
 #### Rule 2: Cosmos DB MongoDB RU active-active intent
 
-If Kafka and Cosmos DB are used by production code, Cosmos DB uses MongoDB API and RU throughput, Cosmos DB is authoritative business or durable operational state, Azure SQL is not authoritative state, and repository evidence indicates regional multi-write intent, infer:
+If Kafka and Cosmos DB are used by production code, Cosmos DB uses MongoDB API and RU throughput resolved through the shared variant policy, Cosmos DB is authoritative business or durable operational state, Azure SQL is not authoritative state, and repository evidence indicates regional multi-write intent, infer:
 
 ```yaml
 value: independent_regional_active_active
@@ -359,6 +498,12 @@ conditional_assumptions:
 
 Do not require an approved context file merely to perform this conditional inference. Do not record Cosmos DB multi-region writes or Kafka topology as confirmed platform facts unless approved context or another authoritative source confirms them.
 
+A governed RU default satisfies only the throughput-model predicate. Preserve
+the other conditions and the existing confirmation paths: approved target context
+may establish target intent, while repository-only scenario inference remains
+conditional. Never set the Kafka scenario source to an architecture context merely
+because the variant used an organization default.
+
 Repository indicators of multi-region-write intent may include region-specific connection selection, preferred-write-region configuration, MongoDB `appName` regional configuration, region-aware configuration properties, or application logic explicitly designed for local regional writes.
 
 #### Rule 3: Kafka with no application database
@@ -374,13 +519,19 @@ architecture_confirmation_required: true
 
 Resolve `processing_model`, `regional_processing_model`, `external_side_effects`, and `kafka_backed_state` separately. Do not assume database-independent Kafka is stateless, multi-active, free of durable state, free of external side effects, or safe for duplicate processing.
 
-#### Rule 4: Unresolved
+#### Rule 4: DSE Cassandra active-active
+
+When the selected Kafka policy's DSE Cassandra predicates are satisfied, preserve
+`KAFKA-SCENARIO-004` and its approved-context and local-affinity requirements.
+Do not use this rule for Cosmos DB or for an unresolved scenario.
+
+#### Rule 5: Unresolved
 
 Use:
 
 ```yaml
 value: unresolved
-rule_id: KAFKA-SCENARIO-004
+rule_id: KAFKA-SCENARIO-005
 status: insufficient_evidence
 architecture_confirmation_required: true
 ```
@@ -402,8 +553,8 @@ kafka_operating_scenario:
 
   policy_validation:
     policy_id: KAFKA-OPERATING-SCENARIO
-    policy_version: "3.2.0"
-    rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004
+    policy_version: "3.3.0"
+    rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004|KAFKA-SCENARIO-005
     status: consistent|inferred|conditionally_inferred|conflict|insufficient_evidence
 
   repository_validation:
@@ -513,6 +664,66 @@ assessment_snapshot:
 ```
 
 Use `git_revision` only when valid Git metadata is available. Otherwise classify the input as a workspace snapshot, uploaded archive, source drop, or unknown source with explicit limitations.
+
+### External configuration sources record
+
+Under `## External Configuration Sources`, emit:
+
+```yaml
+external_configuration_resolution:
+  policy_id: EXTERNAL-CONFIG-RESOLUTION
+  policy_version: "<active-version>"
+  config_client_detected: "<true|false>"
+  detection_evidence: []
+  sources:
+    - source_id: CFG-SRC-001
+      activation_mode: "<detected_config_client|customer_declared_mirror>"
+      authority_basis: "<detected_config_client|customer_declaration|unresolved>"
+      declaration_owner: "<value-or-not_applicable>"
+      declaration_reference: "<value-or-not_applicable>"
+      config_client_detected: "<true|false>"
+      client_match_status: "<matched|customer_declaration_only|client_unconfirmed|binding_conflict>"
+      application_name: "<value>"
+      profiles: []
+      label: "<value-or-not_provided>"
+      local_equivalent_status: "<validated|missing_metadata|invalid_metadata|fingerprint_mismatch|missing_file|unreadable_file|invalid_configuration|client_unconfirmed|binding_conflict|none>"
+      authority: "<authoritative|unresolved>"
+      root_path: "<path-or-not_applicable>"
+      files_in_precedence_order: []
+      provenance_origin: "<value-or-not_available>"
+      provenance_source_revision: "<value-or-not_available>"
+      declared_fingerprint: "<value-or-not_available>"
+      computed_fingerprint: "<value-or-not_available>"
+      fingerprint_handling: "<computed_at_inventory|supplied_hash_verified|not_available>"
+      fingerprint_validation: "<captured|matched|mismatch|not_assessed>"
+      file_fingerprints:
+        - {repository_path: "<workspace-relative-path>", size_bytes: "<integer>", sha256: "<value>"}
+      binding_observation_refs: []
+      observations: []
+      validation_errors: []
+  effective_configuration:
+    - key: "<property.key>"
+      provenance: "<repo_owned|config_server_local_equivalent|unresolved>"
+      source_id: "<id-or-not_applicable>"
+      winning_file: "<path-or-not_available>"
+      winning_line_range: {start_line: 1, end_line: 1, status: "<exact|advisory|not_available>"}
+      value: "<value-or-redacted>"
+      overridden_values: []
+  key_counts_by_provenance:
+    repo_owned: 0
+    config_server_local_equivalent: 0
+    unresolved: 0
+  conflicts: []
+  inventory_exceptions: []
+```
+
+List only keys relevant to resiliency controls and loaded standards. Emit the actual
+`config_client_detected` result, but retain declared sources and valid customer-declared
+mirror keys even when it is false. Source validation is not control evaluation. Emit
+empty source/effective-configuration lists only when no applicable declarations or
+resolved keys exist. Preserve older inventory policy versions without retroactively
+upgrading their authority. A changed mirror requires a new Step 1 resolution, not an
+in-place edit to historical assessment evidence.
 
 ### Application architecture relationships
 
@@ -686,7 +897,14 @@ application_profile:
 dependency_summary:
   confirmed_dependencies: []
   declared_only_dependencies: []
+  architecture_activated_standards: []
   dependency_standards_to_load: []
+  standard_resolution_summary:
+    candidates: 0
+    activated_production_dependency: []
+    activated_approved_capability: []
+    not_activated: []
+    not_applicable: []
 
 repository_observed_interactions:
   inbound_contract_count: 0
@@ -725,8 +943,12 @@ next_phase:
 Before completing:
 
 - Verify the authoritative research artifact exists under `.copilot-tracking/research/` and its path uses the configured `task_slug` consistently.
-- Verify every confirmed dependency has production-code evidence.
-- Verify the dependency standards list contains only confirmed dependencies.
+- Verify every standard in the list records an `activation_route`, an `activation_signal`, its `evaluation_mode`, and the evidence that produced it.
+- Verify every standard activated through `production_dependency` has production-code evidence or a dependency-specific production pattern match.
+- Verify standards activated through `approved_target_platform_capability` are present with `evaluation_mode: repository_verifiable_controls_only`, come from approved context, belong to registry entries with `capability_activation_allowed: true`, and were not omitted for lack of a platform SDK, manifest, deployed state, or production-code evidence.
+- Verify the `standard_resolution` record count equals the registry entry count under `standards` plus `assessment_domain_standards`, and every non-activated record carries an allowed `exclusion_reason`.
+- Verify every activated standard is `in_scope` or declares no shared service.
+- Verify no standard appears without a matched registry signal.
 - Verify dependency standards and assessment-domain standards are listed separately.
 - Verify missing or invalid registry entries are recorded as governance gaps and no grounding path was invented.
 - Verify assessment-scope context and schema were distinguished and validated.
