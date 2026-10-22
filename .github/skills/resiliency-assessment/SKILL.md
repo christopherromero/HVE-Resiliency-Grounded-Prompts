@@ -2,7 +2,7 @@
 name: resiliency-assessment
 description: 'Route new, resumed, or status-only resiliency assessments to HVE agents - Brought to you by microsoft/hve-core'
 user-invocable: true
-compatibility: 'Requires GPT-6.1 Sol and the HVE Core agents declared by the workspace wrapper prompts'
+compatibility: 'Requires Claude Opus 5.5 and the HVE Core agents declared by the workspace wrapper prompts'
 ---
 
 # Resiliency Assessment Routing
@@ -12,7 +12,7 @@ compatibility: 'Requires GPT-6.1 Sol and the HVE Core agents declared by the wor
 Resolve one next step and its invocation from repository artifacts.
 The caller executes that step. This skill does not perform assessment work, launch agents, or write workflow artifacts.
 Paths below are relative to the assessment workspace root, not the installed skill folder.
-This GPT branch executes through GPT-6.1 Sol as required by repository governance and the bound agents' model metadata. VS Code uses `GPT-6.1 Sol (copilot)`; the Copilot SDK task tool uses `gpt-6.1-sol`. Routing never selects a fallback model.
+This branch executes through Claude Opus 5.5 as required by repository governance and the bound agents' model metadata. VS Code uses `Claude Opus 5.5 (copilot)`; the Copilot SDK task tool uses `claude-opus-5.5`. Routing never selects a fallback model.
 
 ## Prerequisites
 

@@ -123,11 +123,11 @@ An explicit implementation request may proceed from the approved Step 3A plan wi
 
 Each phase must read the required authoritative artifacts rather than rely on prior conversation history.
 
-## GPT branch model policy
+## Model policy
 
-Use GPT-6.1 Sol for the orchestrator, each assessment or remediation step, and any internal subagent delegation. The workspace agent definitions use the VS Code qualified model name `GPT-6.1 Sol (copilot)` for direct invocation and handoffs.
+Use Claude Opus 5.5 for the orchestrator, each assessment or remediation step, and any internal subagent delegation. The workspace agent definitions use the VS Code qualified model name `Claude Opus 5.5 (copilot)` for direct invocation and handoffs.
 
-Use the model identifier expected by the active tool: VS Code `runSubagent` takes `GPT-6.1 Sol (copilot)`, while the Copilot SDK `task` tool takes the runtime ID `gpt-6.1-sol`. If no model parameter is available, require the target agent's pinned model metadata. Do not use the runtime ID as a VS Code frontmatter model name.
+Use the model identifier expected by the active tool: VS Code `runSubagent` takes `Claude Opus 5.5 (copilot)`, while the Copilot SDK `task` tool takes the runtime ID `claude-opus-5.5`. If no model parameter is available, require the target agent's pinned model metadata. Do not use the runtime ID as a VS Code frontmatter model name.
 
 If the model is unavailable or the runtime cannot honor the pin, stop and report the limitation. Do not silently fall back to another model or provider. Leave reasoning-effort and context-tier overrides unset unless explicitly requested, and do not change permissions to run the workflow.
 

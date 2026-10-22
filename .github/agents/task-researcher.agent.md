@@ -1,7 +1,7 @@
 ---
 name: Task Researcher
 description: 'Task research specialist for comprehensive project analysis - Brought to you by microsoft/hve-core'
-model: 'GPT-6.1 Sol (copilot)'
+model: 'Claude Opus 5.5 (copilot)'
 agents:
   - Researcher Subagent
 handoffs:

@@ -1,7 +1,7 @@
 ---
 name: Task Reviewer
 description: 'Reviews completed implementation work for accuracy, completeness, and convention compliance - Brought to you by microsoft/hve-core'
-model: 'GPT-6.1 Sol (copilot)'
+model: 'Claude Opus 5.5 (copilot)'
 agents:
   - RPI Validator
   - Researcher Subagent
