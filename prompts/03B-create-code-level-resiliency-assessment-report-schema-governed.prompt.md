@@ -80,7 +80,6 @@ The schema controls:
 - Summary and matrix structure
 - Evidence-boundary sections
 - Standards-alignment structure
-- Implementation-roadmap structure
 - Required notices and exclusions
 
 This prompt controls who generates the report and where it may be written. Step 3B directly generates the report.
@@ -116,7 +115,8 @@ Also verify that the schema defines these required sections:
 4. Repository and IaC Evidence Gap Analysis
 5. Full Finding Matrix
 6. Standards Alignment
-7. Implementation Roadmap
+
+Do not render an Implementation Roadmap or Appendix A: Traceability section. Both are retired in the schema and remain commented out for possible restoration.
 
 If the schema is missing, unreadable, inactive, or structurally invalid, stop and report the schema validation error. Do not generate a best-effort report from memory, and do not route the error to Task Implementor.
 
@@ -151,8 +151,8 @@ Line numbers are navigation metadata. Never present a line number alone as the a
 
 Create one complete, polished Markdown report that:
 
-- Explains the assessed application and repository scope
-- Summarizes application architecture and regional resiliency themes
+- Identifies the assessed application and repository by name
+- Summarizes application architecture and its regional resiliency readiness
 - Presents findings grouped by resiliency relationship and governed priority
 - Includes precise repository evidence
 - Includes illustrative proposed fixes from Step 3A
@@ -162,7 +162,6 @@ Create one complete, polished Markdown report that:
 - Summarizes repository-visible IaC and external platform evidence boundaries without creating infrastructure findings
 - Provides a complete finding matrix
 - Maps findings to applicable Microsoft or approved enterprise standards
-- Summarizes the Step 3A implementation roadmap
 - Conforms to the authoritative report schema
 
 ## Strict phase boundaries
@@ -271,10 +270,9 @@ If both file paths are blocked by the active agent environment but report conten
 
 ## Report metadata
 
-At the beginning of the report, include the schema identity in an HTML comment:
+Write the schema identity to the assembly sidecar defined by the schema, not to the report:
 
-```html
-<!--
+```yaml
 report_governance:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
   schema_version: "<active-version-read-from-REPORT_SCHEMA>"
@@ -283,20 +281,21 @@ report_governance:
   generated_by_phase: Step 3B
   artifact_type: assessment_documentation
   implementation_artifact: false
--->
 ```
+
+The final report contains no HTML comments, HTML tags, schema references, or internal identifiers. Follow the schema's final report sanitization rule.
 
 #### Canonical template rendering contract
 
-Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the eight required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
+Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the six required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
 
-Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged, except for the H1 title, which the schema's report-title rule governs when the report is a filtered view. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
+Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged, except for the H1 title, which the schema's report-title rule governs when the report is a filtered view. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding. Markers are assembly aids only; final sanitization removes them.
 
-Render the compact report header block between the `content:report-header` markers, following the schema's report header block rendering contract. Keep each field to one line, and do not render a Deployment Evolution subsection or repeat Application and Repository scope in Assessment Overview.
+Render the compact report header block between the `content:report-header` markers, following the schema's report header block rendering contract. Keep each field to one line. Render **Repo Scope** as the repository or microservice name only, with no scope description or evidence notes.
 
 Open Assessment Overview following the schema's Assessment Overview opening contract. Render one or two short narrative paragraphs, then three to five one-line bullets covering stack and runtime, assessment basis, coverage, and the operating scenario when one applies. Do not render an `Application and Repository Overview` subsection heading above them, and do not render an `Assessment Attributes` subsection, an attribute table, or a scenario subsection or table. Attribute and scenario detail beyond those bullets stays authoritative in the Step 1, Step 2, and Step 3A artifacts and is intentionally omitted from the report.
 
-Render each detailed finding using the schema's field order. Do not render a severity field, a finding status field, or a priority policy ID and version in the finding body; render a `**Conditional finding:**` field only when the Step 2 finding status is conditional, and declare the priority policy ID and version once above the Appendix A table. Render the standards reference in plain Markdown with no `<span>` or inline font sizing, citing only the grounded standards that define the controls the finding violates rather than the full evaluated standards set. Follow it with a `**MSFT Reference:**` final line resolved from `MICROSOFT_PATTERN_REGISTRY`, and omit that line when no pattern resolves.
+Render each detailed finding using exactly the schema's field order: Priority, Resiliency Related, Issue, What does this solve, Resiliency Impact (or Impact), Recommended Fix, File, Fix, Notes, and MSFT Reference. Render no other fields. When the Step 2 finding status is conditional, open the Issue with `Conditional:` and state the condition and evidence required. Render `**MSFT Reference:**` as the final line, resolved from `MICROSOFT_PATTERN_REGISTRY`, and omit it when no pattern resolves.
 
 Use the schema's fixed priority heading labels exactly: `P0 — Critical Resiliency Risks`, `P1 — High Priority Resiliency`, `P2 — Improvement / Best Practice`, and `P3 — Code Consistency` in the resiliency section, and the same P2 and P3 labels with a `(Non-Resiliency)` suffix in the non-resiliency section, each followed by the finding count. Do not invent a label, do not fold a category name into a priority heading, and never render a governance state such as governance-blocked as a priority heading.
 
@@ -304,7 +303,7 @@ Group findings under H3 category headings inside every priority section. Do not 
 
 Title the summary table `Summary Findings Table` exactly and end it with a bolded total row. Render the Full Finding Matrix with five columns, `ID`, `Priority`, `Category`, `Finding`, and `Remediated with`, and render each `ID` as a Markdown link to that finding's heading anchor.
 
-Keep sections 1 through 7 free of workflow phase names such as `Step 2` or `Step 3A`, internal identifiers such as `F-001` or `CHANGE-AA-001`, and `.copilot-tracking/` paths. Appendix A is the one place those belong. Label each illustrative proposal with its target only, for example `*Target `path`:12-20.*`; do not repeat the illustrative disclaimer above each block, because the Assessment Overview notice already carries it. Omit the `Report Scope` subsection entirely when the report includes every governed priority.
+Keep every report section free of workflow phase names such as `Step 2` or `Step 3A`, internal identifiers such as `F-001` or `CHANGE-AA-001`, and `.copilot-tracking/` paths. Label each illustrative proposal with its target only, for example `*Target `path`:12-20.*`; do not repeat the illustrative disclaimer above each block, because the Assessment Overview notice already carries it. Omit the `Report Scope` subsection entirely when the report includes every governed priority.
 
 When `MICROSOFT_PATTERN_REGISTRY` is supplied and its lifecycle status is approved, resolve one pattern per finding using the registry's `resolution_order`: discard `standards_alignment_only` patterns, score each remaining pattern by how many of the finding's cited controls it matches through `applies_to_controls` or `applies_to_control_families`, prefer the highest score, then the lowest `precedence`, then `pattern_id`. Render the `Standards Alignment` section body as the Microsoft pattern table with `Pattern`, `Status`, and `Findings` columns, deriving `Status` from the findings rather than from the registry. Keep the section heading exactly `## Standards Alignment`; the template and report validator depend on that string. Never invent a Microsoft URL, never add a locale segment to a registry URL, and never cite a `standards_alignment_only` pattern as a per-finding reference. When the registry is absent, unreadable, or not approved, keep the `Standards Alignment` section, render the schema's no-registry statement in place of the Microsoft pattern table, and omit every `**MSFT Reference:**` line rather than substituting invented links.
 
@@ -318,7 +317,7 @@ Never invent a reference-architecture URL that appears in neither the schema nor
 
 ### Schema-driven report rendering
 
-Follow `assessment-report-schema.md` exactly for top-level sections, section order, required finding fields, notices, tables, finding matrix, standards alignment, roadmap, priority filtering, testing-output preferences, source-locator display, and report conformance.
+Follow `assessment-report-schema.md` exactly for top-level sections, section order, required finding fields, notices, tables, finding matrix, standards alignment, priority filtering, testing-output preferences, source-locator display, and report conformance.
 
 Do not reproduce or reinterpret the schema contract from memory. For each required section:
 
@@ -326,7 +325,7 @@ Do not reproduce or reinterpret the schema contract from memory. For each requir
 - Use the schema-defined unavailable-content behavior.
 - Render only authoritative Step 1, Step 2, and Step 3A facts.
 - Preserve Step 2 finding status and severity and Step 3A priority and change mapping. Preservation is a data obligation, not a rendering obligation; the schema governs which of these fields the report body renders.
-- Apply the frozen report selection consistently to detailed findings, summary, matrix, and roadmap.
+- Apply the frozen report selection consistently to detailed findings, summary, and matrix.
 - Render exact Step 2 source excerpts and Step 3A illustrative proposals according to their target-level status.
 - Display source locators using the authority order defined in this prompt.
 
@@ -395,7 +394,7 @@ Include exact Step 2 source excerpt.
 
 
 ### Illustrative proposed implementation
-Include Step 3A illustrative code and disclaimer.
+Include Step 3A illustrative code. Do not add a per-proposal disclaimer; the Assessment Overview notice covers it.
 
 ## Missing Evidence Handling
 Render:
@@ -421,17 +420,15 @@ Step 3B must:
 - Verify `illustrative_code` is non-empty.
 - Verify it contains code or configuration syntax appropriate to `source_language`.
 - Render it in a fenced block using the supplied language.
-- Render `narrative_explanation` after the code block as explanatory text.
+- Render `narrative_explanation` after the code block as a short explanatory paragraph.
 - Never replace the block with a summary sentence.
 
 Required order:
 
-1. Target file and location
-2. Original source requiring update
-3. Illustrative proposal notice
-4. Concrete illustrative code or configuration block
-5. Explanation of the proposal
-6. Validation requirements
+1. `**File:**` target file and location, followed by the original source excerpt
+2. `**Fix:**` followed by each concrete illustrative code or configuration block, preceded by its target and followed by its explanation
+
+When a target file does not exist in the repository, label it explicitly as a new file: `*Target `{path}` (new file).*` A new file has no original source excerpt; do not render a `**File:**` entry or an empty code block for it.
 
 #### Targeted discovery required
 
@@ -441,22 +438,13 @@ When:
 illustrative_code_status: targeted_discovery_required
 ```
 
-Step 3B must not display the narrative explanation under a heading or field labeled `Fix` as though it were code.
-
-Render:
+Render one italic line under `**Fix:**` and nothing else for that target:
 
 ```markdown
-**Illustrative code status:** Targeted implementation discovery required
-
-**Why code was not generated:** [specific discovery-required reason]
-
-**Unresolved inputs:**
-- [specific missing fact]
-
-**Intended behavior:** [narrative explanation]
+*No code proposed; requires {unresolved inputs}.*
 ```
 
-Do not create a fenced code block. Do not invent an example. Do not substitute prose for code.
+Do not create a fenced code block. Do not invent an example. Do not render status, reason, unresolved-input, or intended-behavior fields.
 
 #### Not applicable
 
@@ -466,7 +454,7 @@ When:
 illustrative_code_status: not_applicable
 ```
 
-Render the reason the remediation has no source/configuration target. Do not emit an empty `Fix` block.
+Render one italic line under `**Fix:**` stating that no source or configuration change applies. Do not emit an empty `Fix` block.
 
 #### Invalid Step 3A proposal
 
@@ -505,7 +493,7 @@ The status is `passed` only when `invalid_generated_proposals` and `narrative_on
 
 ## Required schema-conformance record
 
-Before completing, add this validation record to the report's final HTML comment:
+Before completing, write this validation record to the conformance block of the assembly sidecar:
 
 ```yaml
 schema_conformance:
@@ -516,7 +504,7 @@ schema_conformance:
   required_finding_fields_present: true
   summary_counts_reconcile: true
   finding_matrix_reconciles: true
-  roadmap_matches_plan: true
+  # roadmap_matches_plan: true  # Retired with the Implementation Roadmap section.
   unsupported_findings_added: false
   priorities_changed: false
   infrastructure_findings_added: false
@@ -536,16 +524,16 @@ Before completing:
 2. Verify every required schema section exists in the required order.
 3. Verify every finding in the report exists in Step 2.
 4. Verify every priority matches Step 3A.
-5. Verify every priority cites its governance rule.
-6. Verify every detailed finding contains all required fields.
+5. Verify every priority has a governance rule in Step 3A.
+6. Verify every detailed finding renders exactly the schema's finding fields, in order, and no others.
 7. Verify every generated illustrative proposal comes from Step 3A and contains concrete source/configuration syntax.
 8. Verify no narrative-only text is rendered as a code fix.
-9. Verify every targeted-discovery record includes its specific reason and unresolved inputs.
+9. Verify every targeted-discovery target renders only the single italic `**Fix:**` line naming its unresolved inputs.
 10. Verify invalid Step 3A proposals cause report conformance failure and planning-revision routing.
-11. Verify conditional findings identify conditions and evidence required.
+11. Verify conditional findings open their Issue with `Conditional:` and state the condition and evidence required.
 12. Verify no `not_assessed` item is presented as noncompliant.
 13. Verify summary counts match the Full Finding Matrix.
-14. Verify the roadmap matches Step 3A priority and wave indexes.
+14. Verify no Implementation Roadmap section was rendered.
 15. Verify no infrastructure findings were created.
 16. Verify no PCF findings or recommendations appear.
 17. Verify internal links and anchors are valid.
@@ -564,11 +552,8 @@ Before completing:
 27. Verify Assessment Overview opens with narrative plus three to five one-line
   bullets, with no `Application and Repository Overview` subsection heading and
   no `Assessment Attributes` or operating-scenario subsection or table.
-28. Verify no finding body renders a severity field, a finding status field, or a
-  priority policy ID and version, and that the priority policy is declared once
-  above the Appendix A table.
-29. Verify every standards reference is plain Markdown with no HTML wrapper and
-  cites only the standards whose controls the finding violates.
+28. Verify no finding body renders a severity, finding status, priority policy,
+  conditional finding, or standards reference field.
 
 ### Kafka scenario reporting
 
@@ -664,7 +649,7 @@ Read `report_preferences.finding_selection` from `ASSESSMENT_SCOPE_CONTEXT`. If 
 2. Read all authoritative Step 2 findings and Step 3A mappings before filtering.
 3. Resolve every included priority to exact finding IDs and change IDs.
 4. Freeze the report selection before rendering.
-5. Render detailed recommendations, filtered summary counts, Full Finding Matrix, and roadmap from the frozen selection.
+5. Render detailed recommendations, filtered summary counts, and Full Finding Matrix from the frozen selection.
 6. Do not modify or regenerate IDs, priorities, severity, status, category, evidence, or change mappings.
 7. Preserve cross-references to excluded findings as `Not included in this priority-filtered report`.
 
@@ -696,16 +681,21 @@ report_finding_selection:
 - Add a prominent `Report Scope` subsection in Assessment Overview.
 - Label summary counts `Filtered Findings Summary`.
 - Include only selected findings in detailed recommendation sections and the Full Finding Matrix.
-- Include only selected changes in roadmap priority, wave, and change-index tables.
 - Do not render empty excluded priority sections.
-- State where the authoritative full assessment and plan are located.
+- State that omitted priorities remain in the full assessment and remediation plan, without rendering artifact paths.
 - Apply testing-output preferences after priority selection.
 - If `include_conditional_findings` is false, omit conditional findings from narrative and matrix, declare the omission, and preserve them in the authoritative Step 2 artifact.
 - `include_verified_controls` and `include_evidence_gaps` remain independent of priority filtering.
 
 ### Conformance and handoff
 
-Add the selected and omitted priority lists, finding/change counts, and frozen selection record to the final schema-conformance comment and `03B-report-summary.yml`. Validate that filtered summary, matrix, roadmap, and detailed sections reconcile exactly. A mismatch causes report conformance failure.
+Add the selected and omitted priority lists, finding/change counts, and frozen selection record to the assembly sidecar's conformance block and `03B-report-summary.yml`. Validate that filtered summary, matrix, and detailed sections reconcile exactly. A mismatch causes report conformance failure.
+
+## Business-Logic Finding Exclusion
+
+Follow the schema's business-logic finding exclusion rule. Before freezing display IDs, exclude every finding whose mapped Step 3A change targets include `change_boundary.classification: business_logic_change`. Exclude silently: render no disclosure, count, or placeholder, and remove references to excluded findings from other findings. Record the excluded finding IDs only in the assembly sidecar and `03B-report-summary.yml`.
+
+This exclusion is presentation-only. It does not suppress, reclassify, or reprioritize findings in the Step 2 review or Step 3A plan, so it does not conflict with the resiliency finding qualification policy.
 
 ## Repository-Agnostic Snapshot Rendering
 
@@ -718,6 +708,8 @@ Render each piece of repository evidence with its repository path and line range
 ```markdown
 **File:** `src/main/java/example/Service.java`:142-156
 ```
+
+Render paths relative to the assessed repository's own root. When the Step 1 inventory records a `repository_root` such as `source`, remove that prefix from every rendered path: `source/src/main/...` becomes `src/main/...`. Do not change paths in the Step 2 or Step 3A artifacts.
 
 <!-- Disabled 2026-09-21 by customer report preference. Restore this block to reinstate per
 finding symbol, fingerprint, snapshot, and advisory line rendering.
@@ -754,40 +746,39 @@ Generate the report through bounded incremental assembly. Do not attempt one unb
 Before creating the report:
 
 1. Validate all authoritative inputs and the active schema version read from `REPORT_SCHEMA`.
-2. Freeze selected priorities, omitted priorities, selected finding IDs, selected change IDs, display IDs, categories, counts, and roadmap mappings.
-3. Create the schema-required `report_assembly_manifest`.
+2. Freeze selected priorities, omitted priorities, selected finding IDs, selected change IDs, display IDs, categories, counts, and change mappings.
+3. Create the assembly sidecar with the governance block and the schema-required `report_assembly_manifest`.
 4. Do not reconsider these values during writing or recovery.
 
 Freezing applies to scope, identifiers, counts, and mappings. The assembly manifest's `assembly_status` is progress tracking and is expected to change as sections and findings are appended.
 
 ### Bounded write sequence
 
-1. Initialize the final report with the governance block, the assembly manifest, the title, the report header block, and the table of contents.
+1. Initialize the report with the title, the report header block, and the table of contents.
 2. Append Assessment Overview.
 3. Append detailed recommendations one complete finding at a time.
 4. Append Non-Resiliency Recommendations.
 5. Append Repository and IaC Evidence Gap Analysis.
 6. Append the Full Finding Matrix.
 7. Append Standards Alignment.
-8. Append the Implementation Roadmap.
-9. Append Appendix A: Traceability.
-10. Append the hidden report-metadata block.
-11. Append the final conformance block.
-12. Reopen and validate the completed file.
+8. Write the report-metadata block to the assembly sidecar.
+9. Reopen and validate the completed file.
+10. Apply final report sanitization.
+11. Write the conformance block to the assembly sidecar.
 
-Use the schema's assembly block names. The governance block, assembly manifest, report-metadata block, and conformance block are four separate blocks in three positions, and none substitutes for another. The report-metadata block is the required report metadata fields, is hidden, and belongs after Appendix A rather than beneath the title.
+Use the schema's assembly block names. The governance block, assembly manifest, report-metadata block, and conformance block are four separate blocks in the assembly sidecar, `{report-basename}.assembly.yml`, beside the report. None substitutes for another, and none is written to the report.
 
-Use the schema-required invisible markers before each top-level section and detailed finding.
+Use the schema-required assembly markers before each top-level section and detailed finding while writing. Final sanitization removes them.
 
 ### Internal identifier suppression
 
-Sections 1 through 7 are customer-facing narrative and must not contain internal workflow identifiers. Follow the schema's internal-identifier-suppression rule exactly.
+All report sections are customer-facing narrative and must not contain internal workflow identifiers. Follow the schema's internal-identifier-suppression rule exactly.
 
 Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, priority rule IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs in body content. Reference findings, dependencies, and consolidation through display IDs. State test obligations, open questions, evidence gaps, and discovery items in prose. Omit the `Cross-refs` notes sub-bullet.
 
-Carry every suppressed identifier into Appendix A so nothing is lost. Suppression and appendix placement are presentation-only and must not change findings, priorities, severity, status, evidence, control mappings, change mappings, or validation obligations.
+Suppressed identifiers remain authoritative in the Step 2 review and Step 3A plan. Suppression is presentation-only and must not change findings, priorities, severity, status, evidence, control mappings, change mappings, or validation obligations.
 
-Hidden governance, manifest, and conformance comment blocks retain full identifiers and are exempt.
+The assembly sidecar retains full identifiers and is exempt.
 
 ### Notes rendering
 
@@ -796,15 +787,8 @@ Notes content rule. Cover only the main way the fix goes wrong if applied carele
 it, and a genuinely blocking unresolved input.
 
 Do not restate complexity, wave, dependencies, release gates, approval requirements, or file
-counts, all of which are rendered elsewhere. Do not explain why testing detail is hidden. Do not
-emit the same sentence in more than one finding; a note that would be identical everywhere belongs
-in a scope declaration instead.
-
-<!-- Disabled 2026-09-21 by customer report preference. Notes previously rendered three labeled
-sub-bullets for Implementation, Validation, and Guardrail. Testing, validation, release-gate,
-dependency, and approval obligations remain authoritative in the Step 3A plan and are unchanged
-by this rendering preference.
--->
+counts. Do not explain why testing detail is hidden. Do not emit the same sentence in more than
+one finding; a note that would be identical everywhere belongs in a scope declaration instead.
 
 ### Finding write unit
 
@@ -823,7 +807,7 @@ Do not regenerate a completed finding after a recoverable error.
 
 When a request or file-write operation recovers:
 
-- Reopen the report.
+- Reopen the report and its assembly sidecar.
 - Inspect stable section and finding markers.
 - Resume after the last verified completed unit.
 - Preserve the frozen manifest.
@@ -852,10 +836,12 @@ After writing, reopen the report and verify:
 - Every required section marker occurs exactly once.
 - Every selected finding marker occurs exactly once.
 - No omitted or unexpected finding marker exists.
-- Summary, detailed findings, matrix, roadmap, and selected scope reconcile.
+- Summary, detailed findings, matrix, and selected scope reconcile.
 - Full source fingerprints remain only in authoritative artifacts.
 - Original-source fenced blocks match Step 2 exactly.
 - Final schema and assembly conformance are passed.
+
+Then apply the schema's final report sanitization: remove every HTML comment and HTML tag, schema reference, and internal identifier outside fenced code blocks. Reopen the report and verify none remain and every in-document link still resolves. Record the result in the sidecar's conformance block.
 
 Successful Step 3B completion requires a complete validated final report, not a partial file or report text that exists only in chat.
 
@@ -864,7 +850,7 @@ Successful Step 3B completion requires a complete validated final report, not a 
 Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1.1.0. Preserve every evidence-backed applicable control violation as either `resiliency` or `non_resiliency`. Do not suppress a valid non-resiliency finding merely because it fails the resiliency gate. Resiliency classification requires a credible failure scenario, approved resiliency domain, target-architecture element, causal mechanism, and material impact. Preserve classification and rationale across phase artifacts. Business-logic risk remains a separate implementation-approval dimension.
 
 ### Phase-specific rule
-Render Resiliency-Focused Recommendations first, ordered P0, P1, P2, P3. Render Non-Resiliency-Focused Recommendations second, ordered P2, P3 only. Do not render non-resiliency P0/P1 headings. If Step 3A contains non-resiliency P0/P1, fail conformance and route to Step 3A revision. Include both classes in counts, matrix, roadmap, and traceability.
+Render Resiliency-Focused Recommendations first, ordered P0, P1, P2, P3. Render Non-Resiliency-Focused Recommendations second, ordered P2, P3 only. Do not render non-resiliency P0/P1 headings. If Step 3A contains non-resiliency P0/P1, fail conformance and route to Step 3A revision. Include both classes in counts and matrix.
 
 
 ### Concise finding rendering mode
@@ -895,9 +881,9 @@ Suppress detailed implementation content:
 - selector information
 - verbose code discussion
 
-Preserve all findings, priorities, classifications, matrix entries, roadmap mappings, and Appendix A traceability.
+Preserve all findings, priorities, classifications, and matrix entries.
 
 ### Shared-Service Assessment Scope Reporting
 
-Render the authoritative Step 1 scope summary within Assessment Overview. Show service, production-use status, assessment scope, scope owner, and rationale. Render out-of-scope, informational-only, and architecture-only services as scope/context records, never as findings. They receive no finding ID or priority and are excluded from finding counts, the Full Finding Matrix, Standards Alignment finding mappings, the remediation roadmap, and implementation selectors. Preserve architecture relationships needed to explain in-scope findings.
+Render the authoritative Step 1 scope summary within Assessment Overview. Show service, production-use status, assessment scope, scope owner, and rationale. Render out-of-scope, informational-only, and architecture-only services as scope/context records, never as findings. They receive no finding ID or priority and are excluded from finding counts, the Full Finding Matrix, Standards Alignment finding mappings, and implementation selectors. Preserve architecture relationships needed to explain in-scope findings.
 

@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.16.0"
+  schema_version: "1.17.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -28,10 +28,12 @@ This governance document defines the required structure and content of the custo
 4. Repository and IaC Evidence Gap Analysis
 5. Full Finding Matrix
 6. Standards Alignment
+<!-- Retired in 1.17.0 by customer report preference. To restore, append after Standards Alignment:
 7. Implementation Roadmap
 8. Appendix A: Traceability
+-->
 
-Sections 1 through 7 are readable customer-facing content. Section 8 is the traceability appendix and must be rendered last.
+All six sections are readable customer-facing content. Standards Alignment is rendered last.
 
 ## Required report metadata
 
@@ -47,7 +49,7 @@ Sections 1 through 7 are readable customer-facing content. Section 8 is the trac
 
 Use `Not provided` when required metadata is unavailable.
 
-Application, assessment date, repository scope, current deployment, and approved target deployment are also rendered as visible one-line fields in the report header block. The remaining fields stay in the hidden metadata block.
+Application, assessment date, repository scope, current deployment, and approved target deployment are also rendered as visible one-line fields in the report header block. The remaining fields are written to the assembly sidecar.
 
 ### Deployment-state metadata contract
 
@@ -75,32 +77,35 @@ Rules:
 
 ### Report metadata placement and visibility
 
-Render report metadata as a hidden HTML comment block between the `report-metadata` markers at the end of the report, after Appendix A and before the schema-conformance block. It is provenance rather than narrative, so it must not open the document.
+Write report metadata to the assembly sidecar defined in the incremental report assembly protocol, not to the report. It is provenance rather than narrative, and the final report contains no HTML comments.
 
-Follow the marker pattern already used by the governance block. The `report-metadata:start` and `report-metadata:end` markers are separate comments, and the metadata itself is one comment block between them. Never nest a comment inside another comment.
+Because the metadata is not in the report, the readable title, the report header block, and the filtered-view summary line carry document identification. They must state the application, and when the report is a priority-filtered view, they must state that and name the included priorities. This satisfies the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
 
-Because the metadata is hidden, the readable title, the report header block, and the filtered-view summary line carry document identification. They must state the application, and when the report is a priority-filtered view, they must state that and name the included priorities. This satisfies the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
-
-Metadata placement and visibility are presentation-only. Every required field is still rendered, and no field may be dropped.
+Metadata placement is presentation-only. Every required field is still recorded in the sidecar, and no field may be dropped.
 
 ## Required Assessment Overview content
 
 - Opening narrative and the compact overview bullets
 <!-- - Current deployment, approved target deployment, and migration-context summary (retired in 1.11.0; rendered in the report header block) -->
-- Assessment themes with finding references
+<!-- - Assessment themes with finding references (retired in 1.17.0 by customer report preference) -->
 - Approved Azure Shared Services reference-architecture table, rendered from
   REFERENCE_ARCHITECTURE_REGISTRY, or the no-registry statement when no approved
   registry is supplied
 - Summary Findings Table
 - Illustrative-code notice
 
+Do not render an `Assessment Themes` subsection or a themes summary in Assessment Overview.
+
+Do not render a `Multi-Region Coverage Checklist` subsection or table in Assessment Overview.
+
 Do not render a `Report Scope` subsection when the report includes every governed priority. A report
 describing its own completeness is meta-commentary the customer did not ask for. When all priorities
 are present, the Summary Findings Table already establishes scope.
 
 Render a `Report Scope` subsection only when priorities are omitted by report preference. In that
-case it must declare the included priorities, the omitted priorities, and the authoritative
-assessment and plan paths, so that no reader mistakes a filtered report for the complete finding set.
+case it must declare the included priorities and the omitted priorities, and state that omitted
+findings remain in the full assessment and remediation plan, so that no reader mistakes a filtered
+report for the complete finding set. Do not render `.copilot-tracking/` or other workflow artifact paths.
 
 
 ```markdown
@@ -202,7 +207,7 @@ Render these lines in order, each as its own bold line separated by a blank line
 
 **Assessment Date:** {YYYY-MM-DD}
 
-**Repo Scope:** {repository scope}
+**Repo Scope:** {repository or microservice name}
 
 **Current Deployment:** {one line from architecture_context.deployment_evolution.source}
 
@@ -212,18 +217,20 @@ Render these lines in order, each as its own bold line separated by a blank line
 Rules:
 
 - Keep every field to one line. Do not render a paragraph, bullet list, or table in the header block.
+- **Repo Scope** renders only the repo or microservice name, resolved from `architecture_context.metadata.repository_name`.
 - **Current Deployment** uses only `architecture_context.deployment_evolution.source`.
 - **Target Deployment** uses only `architecture_context.deployment_evolution.target`.
 - Use `Not provided` when a field is unavailable.
-- Do not add fields to the header block. Language, framework, runtime platform, and report version stay in the hidden report-metadata block.
+- Do not add fields to the header block. Language, framework, runtime platform, and report version are written to the assembly sidecar.
 - Assessment Overview must not repeat Application or Repository scope, because the header block carries them. The opening overview bullets are unaffected.
 - Assessment Overview must not render a Deployment Evolution subsection.
 - Wording may be polished, but state, region, and lifecycle meaning must not change. If source or target is missing or conflicting, state the limitation in the Assessment Overview and route it to architecture review.
 - Do not infer deployment state from repository configuration or dependency topology.
 
-Expected semantic rendering for this application:
+Illustrative example only. Do not copy these values; resolve every field from the approved architecture context for the assessed repository:
 
 ```text
+**Repo Scope:** example-service
 **Current Deployment:** Active-standby; West US active, East US reserved for disaster recovery.
 **Target Deployment:** Active-active across West US 2 and West US using the same application artifact.
 ```
@@ -235,7 +242,7 @@ Assessment Overview opens directly with one or two short narrative paragraphs de
 Render the bullets in this order, omitting any bullet whose facts are unavailable or not applicable:
 
 1. **Stack and runtime:** language, framework, and runtime platform.
-2. **Assessment basis:** assessment snapshot type and identifier, approved architecture context path and version, and the enabled assessment domains.
+2. **Assessment basis:** the approved architecture context and the enabled assessment domains. Do not render file paths, versions, or snapshot identifiers.
 3. **Coverage:** standards evaluated, controls evaluated, verified and conditional finding counts, and confirmed dependencies.
 4. **Operating scenario:** rendered only when an applicable dependency standard defines an operating scenario, following the applicable operating-scenario reporting contract, such as Kafka scenario reporting.
 
@@ -298,7 +305,12 @@ Exclude verified controls, non-findings, not-assessed controls, not-applicable c
 
 ## Required detailed finding fields
 
-Every detailed finding must include:
+Every detailed finding renders exactly the fields listed in the Required detailed finding content
+emit order, and no others.
+
+<!-- Retired in 1.17.0 by customer report preference. This list conflicted with the emit order and
+produced extra per-finding fields. Validation requirements, dependencies, and standards
+references remain authoritative in the Step 2 review and Step 3A plan.
 
 1. Finding ID and title
 2. Priority
@@ -316,6 +328,7 @@ Every detailed finding must include:
 14. Notes
 15. Standards reference, when supported
 16. Conditional status, only when the finding status is conditional
+-->
 
 <!-- Disabled 2026-09-22 by customer report preference. Severity duplicated the priority risk
 label, finding status was `Verified finding` on every rendered finding, and the priority policy ID
@@ -351,7 +364,7 @@ The report title is H1 and precedes section 1. The template carries a generic de
 
 When the report is a priority-filtered view, replace the default with a title that identifies the filtered scope, then follow the header block with a one-line summary naming the application, stating that the document is a priority-filtered view, and listing the included priorities.
 
-The title, the header block, and that summary line are the readable identification of the document, because report metadata is rendered as a hidden block at the end. Together they satisfy the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
+The title, the header block, and that summary line are the readable identification of the document, because report metadata is written to the assembly sidecar rather than the report. Together they satisfy the priority-filtered reporting rule that the title and metadata identify the document as a filtered view.
 
 ### Heading hierarchy
 
@@ -371,9 +384,9 @@ accepted and not enforced in this repository.
 
 Number top-level sections in schema order. Derive table-of-contents anchors from the rendered heading text, so `# 2. Resiliency-Focused Recommendations` is linked as `#2-resiliency-focused-recommendations`.
 
-Every in-document link must resolve to a heading anchor or an explicit `<a id="...">`. Do not link to
-an HTML comment marker such as `<!-- section:resiliency-recommendations -->`; comments generate no
-anchor and the link silently breaks.
+Every in-document link must resolve to a heading anchor. Do not render explicit `<a id="...">` anchors,
+and do not link to an HTML comment marker such as `<!-- section:resiliency-recommendations -->`;
+markers are removed during final sanitization and the link would break.
 
 State the finding count in each priority heading so the reader can scan volume without counting.
 
@@ -402,8 +415,8 @@ In the non-resiliency section:
 Use an em dash. `N` is the finding count in that heading's section and class.
 
 Never render a governance state as a priority heading. A change that resolves no governed priority
-rule is governance-blocked, which is a Step 3A condition recorded in the remediation plan and
-Appendix A, not a customer-facing priority group.
+rule is governance-blocked, which is a Step 3A condition recorded in the remediation plan,
+not a customer-facing priority group.
 
 The `{risk label}` in the finding's `**Priority:**` field is the same label without the count and
 without the `(Non-Resiliency)` suffix, for example `**Priority: P1 - High Priority Resiliency**`.
@@ -482,31 +495,36 @@ Emit fields in this order:
 
 - `**Priority: {P0|P1|P2|P3} - {risk label}**`
 - `**Resiliency Related:** {Yes|No}`
-- `**Conditional finding:** {conditions and evidence required}`, rendered only when the Step 2 finding status is conditional
-- `**Issue:**`
+- `**Issue:**` When the finding status is conditional, open with `Conditional:` followed by the condition and the evidence required to confirm it.
 - `**What does this solve:**`
 - `**Resiliency Impact:**` (or `**Impact:**` for non-resiliency findings)
 - `**Recommended Fix:**`
-- `**File:** {path}:{startLine}-{endLine}`
-- a `// before` fenced code block showing current state
-- `**Fix:**` then one or more fenced code blocks of the proposal
-- `**Notes:**` one short paragraph, at most three sentences
+- `**File:** {path}:{startLine}-{endLine}`, followed by a fenced code block of the original source excerpt
+- `**Fix:**` followed by one or more fenced code blocks of the illustrative proposal, each preceded by its target and followed by a short explanation of the proposal. Label a target that does not yet exist as `*Target `{path}` (new file).*`; a new file has no `**File:**` entry or original source excerpt. When no code was generated, render one italic line instead: `*No code proposed; requires {unresolved inputs}.*`
+- `**Notes:**` one short paragraph, at most three sentences, following the Notes content rule
+- `**MSFT Reference:** [{title}]({url})`, following the Microsoft reference content contract, rendered only when a pattern resolves
+
+Render only these fields, in this order. Severity, finding status, and priority policy are intentionally excluded: severity duplicates the priority risk label, a finding is verified unless its Issue opens with `Conditional:`, and policy details remain authoritative in the Step 3A plan.
+
+<!-- Retired in 1.17.0 by customer report preference. Restore these lines to reinstate them.
+
+- `**Conditional finding:** {conditions and evidence required}`, rendered only when the Step 2 finding status is conditional
+- `**Standards reference:** {grounded standard name and version} — {grounding file path}`, following the standards reference content contract
+-->
 
 <!-- Disabled 2026-09-21 by customer report preference. The three sub-bullet structure produced
 repetition and a wall of text. Restore this line to reinstate the previous structure.
 
 - `**Notes:**` sub-bullets (`Implementation`, `Validation`, `Guardrail`)
 -->
-- `**Standards reference:** {grounded standard name and version} — {grounding file path}`, following the standards reference content contract
-- `**MSFT Reference:** [{title}]({url})`, following the Microsoft reference content contract, rendered only when a pattern resolves
-
-Do not render a severity field, a finding status field, or a priority policy ID and version in the finding body. Severity duplicates the priority risk label, a rendered finding is verified unless the conditional field says otherwise, and the priority policy identity is declared once above the Appendix A table while the priority rule ID resolves in that table.
 
 <!-- Disabled 2026-09-22 by customer report preference. Restore this line to reinstate the
 combined severity, finding status, and priority policy line.
 
 - `**Severity:** {severity} | **Finding status:** {status} | **Priority policy:** {policy ID} v{version}`
 -->
+
+<!-- Retired in 1.17.0 by customer report preference. Standards linkage remains in Standards Alignment.
 
 #### Standards reference content
 
@@ -523,6 +541,7 @@ Expected semantic rendering:
 ```markdown
 **Standards reference:** Spring Boot Confluent Kafka dependency standard v3.1.0 — `grounding/dependencies/springboot-confluent-kafka.md`
 ```
+-->
 
 #### Microsoft reference content
 
@@ -546,7 +565,7 @@ Expected semantic rendering:
 **MSFT Reference:** [Health Endpoint Monitoring pattern](https://learn.microsoft.com/azure/architecture/patterns/health-endpoint-monitoring)
 ```
 
-Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority). Apply the
+Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority) after applying the business-logic finding exclusion. Apply the
 same display ID everywhere, including cross-references.
 
 #### Notes content
@@ -560,8 +579,7 @@ information a reader cannot get from elsewhere in the report:
 
 Do not restate anything already rendered in another field or table:
 
-- Complexity, wave, and dependencies appear in the Implementation Roadmap tables
-- Release gates appear in the priority summary table
+- Complexity, wave, dependencies, and release gates remain in the Step 3A remediation plan
 - Approval requirements appear in the approval boundary
 - File counts, and any sentence explaining why testing detail is hidden, are omitted entirely
 
@@ -579,24 +597,25 @@ are unchanged by this rendering preference.
 
 The display ID is the only finding identifier permitted in the readable report body.
 
-Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, evidence IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs anywhere in section 1 through section 7 body content. They are internal workflow identifiers and interrupt customer-facing narrative.
+Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, evidence IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs anywhere in readable report content. They are internal workflow identifiers and interrupt customer-facing narrative.
 
 Apply these substitutions:
 
 - Reference another finding by its display ID, for example `Remediated together with P0-006`.
 - Express change dependencies through display IDs, for example `Depends on P0-002`.
-- State acceptance criteria and test obligations in prose rather than by test ID.
+- Do not render acceptance criteria or test obligations; they remain in the remediation plan.
 - Describe an open question, evidence gap, or targeted-discovery item by its substance rather than its identifier.
 - Render repository evidence through its path and exact excerpt rather than its evidence ID, because evidence IDs embed the Step 2 finding ID.
-- Declare the priority policy ID and version once above the Appendix A table. Resolve the priority rule ID per finding in Appendix A.
-- Omit the `Cross-refs` notes sub-bullet from the body. Its content belongs in Appendix A.
+- Do not render the priority policy ID, version, or priority rule ID.
+- Omit the `Cross-refs` notes sub-bullet.
 
-Record every suppressed identifier in Appendix A so traceability is preserved rather than lost. Suppression is presentation-only and must not change findings, priorities, evidence, control mappings, change mappings, or validation obligations.
+Suppressed identifiers remain authoritative in the Step 2 review and Step 3A plan. Suppression is presentation-only and must not change findings, priorities, evidence, control mappings, change mappings, or validation obligations.
 
-Hidden governance and conformance comment blocks are exempt and retain full identifiers.
+The assembly sidecar is exempt and retains full identifiers.
 
 Rules:
 - Preserve line numbers in `**File:**` when available.
+- Render every repository path relative to the assessed repository's own root, not the assessment workspace. When the Step 1 inventory records a `repository_root` such as `source`, remove that prefix from every rendered path, including `**File:**`, `*Target*` lines, links, and table cells. For example, render `source/src/main/resources/application.yml` as `src/main/resources/application.yml`. Path display is presentation-only; Step 2 and Step 3A paths are unchanged.
 - Use fenced code blocks with the correct language.
 - Every code block is an illustrative proposal.
 - Do not fabricate code when Step 3A requires targeted implementation discovery.
@@ -642,7 +661,7 @@ This list states what the Step 3A proposal record must contain. It is not a rend
 
 For generated proposals, render original source and illustrative proposed source as separate fenced blocks. Render explanation after the proposed block.
 
-For targeted discovery, render the status, specific reason, unresolved inputs, and intended behavior. Do not use a fenced code block and do not label narrative text as the fix implementation.
+For targeted discovery, render only the single italic `**Fix:**` line defined in the Required detailed finding content emit order. Do not render the status, reason, unresolved inputs, or intended behavior as separate fields. Do not use a fenced code block and do not present narrative text as code.
 
 An invalid or missing proposal status for an applicable target causes report conformance failure and requires Step 3A planning revision.
 
@@ -652,14 +671,16 @@ Include this notice in the Assessment Overview:
 
 > **IMPORTANT:** Hard numbers used for retry counts, timeout settings, interval timings, thread-pool sizes, cache duration, health thresholds, and circuit-breaker settings are examples unless the authoritative plan identifies an approved value. These values must be externally configurable and coordinated with application, mesh, gateway, and load-balancer budgets. All code snippets are illustrative proposals, not applied or prescriptive patches.
 
+The Illustrative-Code Notice subsection consists of this notice only. Do not add paragraphs, notes, or statements about test proposals, approval, execution, or review history unless this schema or report preferences explicitly specify them.
+
 Label every individual illustrative code proposal with its target, as a single italic line
 immediately above the code block:
 
 ```markdown
-*Target `source/src/main/resources/application.yml`:275-281.*
+*Target `src/main/resources/application.yml`:275-281.*
 ```
 
-Use `new target` when the proposal creates a file that does not exist yet.
+Use `*Target `{path}` (new file).*` when the proposal creates a file that does not exist yet.
 
 Do not repeat the illustrative disclaimer on each proposal. The Assessment Overview notice already
 states that every code snippet is an illustrative proposal, and restating it above every block
@@ -733,7 +754,7 @@ Render `ID` as a Markdown link to the finding's heading anchor, for example
 forces the reader to scroll and search, which defeats the table.
 
 `Remediated with` names the other display IDs that share a single remediation change, or `—` when
-the finding is remediated alone. Step 2 finding IDs and Step 3A change IDs belong in Appendix A, not in this matrix.
+the finding is remediated alone. Do not render Step 2 finding IDs or Step 3A change IDs in this matrix.
 
 Do not add a column that carries the same value on nearly every row. Severity duplicates the
 priority, status is verified for every rendered finding, and repository scope repeats the assessment
@@ -799,6 +820,11 @@ and Step 3A artifacts. Restore this block to reinstate the grounded-standards al
 Only grounded or approved references may be used.
 -->
 
+<!-- Retired in 1.17.0 by customer report preference. Do not render an Implementation Roadmap
+section. Priority, wave, complexity, dependency, release-gate, and targeted-discovery data remain
+authoritative in the Step 3A remediation plan. To restore, uncomment this contract, restore section 7
+in the required section order, template, manifest, and marker tables, and renumber Appendix A to 8.
+
 ## Implementation Roadmap content
 
 Required subsections:
@@ -807,7 +833,7 @@ Required subsections:
 - Implementation waves
 - Remediation index
 - Targeted implementation discovery
-<!--- Approval boundary -->
+- Approval boundary (disabled)
 
 Priority summary columns:
 
@@ -833,10 +859,15 @@ Remediation index columns:
 - Remediated with
 
 Use display IDs throughout the roadmap. Change IDs, finding IDs, and priority rule IDs belong in Appendix A.
+-->
+
+<!-- Retired in 1.17.0 by customer report preference. Do not render Appendix A. Internal workflow
+identifiers remain authoritative in the Step 2 review and Step 3A plan. To restore, uncomment this
+contract and restore the section in the required section order, template, manifest, and marker tables.
 
 ## Appendix A: Traceability
 
-Render Appendix A as the final section, after the Implementation Roadmap. It is the single location where internal workflow identifiers appear in readable content, so that sections 1 through 7 stay free of them while traceability is fully preserved.
+Render Appendix A as the final section. It is the single location where internal workflow identifiers appear in readable content, so that the other sections stay free of them while traceability is fully preserved.
 
 Render one row per finding included in the report scope, ordered by display ID.
 
@@ -861,24 +892,23 @@ Rules:
 - Appendix A is presentation-only. It must not add findings or alter priority, severity, status, evidence, control mappings, or change mappings.
 
 Precede the table with the authoritative Step 2 and Step 3A artifact paths so a reader can resolve any identifier to its source.
+-->
 
 ## Customer-facing vocabulary
 
-Sections 1 through 7 are written for the customer. Appendix A is the single place where internal
-workflow identifiers belong.
+All report sections are written for the customer. Internal workflow identifiers are not rendered
+in readable content.
 
-In sections 1 through 7, do not render:
+In every report section, do not render:
 
 - Workflow phase names such as `Step 1`, `Step 2`, `Step 3A`, or `Step 3B`. Name the artifact by what
   it is instead: the inventory, the assessment, the remediation plan.
 - Internal identifiers such as `F-001`, `CHANGE-AA-001`, `T-AA-001-01`, or `OQ-012`. Use the display
   ID, for example `P0-001`.
 - Paths into `.copilot-tracking/`.
-- Policy version strings inside prose. Declare a policy identity once, above the Appendix A table.
+- Policy version strings.
 
-Hidden governance, manifest, and conformance comment blocks are exempt; they are not rendered
-content. Grounding standard paths on the `**Standards reference:**` line are also exempt, because
-that line is the finding's provenance contract.
+The assembly sidecar is exempt; it is not part of the rendered report.
 
 ## Required exclusions
 
@@ -898,7 +928,7 @@ The report must not:
 
 ## Back-to-top links
 
-Include `[Back to Top](#top)` at the end of each numbered top-level section.
+Include `[Back to Top](#table-of-contents)` at the end of each numbered top-level section. Do not render an `<a id="top">` anchor.
 
 <!-- ## Schema-conformance metadata
 
@@ -913,7 +943,7 @@ Must contain:
 ## Illustrative proposed implementation
 Must contain:
 - Step 3A illustrative code
-- disclaimer that code is illustrative
+- no per-proposal disclaimer; the Assessment Overview notice covers it
 
 ## New Conformance Checks
 ```yaml
@@ -955,6 +985,8 @@ schema_conformance:
   finding_matrix_ids_are_anchor_links: true
   finding_matrix_column_count: 5
   per_proposal_illustrative_disclaimer_rendered: false
+  illustrative_code_notice_extra_content_rendered: false
+  workspace_root_prefix_rendered_in_paths: false
   workflow_phase_names_in_sections_1_to_7: 0
   internal_identifiers_in_sections_1_to_7: 0
   report_scope_subsection_rendered_only_when_filtered: true
@@ -971,14 +1003,18 @@ schema_conformance:
   finding_status_field_rendered: false
   finding_priority_policy_field_rendered: false
   conditional_findings_declare_conditions: true
-  standards_reference_html_wrapper_rendered: false
-  standards_reference_limited_to_violated_standards: true
-  priority_policy_declared_once_in_appendix_a: true
+  standards_reference_rendered: false
+  conditional_finding_field_rendered: false
+  targeted_discovery_extra_fields_rendered: false
+  # priority_policy_declared_once_in_appendix_a: true  # Retired in 1.17.0 with Appendix A.
   assessment_attributes_subsection_rendered: false
+  assessment_themes_subsection_rendered: false
+  multi_region_coverage_checklist_rendered: false
   assessment_attributes_table_rendered: false
   operating_scenario_subsection_rendered: false
   operating_scenario_table_rendered: false
   deployment_evolution_subsection_rendered: false
+  repo_scope_name_only: true
   source_locator_notice_rendered: false
   # Retired in 1.11.0. Superseded by report_header_block_rendered. Do not reintroduce.
   # migration_context_rendered: true
@@ -1004,12 +1040,12 @@ The report may be rendered as a priority-filtered view when `report_preferences.
 Rules:
 - `include_priorities` may contain only `P0`, `P1`, `P2`, and `P3` and must contain at least one unique value.
 - Filtering is a presentation operation only. It must not modify Step 2 findings, Step 3A priorities, finding IDs, change IDs, or authoritative artifacts.
-- Detailed recommendation sections, Summary Findings, Full Finding Matrix, and Implementation Roadmap must include only findings and changes mapped to the selected priorities.
+- Detailed recommendation sections, Summary Findings, and Full Finding Matrix must include only findings and changes mapped to the selected priorities.
 - Cross-references to excluded findings must remain identifiable as omitted references and must not be silently renumbered or reassigned.
 - Display IDs must remain deterministic from the complete authoritative finding set. Do not renumber selected findings merely because other priorities are omitted.
 - Evidence gaps and verified controls follow their independent inclusion preferences. They are not selected by remediation priority unless an authoritative priority exists.
-- The report title and metadata must identify the document as a filtered view. Because report metadata is rendered as a hidden block at the end, the readable title, the report header block, and the filtered-view summary line must carry this identification.
-- Assessment Overview must list included priorities, omitted priorities, context path/version, and the authoritative Step 2 and Step 3A artifact paths.
+- The report title and metadata must identify the document as a filtered view. Because report metadata is written to the assembly sidecar, the readable title, the report header block, and the filtered-view summary line must carry this identification.
+- Assessment Overview must list included and omitted priorities. Do not render context file paths, versions, or workflow artifact paths.
 - Filtering must not remove or alter the separate Current Deployment and Target Deployment header-block fields.
 - The report must state that omitted priorities remain in the authoritative assessment and remediation plan.
 - Filtered counts must reconcile to filtered sections and the filtered Full Finding Matrix. Do not label filtered counts as total assessment counts.
@@ -1033,9 +1069,28 @@ included_priorities_valid: true
 omitted_priorities_declared: true
 filtered_summary_counts_reconcile: true
 filtered_matrix_reconciles: true
-filtered_roadmap_reconciles: true
+# filtered_roadmap_reconciles: true  # Retired in 1.17.0 with the Implementation Roadmap section.
 excluded_findings_renumbered: false
 ``` -->
+
+### Business-logic finding exclusion
+
+The report excludes every finding whose remediation would change business logic. This is a presentation operation only. Step 2 findings and the Step 3A plan are unchanged, and excluded findings remain authoritative there.
+
+Rules:
+
+- Exclude a finding when any Step 3A `change_boundary.classification` for its mapped change targets is `business_logic_change`. Other classifications, including `mixed`, `partner_contract_change`, and `security_or_privacy_change`, are not excluded by this rule.
+- Apply the exclusion before assigning display IDs, so numbering stays sequential within each priority across the rendered findings.
+- Excluded findings do not appear in detailed recommendation sections, the Summary Findings Table, the Full Finding Matrix, Standards Alignment finding mappings, or any count.
+- Remove references to excluded findings from other findings, including `Remediated with` cells. Do not render an omitted-reference placeholder.
+- Exclude silently. Do not render a disclosure line, count, or note about excluded findings anywhere in readable content.
+- Record the excluded Step 2 finding IDs in the assembly sidecar's conformance block.
+
+```yaml
+business_logic_exclusion_applied: true
+excluded_business_logic_finding_ids: []
+business_logic_exclusion_disclosed_in_report: false
+```
 
 ### Repository-Agnostic Assessment Snapshot
 
@@ -1104,28 +1159,32 @@ Large reports must be assembled in bounded units rather than through one unbound
 
 1. Read and validate all authoritative inputs.
 2. Freeze report scope, selected findings, display IDs, categories, and change mappings.
-3. Create the assembly manifest.
-4. Initialize the final report with the governance block, the assembly manifest, the title, the report header block, and the table of contents.
+3. Create the assembly sidecar with the governance block and the assembly manifest.
+4. Initialize the report with the title, the report header block, and the table of contents.
 5. Append top-level sections in schema order.
 6. Append one complete detailed finding at a time.
-7. Append the Full Finding Matrix, Standards Alignment, and Implementation Roadmap.
-8. Append Appendix A: Traceability.
-9. Append the hidden report-metadata block.
-10. Append the final conformance block.
-11. Reopen and validate the completed report.
+7. Append the Full Finding Matrix and Standards Alignment. Do not append an Implementation Roadmap or Appendix A; both were retired in 1.17.0.
+8. Write the report-metadata block to the assembly sidecar.
+9. Reopen and validate the completed report.
+10. Apply final report sanitization.
+11. Write the conformance block to the assembly sidecar.
+
+#### Assembly sidecar
+
+Write all machine-readable assembly data to a YAML sidecar file beside the report, named `{report-basename}.assembly.yml`. For example, `09-09-2026-abc-microservice-code-level-resiliency-assessment.md` has the sidecar `09-09-2026-abc-microservice-code-level-resiliency-assessment.assembly.yml`. The sidecar identifies the governing schema, source artifacts, context, and applied report preferences for the report.
 
 #### Assembly block names
 
-The report carries four separate machine-readable blocks. Use these names exactly and do not merge them, because each has a different purpose and position.
+The sidecar carries four separate top-level blocks. Use these names exactly and do not merge them, because each has a different purpose.
 
-- **Governance block** — schema ID, version, path, and validation status. Written at the top during initialization.
-- **Assembly manifest** — frozen scope, display-ID map, and mutable assembly progress. Written at the top during initialization and required for recovery.
-- **Report-metadata block** — the required report metadata fields. Hidden, written near the end after Appendix A.
-- **Conformance block** — schema, assembly, and source-rendering conformance. Written last.
+- **Governance block** (`report_governance`) — schema ID, version, path, and validation status. Written during initialization.
+- **Assembly manifest** (`report_assembly_manifest`) — frozen scope, display-ID map, and mutable assembly progress. Written during initialization and required for recovery.
+- **Report-metadata block** (`report_metadata`) — the required report metadata fields. Written after Standards Alignment.
+- **Conformance block** (`schema_conformance`) — schema, assembly, sanitization, and source-rendering conformance. Written last.
 
 Only the assembly manifest's `assembly_status` changes during writing. Everything frozen in the assembly order remains fixed.
 
-The final deliverable remains one Markdown report. Temporary fragments are non-authoritative and must not replace the final report.
+The final deliverable is one Markdown report plus its assembly sidecar. Temporary fragments are non-authoritative and must not replace the final report.
 
 #### Required report assembly manifest
 
@@ -1144,8 +1203,8 @@ report_assembly_manifest:
     - evidence_gap_analysis
     - full_finding_matrix
     - standards_alignment
-    - implementation_roadmap
-    - appendix_traceability
+    # - implementation_roadmap  # Retired in 1.17.0.
+    # - appendix_traceability  # Retired in 1.17.0.
   assembly_status:
     report_initialized: false
     completed_sections: []
@@ -1154,11 +1213,11 @@ report_assembly_manifest:
     final_validation_complete: false
 ```
 
-The manifest controls assembly only. It must not alter findings, priorities, IDs, evidence, or roadmap mappings.
+The manifest controls assembly only. It must not alter findings, priorities, IDs, evidence, or change mappings.
 
-#### Stable invisible markers
+#### Stable assembly markers
 
-Use invisible HTML markers so recovery can identify completed units:
+Use HTML comment markers in the report during assembly so recovery can identify completed units:
 
 ```html
 <!-- section:assessment-overview -->
@@ -1166,7 +1225,7 @@ Use invisible HTML markers so recovery can identify completed units:
 <!-- section:full-finding-matrix -->
 ```
 
-Each expected marker must occur exactly once in the completed report.
+Each expected marker must occur exactly once in the report until final sanitization removes it.
 
 #### Required marker vocabulary
 
@@ -1176,10 +1235,13 @@ Document-level markers, in template order:
 
 | Order | Marker pair | Position |
 |-------|-------------|----------|
-| 1 | `report-governance:start` / `report-governance:end` | Before the H1 title |
-| 2 | `content:report-header:start` / `content:report-header:end` | After the H1 title, before the table of contents |
-| 3 | `report-metadata:start` / `report-metadata:end` | After Appendix A |
-| 4 | `schema-conformance:start` / `schema-conformance:end` | Last block in the report |
+| 1 | `content:report-header:start` / `content:report-header:end` | After the H1 title, before the table of contents |
+
+<!-- Retired in 1.17.0. These blocks moved to the assembly sidecar:
+| `report-governance:start` / `report-governance:end` | Before the H1 title |
+| `report-metadata:start` / `report-metadata:end` | After Standards Alignment |
+| `schema-conformance:start` / `schema-conformance:end` | Last block in the report |
+-->
 
 Each top-level section carries a single `section:` locator marker followed by a `content:` pair. Both use the same hyphenated slug:
 
@@ -1191,8 +1253,11 @@ Each top-level section carries a single `section:` locator marker followed by a 
 | 4. Repository and IaC Evidence Gap Analysis | `section:evidence-gap-analysis` | `content:evidence-gap-analysis` |
 | 5. Full Finding Matrix | `section:full-finding-matrix` | `content:full-finding-matrix` |
 | 6. Standards Alignment | `section:standards-alignment` | `content:standards-alignment` |
+
+<!-- Retired in 1.17.0:
 | 7. Implementation Roadmap | `section:implementation-roadmap` | `content:implementation-roadmap` |
 | 8. Appendix A: Traceability | `section:appendix-traceability` | `content:appendix-traceability` |
+-->
 
 Each detailed finding additionally carries `finding:{display-id}`, for example `finding:F-001`, rendered once at the start of that finding.
 
@@ -1208,8 +1273,11 @@ The assembly manifest `sections:` list uses underscore keys, while markers use h
 | `evidence_gap_analysis` | `evidence-gap-analysis` |
 | `full_finding_matrix` | `full-finding-matrix` |
 | `standards_alignment` | `standards-alignment` |
+
+<!-- Retired in 1.17.0:
 | `implementation_roadmap` | `implementation-roadmap` |
 | `appendix_traceability` | `appendix-traceability` |
+-->
 
 Marker vocabulary is structural. It must not change findings, priorities, evidence, control mappings, or scope.
 
@@ -1217,7 +1285,7 @@ Marker vocabulary is structural. It must not change findings, priorities, eviden
 
 After a recoverable request or file-write error:
 
-- Reopen the current report.
+- Reopen the current report and its assembly sidecar.
 - Inspect stable markers and the frozen assembly manifest.
 - Resume after the last completed section or finding.
 - Do not restart from the beginning.
@@ -1226,6 +1294,25 @@ After a recoverable request or file-write error:
 - Increment `recovery_count`.
 
 If report integrity cannot be proven, stop with conformance failed, preserve the partial report for diagnostics, identify the last completed unit, and do not claim successful completion.
+
+#### Final report sanitization
+
+After the completed report passes validation, remove every machine-oriented element from the report so it contains only readable Markdown:
+
+- Every HTML comment, including section, content, and finding markers, `prettier-ignore` directives, and any retired or governance comment.
+- Every HTML tag, including `<a id="...">`, `<span>`, and `<br>`. Use heading anchors for in-document links.
+- Schema IDs, schema versions, schema and grounding paths, `.copilot-tracking/` paths, and internal identifiers such as `F-001`, `CHANGE-AA-001`, or `T-AA-001-01`.
+
+Collapse blank lines left by removed comments to a single blank line. Then reopen the report and verify that no `<!--`, `-->`, or HTML tag remains outside fenced code blocks, and that every in-document link still resolves. Content inside fenced code blocks is source or proposal code and is not sanitized.
+
+Sanitization is presentation-only. It must not change findings, priorities, evidence, code blocks, or display IDs. If sanitization fails, set conformance to failed and do not claim completion.
+
+```yaml
+final_report_sanitized: true
+html_comments_in_final_report: 0
+html_tags_in_final_report: 0
+internal_identifiers_in_final_report: 0
+```
 
 #### Fingerprint display
 
@@ -1278,7 +1365,7 @@ Both qualified resiliency findings and retained non-resiliency findings are auth
 1. Resiliency-Focused Recommendations
 2. Non-Resiliency-Focused Recommendations
 
-Within the resiliency section, render P0, P1, P2, P3. Within the non-resiliency section, render P2, P3 only. Do not render non-resiliency P0 or P1 headings. Omit an empty priority heading only when no finding in that class has that priority. Do not mix finding classes. Both classes participate in Summary Findings, Full Finding Matrix, Standards Alignment, Implementation Roadmap, and Appendix A. Counts must reconcile by class and priority. Replace the legacy `Resiliency Related: Yes|No` derivation with the authoritative Step 2 `finding_classification.type`, rendered as Yes for `resiliency` and No for `non_resiliency`. Non-resiliency findings remain findings and receive Step 3A priority; they are not downgraded to observations.
+Within the resiliency section, render P0, P1, P2, P3. Within the non-resiliency section, render P2, P3 only. Do not render non-resiliency P0 or P1 headings. Omit an empty priority heading only when no finding in that class has that priority. Do not mix finding classes. Both classes participate in Summary Findings, Full Finding Matrix, and Standards Alignment. Counts must reconcile by class and priority. Replace the legacy `Resiliency Related: Yes|No` derivation with the authoritative Step 2 `finding_classification.type`, rendered as Yes for `resiliency` and No for `non_resiliency`. Non-resiliency findings remain findings and receive Step 3A priority; they are not downgraded to observations.
 
 schema_conformance_additions:
   qualification_policy_id: RESILIENCY-FINDING-QUALIFICATION
@@ -1301,6 +1388,6 @@ schema_conformance_additions:
 - Implementation steps, change specifications, code examples, acceptance tests, selector information, and detailed remediation procedures must not appear in the report body.
 ### Shared-service assessment-scope rendering contract
 
-Assessment Overview must include a shared-service scope summary sourced from the authoritative Step 1 inventory. Columns: Shared service, Repository usage, Assessment scope, Scope owner, Rationale. Out-of-scope, informational-only, and architecture-only records remain visible but are not findings. Informational observations receive no finding ID or P0-P3 priority. Non-in-scope scope records are excluded from finding counts, priority counts, detailed recommendation sections, the Full Finding Matrix, finding mappings in Standards Alignment, the Implementation Roadmap, Appendix A finding traceability, and implementation selectors. Architecture-only services may still explain processing chains, authoritative state, Kafka scenario selection, and cross-service relationships.
+Assessment Overview must include a shared-service scope summary sourced from the authoritative Step 1 inventory. Columns: Shared service, Repository usage, Assessment scope, Scope owner, Rationale. Out-of-scope, informational-only, and architecture-only records remain visible but are not findings. Informational observations receive no finding ID or P0-P3 priority. Non-in-scope scope records are excluded from finding counts, priority counts, detailed recommendation sections, the Full Finding Matrix, finding mappings in Standards Alignment, and implementation selectors. Architecture-only services may still explain processing chains, authoritative state, Kafka scenario selection, and cross-service relationships.
 
 
