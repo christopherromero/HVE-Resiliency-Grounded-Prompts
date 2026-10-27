@@ -303,7 +303,7 @@ Group findings under H3 category headings inside every priority section. Do not 
 
 Title the summary table `Summary Findings Table` exactly and end it with a bolded total row. Render the Full Finding Matrix with five columns, `ID`, `Priority`, `Category`, `Finding`, and `Remediated with`, and render each `ID` as a Markdown link to that finding's heading anchor.
 
-Keep every report section free of workflow phase names such as `Step 2` or `Step 3A`, internal identifiers such as `F-001` or `CHANGE-AA-001`, and `.copilot-tracking/` paths. Label each illustrative proposal with its target only, for example `*Target `path`:12-20.*`; do not repeat the illustrative disclaimer above each block, because the Assessment Overview notice already carries it. Omit the `Report Scope` subsection entirely when the report includes every governed priority.
+Write every report section for a reader who has only this report and the application source code, following the schema's customer-facing vocabulary rule. Never describe how the assessment was produced: no phase names, workflow artifacts such as "the inventory" or "the remediation plan", agent names such as Task Implementor, internal identifiers, policies, registries, scope keys, the architecture context file, or governance routing. This applies to prose, tables, notes, and comments inside proposal code blocks. State the underlying fact instead, for example "This call site currently uses `save`". Label each illustrative proposal with its target only, for example `*Target `path`:12-20.*`; do not repeat the illustrative disclaimer above each block, because the Assessment Overview notice already carries it. Omit the `Report Scope` subsection entirely when the report includes every governed priority.
 
 When `MICROSOFT_PATTERN_REGISTRY` is supplied and its lifecycle status is approved, resolve one pattern per finding using the registry's `resolution_order`: discard `standards_alignment_only` patterns, score each remaining pattern by how many of the finding's cited controls it matches through `applies_to_controls` or `applies_to_control_families`, prefer the highest score, then the lowest `precedence`, then `pattern_id`. Render the `Standards Alignment` section body as the Microsoft pattern table with `Pattern`, `Status`, and `Findings` columns, deriving `Status` from the findings rather than from the registry. Keep the section heading exactly `## Standards Alignment`; the template and report validator depend on that string. Never invent a Microsoft URL, never add a locale segment to a registry URL, and never cite a `standards_alignment_only` pattern as a per-finding reference. When the registry is absent, unreadable, or not approved, keep the `Standards Alignment` section, render the schema's no-registry statement in place of the Microsoft pattern table, and omit every `**MSFT Reference:**` line rather than substituting invented links.
 
@@ -691,9 +691,11 @@ report_finding_selection:
 
 Add the selected and omitted priority lists, finding/change counts, and frozen selection record to the assembly sidecar's conformance block and `03B-report-summary.yml`. Validate that filtered summary, matrix, and detailed sections reconcile exactly. A mismatch causes report conformance failure.
 
-## Business-Logic Finding Exclusion
+## Excluded Findings
 
-Follow the schema's business-logic finding exclusion rule. Before freezing display IDs, exclude every finding whose mapped Step 3A change targets include `change_boundary.classification: business_logic_change`. Exclude silently: render no disclosure, count, or placeholder, and remove references to excluded findings from other findings. Record the excluded finding IDs only in the assembly sidecar and `03B-report-summary.yml`.
+Follow the schema's Excluded findings rule. Before freezing display IDs, exclude every finding whose mapped change resolves no governed priority rule (governance-blocked) and therefore has no P0–P3 priority.
+
+Exclude silently: render no disclosure, count, or placeholder, and remove references to excluded findings from other findings, the Coverage bullet, and evidence-gap cells. Record the excluded finding IDs only in the assembly sidecar and `03B-report-summary.yml`.
 
 This exclusion is presentation-only. It does not suppress, reclassify, or reprioritize findings in the Step 2 review or Step 3A plan, so it does not conflict with the resiliency finding qualification policy.
 
@@ -776,6 +778,8 @@ All report sections are customer-facing narrative and must not contain internal 
 
 Do not emit Step 2 finding IDs, Step 3A change IDs, test IDs, control IDs, priority rule IDs, open-question IDs, evidence-gap IDs, or targeted-discovery IDs in body content. Reference findings, dependencies, and consolidation through display IDs. State test obligations, open questions, evidence gaps, and discovery items in prose. Omit the `Cross-refs` notes sub-bullet.
 
+Step 3A proposal code and `narrative_explanation` text may contain workflow references, such as `// cited by Step 2 F-004` or "if Task Implementor finds `ops.insert`". Rewrite them when rendering: keep the technical meaning and drop the workflow reference. Never alter code statements or original source excerpts.
+
 Suppressed identifiers remain authoritative in the Step 2 review and Step 3A plan. Suppression is presentation-only and must not change findings, priorities, severity, status, evidence, control mappings, change mappings, or validation obligations.
 
 The assembly sidecar retains full identifiers and is exempt.
@@ -841,7 +845,7 @@ After writing, reopen the report and verify:
 - Original-source fenced blocks match Step 2 exactly.
 - Final schema and assembly conformance are passed.
 
-Then apply the schema's final report sanitization: remove every HTML comment and HTML tag, schema reference, and internal identifier outside fenced code blocks. Reopen the report and verify none remain and every in-document link still resolves. Record the result in the sidecar's conformance block.
+Then apply the schema's final report sanitization: remove every HTML comment and HTML tag, schema reference, internal identifier, and customer-facing vocabulary violation, including workflow references in comments inside proposal code blocks. Do not alter original source excerpts or code statements. Reopen the report and search it, including proposal code comments, for phase names (`Step 1`–`Step 5`), agent names (`Task Researcher`, `Task Planner`, `Task Implementor`, `Task Reviewer`), workflow artifacts (the inventory, the review, the remediation plan, handoff), and governance phrases (prioritization policy, priority decision, architecture governance, architecture context, scope key, canonical identifier, registry). Verify none remain outside the filtered-view `Report Scope` statement, and that every in-document link still resolves. Record the result in the sidecar's conformance block.
 
 Successful Step 3B completion requires a complete validated final report, not a partial file or report text that exists only in chat.
 
@@ -885,5 +889,5 @@ Preserve all findings, priorities, classifications, and matrix entries.
 
 ### Shared-Service Assessment Scope Reporting
 
-Render the authoritative Step 1 scope summary within Assessment Overview. Show service, production-use status, assessment scope, scope owner, and rationale. Render out-of-scope, informational-only, and architecture-only services as scope/context records, never as findings. They receive no finding ID or priority and are excluded from finding counts, the Full Finding Matrix, Standards Alignment finding mappings, and implementation selectors. Preserve architecture relationships needed to explain in-scope findings.
+Render the authoritative Step 1 scope summary within Assessment Overview. Show service, production-use status, assessment scope, scope owner, and rationale, written in plain language per the schema's shared-service rendering contract: no scope keys, canonical identifiers, registries, architecture context references, default-scope notes, or governance routing. Render out-of-scope, informational-only, and architecture-only services as scope/context records, never as findings. They receive no finding ID or priority and are excluded from finding counts, the Full Finding Matrix, Standards Alignment finding mappings, and implementation selectors. Preserve architecture relationships needed to explain in-scope findings.
 

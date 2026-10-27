@@ -242,7 +242,7 @@ Assessment Overview opens directly with one or two short narrative paragraphs de
 Render the bullets in this order, omitting any bullet whose facts are unavailable or not applicable:
 
 1. **Stack and runtime:** language, framework, and runtime platform.
-2. **Assessment basis:** the approved architecture context and the enabled assessment domains. Do not render file paths, versions, or snapshot identifiers.
+2. **Assessment basis:** which assessment areas were and were not assessed, in plain terms. Do not mention the architecture context, file paths, versions, snapshot identifiers, or "enabled" settings.
 3. **Coverage:** standards evaluated, controls evaluated, verified and conditional finding counts, and confirmed dependencies.
 4. **Operating scenario:** rendered only when an applicable dependency standard defines an operating scenario, following the applicable operating-scenario reporting contract, such as Kafka scenario reporting.
 
@@ -261,10 +261,10 @@ Expected semantic rendering:
 
 {One or two short paragraphs describing the application and what was assessed.}
 
-- **Stack and runtime:** Java 17, Spring Boot servlet web; JVM on AKS container per approved architecture context.
-- **Assessment basis:** Workspace snapshot `{identifier}`; architecture context `application-context/application-architecture-context.yml` v3.0.0 (approved); application code and application configuration enabled.
+- **Stack and runtime:** Java 17, Spring Boot servlet web; JVM on AKS containers.
+- **Assessment basis:** Application code and configuration assessed; container build, CI/CD, deployment configuration, and infrastructure as code not assessed.
 - **Coverage:** 1 master and 5 dependency standards, 181 control results across 144 applicable controls, 23 verified and 0 conditional findings; confirmed dependencies are Azure SQL, Confluent Kafka, HTTP clients, Azure API Management, and the JVM runtime.
-- **Operating scenario:** Kafka `active_standby` from approved architecture context v3.0.0; single-active regional processing with non-idempotent external side effects and no Kafka-backed authoritative state. Classifies application behavior only; deployed Kafka topology was not validated.
+- **Operating scenario:** Kafka active-standby; single-active regional processing with non-idempotent external side effects and no Kafka-backed authoritative state. Describes application behavior only; deployed Kafka topology was not validated.
 ```
 
 <!-- Retired in 1.11.0; superseded by the report header block rendering contract.
@@ -415,8 +415,7 @@ In the non-resiliency section:
 Use an em dash. `N` is the finding count in that heading's section and class.
 
 Never render a governance state as a priority heading. A change that resolves no governed priority
-rule is governance-blocked, which is a Step 3A condition recorded in the remediation plan,
-not a customer-facing priority group.
+rule is governance-blocked; its finding is excluded from the report under the Excluded findings rule.
 
 The `{risk label}` in the finding's `**Priority:**` field is the same label without the count and
 without the `(Non-Resiliency)` suffix, for example `**Priority: P1 - High Priority Resiliency**`.
@@ -565,7 +564,7 @@ Expected semantic rendering:
 **MSFT Reference:** [Health Endpoint Monitoring pattern](https://learn.microsoft.com/azure/architecture/patterns/health-endpoint-monitoring)
 ```
 
-Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority) after applying the business-logic finding exclusion. Apply the
+Derive the display ID as `{PRIORITY}-{NNN}` (sequential within priority) after applying the Excluded findings rule. Apply the
 same display ID everywhere, including cross-references.
 
 #### Notes content
@@ -734,6 +733,8 @@ Columns:
 
 Absence of infrastructure evidence must not be reported as infrastructure noncompliance.
 
+Evidence-gap rows describe facts about the deployed system or its external dependencies. Do not render rows about the assessment's own inputs, such as architecture context completeness or consistency, approval metadata, or scope-key validity; record those in the assembly sidecar. Write `Related findings or assumptions` cells as display IDs, a short plain assumption, or `—`, never as a governance routing note.
+
 <!--### PCF exclusion
 
 Include:
@@ -896,17 +897,29 @@ Precede the table with the authoritative Step 2 and Step 3A artifact paths so a 
 
 ## Customer-facing vocabulary
 
-All report sections are written for the customer. Internal workflow identifiers are not rendered
-in readable content.
+Write every report section for a reader who has only this report and the application source code.
+The reader has no access to the assessment workflow, its artifacts, or the framework that produced
+the report. Describe the application, its risks, and the fixes. Never describe how the assessment was
+produced.
 
-In every report section, do not render:
+In every report section, including prose, tables, and comments inside proposal code blocks, do not
+render or paraphrase:
 
-- Workflow phase names such as `Step 1`, `Step 2`, `Step 3A`, or `Step 3B`. Name the artifact by what
-  it is instead: the inventory, the assessment, the remediation plan.
-- Internal identifiers such as `F-001`, `CHANGE-AA-001`, `T-AA-001-01`, or `OQ-012`. Use the display
-  ID, for example `P0-001`.
-- Paths into `.copilot-tracking/`.
-- Policy version strings.
+- Workflow phases, such as `Step 1`, `Step 2`, `Step 3A`, or `Step 3B`, or "phase".
+- Workflow artifacts, such as the inventory, the review, the findings record, the remediation plan,
+  a handoff, or a proposal record. State the underlying fact directly instead: write "This call
+  site currently uses `save`", not "The inventory records this site as a save".
+- Agents or roles in the workflow, such as Task Researcher, Task Planner, Task Implementor, or Task
+  Reviewer. Write "the implementer" or address the reader directly when an action is needed.
+- Internal identifiers, such as `F-001`, `CHANGE-AA-001`, `T-AA-001-01`, `OQ-012`, control IDs, or
+  priority rule IDs. Use the display ID, for example `P0-001`.
+- Governance and framework mechanics, such as prioritization policies, policy or rule versions,
+  registries, scope keys, canonical service identifiers, the architecture context file, approval
+  metadata, "routed to architecture governance", or "awaiting a priority decision".
+- Paths into `.copilot-tracking/`, `grounding/`, or `application-context/`.
+
+The only permitted reference to the wider assessment is the filtered-view `Report Scope` statement
+that omitted findings remain in the full assessment and remediation plan.
 
 The assembly sidecar is exempt; it is not part of the rendered report.
 
@@ -1027,7 +1040,7 @@ schema_conformance:
 
 ### Kafka scenario reporting
 
-When Kafka is applicable, render the scenario as the single **Operating scenario** bullet defined by the Assessment Overview opening contract. The bullet must state the scenario, its source, the regional processing model, and the authoritative state position, and it must close with the one-line caveat that the scenario classifies application behavior only and that deployed Kafka topology was not validated. When the scenario is inferred rather than supplied by approved context, or when it is `unresolved`, the bullet must also state that architecture confirmation is required.
+When Kafka is applicable, render the scenario as the single **Operating scenario** bullet defined by the Assessment Overview opening contract. The bullet must state the scenario in plain words (for example, active-standby), whether it is approved or inferred, the regional processing model, and the authoritative state position, and it must close with the one-line caveat that the scenario describes application behavior only and that deployed Kafka topology was not validated. Do not render policy IDs, rule IDs, context versions, or raw enum values such as `active_standby`. When the scenario is inferred rather than supplied by approved context, or when it is `unresolved`, the bullet must also state that architecture confirmation is required.
 
 Allowed scenarios: `active_standby`, `independent_regional_active_active`, `database_independent_kafka`, and `unresolved`. Database-independent must not be presented as automatically stateless or multi-active.
 
@@ -1073,23 +1086,22 @@ filtered_matrix_reconciles: true
 excluded_findings_renumbered: false
 ``` -->
 
-### Business-logic finding exclusion
+### Excluded findings
 
-The report excludes every finding whose remediation would change business logic. This is a presentation operation only. Step 2 findings and the Step 3A plan are unchanged, and excluded findings remain authoritative there.
+The report excludes findings that have no governed priority. This is a presentation operation only. Step 2 findings and the Step 3A plan are unchanged, and excluded findings remain authoritative there.
 
 Rules:
 
-- Exclude a finding when any Step 3A `change_boundary.classification` for its mapped change targets is `business_logic_change`. Other classifications, including `mixed`, `partner_contract_change`, and `security_or_privacy_change`, are not excluded by this rule.
+- Exclude a finding whose mapped change resolves no governed priority rule (governance-blocked) and therefore has no P0–P3 priority.
 - Apply the exclusion before assigning display IDs, so numbering stays sequential within each priority across the rendered findings.
-- Excluded findings do not appear in detailed recommendation sections, the Summary Findings Table, the Full Finding Matrix, Standards Alignment finding mappings, or any count.
-- Remove references to excluded findings from other findings, including `Remediated with` cells. Do not render an omitted-reference placeholder.
+- Excluded findings do not appear in detailed recommendation sections, the Summary Findings Table, the Full Finding Matrix, Standards Alignment finding mappings, the Coverage bullet, or any count.
+- Remove references to excluded findings from other findings, including `Remediated with` cells, and from evidence-gap `Related findings` cells. Render `—` when no rendered finding remains in a cell. Do not render an omitted-reference placeholder.
 - Exclude silently. Do not render a disclosure line, count, or note about excluded findings anywhere in readable content.
 - Record the excluded Step 2 finding IDs in the assembly sidecar's conformance block.
 
 ```yaml
-business_logic_exclusion_applied: true
-excluded_business_logic_finding_ids: []
-business_logic_exclusion_disclosed_in_report: false
+excluded_unprioritized_finding_ids: []
+finding_exclusion_disclosed_in_report: false
 ```
 
 ### Repository-Agnostic Assessment Snapshot
@@ -1129,7 +1141,7 @@ Required Assessment Overview notice:
 
 -->
 
-Assessment Overview must not render a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative. Snapshot identity stays in the opening **Assessment basis** bullet, and locator semantics stay with each finding's source locator.
+Assessment Overview must not render a Source Locator Notice subsection, an advisory-line-numbers notice, or a snapshot-provenance narrative. Snapshot identity stays in the assembly sidecar, and locator semantics stay with each finding's source locator.
 
 <!-- Disabled 2026-09-21 by customer report preference. Per finding snapshot rendering is
 suppressed; snapshot identity remains in the Assessment Overview opening bullets and in the
@@ -1302,16 +1314,26 @@ After the completed report passes validation, remove every machine-oriented elem
 - Every HTML comment, including section, content, and finding markers, `prettier-ignore` directives, and any retired or governance comment.
 - Every HTML tag, including `<a id="...">`, `<span>`, and `<br>`. Use heading anchors for in-document links.
 - Schema IDs, schema versions, schema and grounding paths, `.copilot-tracking/` paths, and internal identifiers such as `F-001`, `CHANGE-AA-001`, or `T-AA-001-01`.
+- Any wording that violates the customer-facing vocabulary rule, in prose, tables, and notes. Rewrite the sentence to state the underlying fact, or remove it when no customer-relevant fact remains.
+- Workflow references inside comments in proposal code blocks under `**Fix:**`, such as `// cited by Step 2 F-004` or `// use INSERT if Task Implementor finds ops.insert`. Keep the technical part of the comment, for example `// Cosmos DB for MongoDB "request rate is large" error code.`, and remove the comment line when nothing technical remains.
 
-Collapse blank lines left by removed comments to a single blank line. Then reopen the report and verify that no `<!--`, `-->`, or HTML tag remains outside fenced code blocks, and that every in-document link still resolves. Content inside fenced code blocks is source or proposal code and is not sanitized.
+Never modify original source excerpts under `**File:**`; they must match the repository exactly. Never change code statements in proposal blocks; only comments are sanitized.
 
-Sanitization is presentation-only. It must not change findings, priorities, evidence, code blocks, or display IDs. If sanitization fails, set conformance to failed and do not claim completion.
+Collapse blank lines left by removed comments to a single blank line. Then reopen the report and verify that:
+
+- No `<!--`, `-->`, or HTML tag remains outside fenced code blocks.
+- No phase name, workflow artifact reference, agent name, internal identifier, or governance phrase from the customer-facing vocabulary rule remains anywhere, including proposal code comments.
+- Every in-document link still resolves.
+
+Sanitization is presentation-only. It must not change findings, priorities, evidence, code statements, or display IDs. If sanitization fails, set conformance to failed and do not claim completion.
 
 ```yaml
 final_report_sanitized: true
 html_comments_in_final_report: 0
 html_tags_in_final_report: 0
 internal_identifiers_in_final_report: 0
+workflow_references_in_final_report: 0
+workflow_references_in_proposal_code_comments: 0
 ```
 
 #### Fingerprint display
@@ -1389,5 +1411,7 @@ schema_conformance_additions:
 ### Shared-service assessment-scope rendering contract
 
 Assessment Overview must include a shared-service scope summary sourced from the authoritative Step 1 inventory. Columns: Shared service, Repository usage, Assessment scope, Scope owner, Rationale. Out-of-scope, informational-only, and architecture-only records remain visible but are not findings. Informational observations receive no finding ID or P0-P3 priority. Non-in-scope scope records are excluded from finding counts, priority counts, detailed recommendation sections, the Full Finding Matrix, finding mappings in Standards Alignment, and implementation selectors. Architecture-only services may still explain processing chains, authoritative state, Kafka scenario selection, and cross-service relationships.
+
+Write every cell in plain language for the customer-facing vocabulary rule. `Repository usage` states what the repository shows, for example `Used in production code and configuration` or `Not used in the repository`. `Rationale` states why the service was or was not assessed, for example `Assessed in this review` or `Assessed separately by the database platform team`. Do not mention scope keys, canonical identifiers, registries, the architecture context file, default scopes, or governance routing. Render `Not provided` for an unknown scope owner.
 
 
