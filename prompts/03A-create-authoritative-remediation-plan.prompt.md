@@ -451,6 +451,7 @@ Rules:
 - `illustrative_code_status: generated` requires non-empty `illustrative_code` containing code or configuration syntax appropriate to `source_language`.
 - A sentence that describes an action is not code and must not be placed in `illustrative_code`.
 - `narrative_explanation` supplements code; it must not replace code when the code-required condition is satisfied.
+- Write `illustrative_code` comments and `narrative_explanation` for an application developer who has only the source code. Describe what the code does and why. Do not reference workflow phases (`Step 2`), finding, change, evidence, or control IDs (`F-004`), agents (`Task Implementor`), or workflow artifacts ("the inventory records"). Write "Use `INSERT` instead if this call site uses `ops.insert`", not "use INSERT if Task Implementor finds ops.insert". Traceability belongs in the structured fields, such as `replaces_or_updates_evidence_ids`.
 - `targeted_discovery_required` is permitted only when a specific unresolved repository or API fact prevents a responsible example.
 - `not_applicable` is permitted only when the remediation is documentation-only or has no source, configuration, build, or test target.
 - Preserve one proposal per target when a change affects multiple files or symbols.
