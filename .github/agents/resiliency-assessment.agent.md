@@ -3,7 +3,7 @@ name: Resiliency Assessment
 description: 'Run GPT-6.1 Sol resiliency assessments through HVE agents with an explicit implementation approval gate.'
 model: 'GPT-6.1 Sol (copilot)'
 disable-model-invocation: true
-tools: [vscode, execute, read, agent, search]
+tools: [vscode, execute, read, edit, agent, search]
 agents:
   - Task Researcher
   - Task Reviewer
