@@ -543,6 +543,12 @@ Resolve per-service scope from `architecture_context.shared_service_assessment_s
 
 
 
+## MongoDB Provider Scope and Atlas Global Cluster Scenario
+
+Resolve MongoDB driver integrations through `provider_aware_scope_binding` in `grounding/governance/shared-service-assessment-scope-schema.yml`. Native MongoDB/Atlas uses canonical service scope `mongodb`; Cosmos Mongo RU/vCore uses `cosmosdb` while retaining MongoDB driver controls. Cosmos Java SDK/API for NoSQL uses the Cosmos standard. Scope and operating/connectivity contracts follow service identity, not driver choice. Preserve per-integration bindings through all phases and never apply an Atlas exclusion to Cosmos Mongo coverage. `mongo-atlas` is not a canonical service key.
+
+The only supported Atlas/Kafka target is Atlas Global Cluster with independent regional active-active Kafka under `grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml` and Kafka Rule 006. An approved zone/shard, consistency, identity, mirroring, and completion/recovery contract is required. Each shard replica set has one writable primary; do not infer unrestricted local writes or availability through every regional partition. Draft samples are not approvals. Both services must be in scope for joint findings. Preserve scenario and provider-binding records in handoffs without downstream recalculation. Missing deployed evidence is a gap, never an infrastructure finding.
+
 ## DSE Cassandra and Kafka Active-Active Scenario
 
 When approved context selects DSE Cassandra authoritative state with DSE and Kafka active-active targets, preserve the DSE scenario, Kafka scenario, local-affinity contracts, topic-mirroring contract, consistency contract, and scope through all phases. Do not infer deployed topology from code, and do not invent conflict resolution or business uniqueness rules.

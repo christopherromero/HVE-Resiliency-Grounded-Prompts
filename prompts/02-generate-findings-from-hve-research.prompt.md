@@ -188,8 +188,8 @@ dependency_context:
   context_id: <id-or-not_applicable>
   context_version: <version-or-not_applicable>
   scenario_policy_id: KAFKA-OPERATING-SCENARIO
-  scenario_policy_version: "3.3.0"
-  scenario_rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004|KAFKA-SCENARIO-005
+  scenario_policy_version: "3.4.0"
+  scenario_rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004|KAFKA-SCENARIO-005|KAFKA-SCENARIO-006
   scenario_validation_status: consistent|inferred|conditionally_inferred|conflict|insufficient_evidence
   architecture_confirmation_required: true|false
   processing_model: <value-or-not_applicable>
@@ -513,6 +513,12 @@ Use `grounding/governance/resiliency-finding-qualification-policy.yml` version 1
 ### Phase-specific rule
 For every emitted finding, populate the complete finding_classification contract. Retain not-qualified violations as non_resiliency findings.
 
+
+## Atlas Global Cluster and Kafka Evaluation Gate
+
+Preserve Step 1 `mongodb_scope_bindings` and `atlas_kafka_scenario` without recalculation. Apply MongoDB driver controls under each recorded service key: native/Atlas `mongodb`, Cosmos Mongo RU/vCore `cosmosdb`. Do not substitute Cosmos SDK controls for Mongo driver behavior or suppress Cosmos Mongo findings because Atlas is excluded. Unknown providers and stale/missing bindings require an inventory exception and separate Step 1 refresh, not scope expansion.
+
+For consistently resolved Rule 006, read `grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml`. Evaluate its joint controls only when both services are in scope. KAFKA-AA-005 and MONGO-012 are not applicable to Atlas; interpret KAFKA-AA-006 using Atlas elections and approved shard/zone behavior, not Cosmos conflicts. Common controls remain independently assessable for an in-scope service. Missing target approvals/contracts make affected controls not_assessed; missing deployed evidence is a gap, not noncompliance. Repository defects still require exact evidence, qualification, and root-cause deduplication.
 
 ## DSE Cassandra and Kafka Active-Active Evaluation Gate
 

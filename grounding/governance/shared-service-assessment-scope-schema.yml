@@ -1,5 +1,5 @@
 ---
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: shared_service_assessment_scope_schema
 schema_id: SHARED-SERVICE-ASSESSMENT-SCOPE
 lifecycle_status: active
@@ -51,6 +51,24 @@ scope_definitions:
 service_entry_schema:
   required_fields: [assessment_scope, rationale, scope_owner]
   optional_fields: [external_assessment_reference, limitations, lifecycle_status, approved_by, approved_at]
+provider_aware_scope_binding:
+  standard_id: SPRINGBOOT-MONGODB
+  resolve_per: production_integration
+  variant_to_service_key:
+    native_mongodb: mongodb
+    cosmos_mongo_ru: cosmosdb
+    cosmos_mongo_vcore: cosmosdb
+  unknown_provider_behavior: {evaluation_status: not_assessed, route_to: architecture_governance_review}
+  output_fields: [integration_id, standard_id, api_variant, service_key, assessment_scope, scope_source, evidence_refs]
+  rules:
+    - Service identity selects scope; the API and driver select the behavior standard.
+    - Bind Cosmos Mongo integrations to cosmosdb scope and operating/connectivity contracts, not mongodb scope.
+    - Bind native MongoDB integrations, including Atlas, to mongodb scope and operating/connectivity contracts.
+    - A MongoDB URI scheme alone does not establish Atlas, the provider, or deployed topology.
+    - Resolve each integration independently when Atlas and Cosmos Mongo coexist; never apply one provider's scope to all MongoDB driver use.
+    - Preserve the resolved Cosmos variant and its provenance from Step 1; do not recalculate it downstream.
+    - Unknown or conflicting provider evidence must not fall through to default in_scope.
+    - mongo-atlas is not a canonical service key; migrated Atlas exclusions use mongodb without changing their scope value.
 consistency_rules:
   - rule_id: SCOPE-001
     rule: Only in_scope services may generate findings, priorities, remediation, or implementation work.
@@ -91,3 +109,8 @@ dse_kafka_active_active_scope_rule:
   required_in_scope_services: [dse-cassandra, confluent-kafka]
   partial_scope_behavior: architecture_reasoning_only
   scenario_specific_findings_when_partial_scope: prohibited
+atlas_kafka_active_active_scope_rule:
+  required_in_scope_services: [mongodb, confluent-kafka]
+  partial_scope_behavior: architecture_reasoning_only
+  scenario_specific_findings_when_partial_scope: prohibited
+  independent_in_scope_common_controls: evaluate_when_repository_evidence_available

@@ -662,6 +662,10 @@ Before implementing each resolved change, verify from frozen Step 1 and Step 3A 
 
 
 
+## Atlas Global Cluster and Kafka Implementation Guardrail
+
+Preserve frozen `mongodb_scope_bindings` and `atlas_kafka_scenario` from Step 3A. Implement only approved change IDs and their mapped repository targets. Do not change service scope, provider, shard keys, zone ownership, uniqueness, consistency, Kafka topology/topic ownership, or completion/recovery semantics without explicit plan authorization and architecture approval. Do not provision Atlas, change live mirroring, or edit external configuration mirrors as remediation. Retain stable control/finding IDs, identity, redaction, and the approved database/Kafka recovery contract. Record exact plan-required validation, including failures and unverified external dependencies.
+
 ## DSE Cassandra and Kafka Active-Active Implementation Guardrail
 
 Implement only approved change IDs. Preserve consistency semantics, business identity, mutation behavior, Kafka contracts, and external side effects. Do not add custom conflict resolution, new uniqueness rules, or synchronous cross-region dual writes without approved architecture and business decisions.

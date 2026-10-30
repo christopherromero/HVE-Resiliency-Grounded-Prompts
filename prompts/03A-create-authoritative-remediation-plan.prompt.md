@@ -1107,6 +1107,10 @@ Before creating each change, verify that every shared service affected by the so
 
 
 
+## Atlas Global Cluster and Kafka Planning Boundary
+
+Preserve `mongodb_scope_bindings` and `atlas_kafka_scenario` from authoritative inputs, including policy version, source/target contracts, unresolved inputs, and scope. Plan only in-scope evidence-backed findings under existing priority governance. Atlas and Cosmos Mongo retain their own service scopes even when sharing MongoDB control IDs. Do not invent shard keys, geographic ownership, business uniqueness, consistency levels, deduplication stores, outbox/CDC products, or recovery objectives. Mark only the unsupported implementation target targeted_discovery_required; supported client, identity, deadline, lifecycle, and test proposals may proceed. Architecture-changing or business-semantic proposals require explicit approval. Include approved joint failure cases and validation commands in the plan.
+
 ## DSE Cassandra and Kafka Active-Active Planning Boundary
 
 Plan behavior-preserving remediation for local affinity, configuration injection, bounded recovery, stable identity, duplicate/replay safety, and testing. Do not invent Cassandra conflict resolution, business uniqueness, custom cross-region dual writes, or workflow changes. Approval is required for changes to consistency, LWT semantics, timestamp ownership, or business reconciliation.
