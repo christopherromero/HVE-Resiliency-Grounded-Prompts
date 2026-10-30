@@ -1,5 +1,5 @@
 ---
-schema_version: 3.1.0
+schema_version: 3.2.0
 document_type: dependency_behavior
 service: confluent-kafka
 service_name: Confluent Kafka Multi-Region
@@ -266,9 +266,33 @@ controls:
   - duplicate event
   - different order
   - regional outage
-  - Cosmos conflict
+  - provider-specific concurrent state updates
   finding_when: tests do not prove local autonomy, duplicate tolerance, ordering behavior,
-    Cosmos conflict safety, and recovery for independent clusters
+    approved provider-specific state safety, and recovery for independent clusters
+  emit_on_failure: true
+- id: KAFKA-ATLAS-001
+  title: Atlas completion and Kafka progress have an approved recovery boundary
+  severity: critical
+  category: consistency
+  applies_when: KAFKA-SCENARIO-006 is consistently resolved and mongodb and confluent-kafka are in_scope
+  evidence_patterns: [acknowledgment, offset commit, stable operation id, reconciliation, transaction outcome]
+  finding_when: offsets advance before required Atlas work is durable, or ambiguous/partial completion can lose or duplicate a business effect without the approved recovery mechanism
+  emit_on_failure: true
+- id: KAFKA-ATLAS-002
+  title: Regional topic ownership and mirroring preserve writable paths and lineage
+  severity: critical
+  category: messaging
+  applies_when: KAFKA-SCENARIO-006 is consistently resolved and mongodb and confluent-kafka are in_scope
+  evidence_patterns: [topic ownership, origin cluster, stable event id, mirror topic, replication direction]
+  finding_when: repository routing publishes to a read-only mirror, republishes mirrored events in a loop, or violates the approved ownership and replication contract
+  emit_on_failure: true
+- id: KAFKA-ATLAS-003
+  title: Joint recovery tests cover Atlas elections and independent Kafka clusters
+  severity: critical
+  category: testing
+  applies_when: KAFKA-SCENARIO-006 is consistently resolved and mongodb and confluent-kafka are in_scope
+  evidence_patterns: [primary election, two Kafka clusters, ambiguous write, replay, mirroring interruption, recovery]
+  finding_when: repository tests omit applicable joint failure cases required by the approved Atlas/Kafka recovery contract
   emit_on_failure: true
 - id: KAFKA-AS-001
   title: Only the active regional role produces and consumes authoritative workloads
@@ -393,16 +417,18 @@ controls:
   finding_when: tests do not cover partial ordering, stale-active fencing, offset
     restoration, duplicate replay, both-active/both-inactive, and reverse failback
   emit_on_failure: true
-scenario_policy: assessment/grounding/governance/kafka-operating-scenario-policy.yml
+scenario_policy: grounding/governance/kafka-operating-scenario-policy.yml
 supported_operating_scenarios:
   independent_regional_active_active:
     description: Two independent regional Kafka clusters; regional applications normally
-      use only their local cluster; database alignment is Cosmos DB for MongoDB RU
-      with multi-region writes and no authoritative Azure SQL.
+      use their local cluster; database alignment follows approved Cosmos Mongo RU,
+      DSE Cassandra, or Atlas Global Cluster policy, with no authoritative Azure SQL.
   active_standby:
     description: One active Kafka application-processing role and one standby role
       aligned with Azure SQL primary/standby ownership. Azure SQL presence takes precedence,
       including applications that also use Cosmos DB.
+  database_independent_kafka:
+    description: No application database or approved authoritative database in the processing chain; processing ownership and side effects are classified separately.
 ---
 
 # Confluent Kafka Multi-Region Application Behavior Standard
@@ -432,7 +458,7 @@ Use `source.operating_model` only to describe current state. Use `target.operati
 
 ## Purpose
 
-This dependency-specific standard assesses Spring Boot use of Confluent Kafka under three approved scenarios: independent regional active-active Kafka clusters aligned with Cosmos DB for MongoDB RU multi-region writes; or active-standby Kafka aligned with Azure SQL primary/standby authoritative state. It does not assess a stretched Kafka cluster.
+This standard assesses Spring Boot Kafka use under the scenarios selected by `grounding/governance/kafka-operating-scenario-policy.yml`: independent regional active-active, active-standby, and database-independent Kafka. Active-active persistence pairings include approved Cosmos Mongo RU, DSE Cassandra, and Atlas Global Cluster contracts. It does not assess a stretched Kafka cluster.
 
 ## Scope boundary
 
@@ -443,6 +469,9 @@ Assess application code, repository-owned configuration, producer/consumer lifec
 - Azure SQL used for authoritative business state: `active_standby`.
 - Azure SQL plus Cosmos DB: `active_standby`.
 - Cosmos DB for MongoDB RU only, with multi-region writes enabled and no authoritative Azure SQL: `independent_regional_active_active`.
+- Approved DSE Cassandra active-active contract: `independent_regional_active_active` under Rule 004.
+- Approved Atlas Global Cluster contract: `independent_regional_active_active` under Rule 006 and `grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml`.
+- No production application database or approved processing-chain authoritative database: `database_independent_kafka` under Rule 003.
 - Otherwise: `unresolved`, with scenario-dependent controls `not_assessed`.
 
 Dependency presence alone is insufficient. Use effective production responsibility and authoritative-state role.
@@ -1097,11 +1126,11 @@ The application code and repository-owned configuration must implement this beha
 - `duplicate event`
 - `different order`
 - `regional outage`
-- `Cosmos conflict`
+- Provider-specific concurrent state updates
 
 #### Finding condition
 
-Emit a finding when evidence shows that tests do not prove local autonomy, duplicate tolerance, ordering behavior, Cosmos conflict safety, and recovery for independent clusters.
+Emit a finding when evidence shows that tests do not prove local autonomy, duplicate tolerance, ordering behavior, approved provider-specific state safety, and recovery for independent clusters.
 
 #### Evidence rule
 
@@ -1505,6 +1534,24 @@ Cite repository-relative path, symbol/property, original assessed lines, and exa
 - Do not blindly retry ambiguous, non-idempotent business effects.
 - Do not infer Cluster Linking, offset synchronization, mirror-topic promotion, or Cosmos multi-write deployment from repository absence.
 
+
+## Atlas Global Cluster and Active-Active Kafka Controls
+
+Select this pairing only from a consistently resolved Step 1 `atlas_kafka_scenario` under Rule 006. Both canonical services must be in scope for joint findings. Common controls remain independently assessable for an in-scope service. An unresolved Atlas contract does not create an architecture finding from missing context alone.
+
+For this pairing, KAFKA-AA-005 and Cosmos RU-specific behavior are `not_applicable`. KAFKA-AA-006 exercises Atlas elections, approved shard/zone routing, and concurrent state updates instead of Cosmos conflict-resolution semantics. Existing per-control Cosmos caveats apply only to Cosmos integrations, not as prerequisites for Atlas or DSE. Do not prescribe global ordering, cross-cluster exactly-once delivery, universal local writes, or regional-isolation availability that the approved state contract cannot provide.
+
+### KAFKA-ATLAS-001: Atlas completion and Kafka progress have an approved recovery boundary
+
+Evaluate Atlas write completion, explicit acknowledgment/offset ordering, stable identity, duplicate detection, and the approved recovery/reconciliation path after a write succeeds but Kafka progress is unknown, or a write times out after taking effect. Kafka transactions do not make Atlas writes atomic with Kafka. Cite exact repository behavior incompatible with the approved completion contract. Reuse MONGO-008, MONGO-009, KAFKA-003, and KAFKA-004 evidence; emit one finding per root cause. Do not choose an outbox, CDC product, new store, or altered transaction semantics without approval.
+
+### KAFKA-ATLAS-002: Regional topic ownership and mirroring preserve writable paths and lineage
+
+Evaluate repository topic selection and origin/event identity against the approved topic ownership, replication direction, loop prevention, and offset-recovery references. A regional producer must use its approved writable topic, not an unpromoted read-only mirror. Mirroring must not cause application republishing loops or regenerate durable business identity. Missing deployed mirroring proof is an external evidence gap; repository-owned routing incompatibility may produce a finding.
+
+### KAFKA-ATLAS-003: Joint recovery tests cover Atlas elections and independent Kafka clusters
+
+Require evidence-supported tests for duplicate and reordered events from both clusters, write success before offset failure, ambiguous Atlas writes, primary election/server selection, mirroring interruption, region loss, and restoration/failback where the approved contract requires them. Evaluate expected outcomes against approved consistency and availability boundaries. Do not claim that a single-node Mongo fixture or one embedded Kafka broker proves deployed Global Cluster or cross-cluster recovery.
 
 ## Database-Independent Kafka Scenario Controls
 

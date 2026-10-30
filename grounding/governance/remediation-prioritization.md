@@ -2,11 +2,11 @@
 document_type: remediation_prioritization_policy
 schema_version: "1.1.0"
 policy_id: AA-REMEDIATION-PRIORITY
-policy_version: "1.2.0"
-last_updated: "2026-09-20"
+policy_version: "1.3.0"
+last_updated: "2026-10-23"
 owner: Cloud Architecture Team
 lifecycle_status: proposed
-supersedes: "AA-REMEDIATION-PRIORITY 1.1.0"
+supersedes: "AA-REMEDIATION-PRIORITY 1.2.0"
 applies_to:
   - springboot-active-active-code-assessment
   - active-active-remediation-planning
@@ -311,6 +311,26 @@ Missing correlation, regional dimensions, or root-cause diagnostics alone are P2
 
 Apply when application code contains an unbounded or inadequately isolated consumption path involving heap, threads, sockets, connections, queues, cache load, or result materialization that can materially impair availability.
 
+### P1-RCV-010: Required failover-aware endpoint is bypassed
+
+Apply when all are established:
+
+- The approved target connectivity contract requires a failover-aware
+  listener or endpoint.
+- Effective production code or configuration bypasses that endpoint
+  and connects directly to a physical or regional server.
+- This binding prevents following the promoted serving endpoint or
+  materially delays restoration of required application capability
+  during the approved failover scenario.
+
+Repository evidence must establish the effective endpoint and causal
+failure mechanism. Evidence that recovery requires a process or pod
+restart is not required.
+
+A hardcoded string alone is insufficient. Do not infer deployed
+failover resources, DNS behavior, or infrastructure noncompliance
+from missing repository evidence.
+
 ### P1-DUR-001: Producer durability and outcome handling are incomplete
 
 Apply when acknowledgment, idempotent producer configuration, send-result handling, delivery timeout, or failure signaling is absent, but the finding does not independently satisfy P0-DUR-002 or P0-DUR-003.
@@ -435,7 +455,7 @@ An override does not change finding severity, classification, evidence, or compl
 priority:
   value: P1
   policy_id: AA-REMEDIATION-PRIORITY
-  policy_version: "1.2.0"
+  policy_version: "1.3.0"
   rule_id: P1-RCV-002
   secondary_rule_ids: []
   rationale: >

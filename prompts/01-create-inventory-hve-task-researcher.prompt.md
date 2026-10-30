@@ -55,6 +55,12 @@ A validated local equivalent is authoritative configuration evidence. Cite it in
 
 ## Inventory objectives
 
+### MongoDB provider and scope routing
+
+Read `provider_aware_scope_binding` in `grounding/governance/shared-service-assessment-scope-schema.yml`. Resolve each production integration's provider/API before applying scope. Record `mongodb_scope_bindings` entries with integration ID, `SPRINGBOOT-MONGODB` standard ID, API variant, canonical service key, scope, source, and evidence references. Native MongoDB/Atlas uses `mongodb`; Cosmos Mongo RU/vCore uses `cosmosdb`. Both use the MongoDB driver behavior standard. Cosmos SDK/API for NoSQL uses the Cosmos standard. Do not activate Cosmos SDK controls solely from Mongo driver use, apply one provider's scope to all clients, or default an unidentified provider into scope. Preserve the resolved Cosmos variant and keep observed provider evidence distinct from approved target intent. Older inventories require a Step 1 refresh before gaining these new bindings.
+
+Use the resolved service key for scope, dependency expectations, operating model, connectivity contracts, and finding ownership, while retaining the behavior standard's control IDs. Keep all used services in inventory even when out of scope. An Atlas exclusion must not suppress Cosmos Mongo coverage.
+
 Record application modules, Java and Spring Boot versions, production dependencies, client construction, regional endpoint configuration, retries, timeouts, circuit breakers, bulkheads, Actuator configuration, readiness, liveness, health indicators, state and session handling, transaction behavior, messaging behavior, idempotency, concurrency controls, graceful shutdown, regional telemetry, fault tests, and historical PCF references.
 
 ## Dependency and capability activation rule
@@ -398,6 +404,15 @@ kafka_scenario_inputs:
 
   other_databases: []
 
+  mongodb_atlas:
+    used_by_production_code: true|false|unknown
+    provider_evidence: []
+    source_deployment_model: replica_set|global_cluster|unknown
+    target_deployment_model: global_cluster|unknown
+    contract_policy: grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml
+    contract_validation: consistent|conflict|insufficient_evidence
+    scope_binding_refs: []
+
   processing_model:
     value: stateless_producer|stateless_consumer|stream_transformer|topic_bridge|external_side_effect_processor|stateful_stream_processor|mixed|unknown
     evidence: []
@@ -525,6 +540,10 @@ When the selected Kafka policy's DSE Cassandra predicates are satisfied, preserv
 `KAFKA-SCENARIO-004` and its approved-context and local-affinity requirements.
 Do not use this rule for Cosmos DB or for an unresolved scenario.
 
+#### Atlas Global Cluster active-active (Rule 006)
+
+Apply `grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml` only to the approved Atlas Global Cluster target with independent regional active-active Kafka. Validate the entire target contract, including zones, shard/uniqueness rules, consistency, identities, completion/recovery, mirroring, and approvals. Use `tools/validate_atlas_kafka_scenario.py` for offline structural checks; it does not authenticate approvals or verify deployments. Preserve `KAFKA-SCENARIO-006` only after consistent validation, and keep SQL authoritative-state precedence. Do not infer this pairing from Mongo dependencies, URI syntax, multiple hosts, or a draft sample. Unsupported Atlas targets and missing/conflicting contracts remain unresolved. Source replica-set or active-standby values are baseline context, not another supported target.
+
 #### Rule 5: Unresolved
 
 Use:
@@ -553,8 +572,8 @@ kafka_operating_scenario:
 
   policy_validation:
     policy_id: KAFKA-OPERATING-SCENARIO
-    policy_version: "3.3.0"
-    rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004|KAFKA-SCENARIO-005
+    policy_version: "3.4.0"
+    rule_id: KAFKA-SCENARIO-001|KAFKA-SCENARIO-002|KAFKA-SCENARIO-003|KAFKA-SCENARIO-004|KAFKA-SCENARIO-005|KAFKA-SCENARIO-006
     status: consistent|inferred|conditionally_inferred|conflict|insufficient_evidence
 
   repository_validation:
@@ -978,6 +997,10 @@ Inventory applicable target architecture elements and credible failure scenarios
 Read `grounding/governance/shared-service-assessment-scope-schema.yml` and `architecture_context.shared_service_assessment_scope`. Resolve one effective scope for every confirmed or architecture-declared shared service. Inventory all services regardless of scope. Add dependency standards to the control-evaluation load list only for `in_scope` services. Preserve non-in-scope services in dependency and architecture inventories. Do not create findings in Step 1. Emit `shared_service_scope_resolution` records with service key, production-use status, effective scope, scope source, rationale, scope owner, architecture reasoning allowed, observations allowed, findings allowed, remediation allowed, and conflicts. Preserve a categorized `shared_service_assessment_scope_summary` in the authoritative inventory and Step 1 handoff. Repository evidence must not silently expand approved scope; route conflicts to architecture governance.
 
 
+
+## Atlas Global Cluster and Kafka Inventory Contract
+
+When Atlas is declared or observed, read `grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml` and record `atlas_kafka_scenario` using its output contract, including unresolved inputs. Preserve provider scope bindings, source and target separately, target zone/shard and consistency references, Kafka ownership/mirroring/offset references, policy version/rule, context provenance, side effects, and conflicts. `deployed_topology_verified` remains false unless independently supplied authoritative deployed evidence exists. Architecture intent never establishes a repository defect. The joint finding gate requires both services in scope, but architecture reasoning remains available for excluded services. Include both records in the phase handoff.
 
 ## DSE Cassandra and Kafka Active-Active Inventory Contract
 

@@ -441,7 +441,7 @@ architecture_context:
           Elasticsearch usage is retained for dependency context, but controls are not evaluated.
         scope_owner: search_platform_team
         external_assessment_reference: not_provided
-      mongo-atlas:
+      mongodb:
         assessment_scope: out_of_scope
         rationale: >-
           Mongo Atlas participates in authoritative-state and processing-chain reasoning but is assessed separately.

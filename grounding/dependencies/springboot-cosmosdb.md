@@ -464,6 +464,8 @@ Use `source.operating_model` only to describe current state. Use `target.operati
 
 This dependency-specific standard assesses how a Spring Boot microservice uses Azure Cosmos DB when evaluated for the approved target operating model supplied by application architecture context. The local regional service endpoint is assumed to exist and be reachable through the approved private networking design.
 
+This standard's COSMOS controls assess the Cosmos Java SDK/API for NoSQL integration path. Cosmos DB for MongoDB uses `springboot-mongodb.md` and the resolved RU/vCore variant instead, while retaining canonical service identity and scope `cosmosdb`. Do not require CosmosClientBuilder, CosmosException, session-token, or ETag APIs on a MongoDB-driver path. If both APIs are used, assess each integration with its applicable standard and deduplicate findings by root cause.
+
 ## Scope boundary
 
 This standard assesses **application code, application configuration checked into the repository, and automated tests only**. It does not assess whether Azure or third-party infrastructure has been deployed correctly.

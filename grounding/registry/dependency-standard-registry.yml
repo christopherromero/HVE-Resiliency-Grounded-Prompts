@@ -1,4 +1,4 @@
-schema_version: '2.3'
+schema_version: '2.4'
 registry_type: dependency_standard_registry
 standards:
   keyvault:
@@ -24,6 +24,12 @@ standards:
     grounding_file: grounding/dependencies/springboot-cosmosdb.md
     type: dependency_standard
     activation_evidence_class: production_code_evidence
+    api_behavior_standards:
+      nosql: grounding/dependencies/springboot-cosmosdb.md
+      mongodb: grounding/dependencies/springboot-mongodb.md
+    api_routing_rule: Confirm provider and API per production integration; Mongo driver use alone does not activate Cosmos SDK controls.
+    default_standard_activation_requires: cosmos_sdk_production_integration
+    mongodb_api_activation: delegate_to_mongodb_behavior_standard_with_cosmosdb_scope
     activate_when_any:
       inventory_dependencies:
       - cosmosdb
@@ -38,10 +44,17 @@ standards:
       version: 2.2.0
       business_logic_risk_classification: true
   mongodb:
-    display_name: MongoDB and Azure Cosmos DB for MongoDB
+    display_name: MongoDB and Atlas
     grounding_file: grounding/dependencies/springboot-mongodb.md
     type: dependency_standard
     activation_evidence_class: production_code_evidence
+    scope_binding:
+      schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+      contract: provider_aware_scope_binding
+      native_mongodb: mongodb
+      cosmos_mongo_ru: cosmosdb
+      cosmos_mongo_vcore: cosmosdb
+    atlas_scenario_policy: grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml
     api_variant_detection:
       declared_in_standard: true
       variants:
@@ -69,7 +82,7 @@ standards:
       - org.springframework.data.mongodb
     standard:
       path: grounding/dependencies/springboot-mongodb.md
-      version: 1.0.0
+      version: 1.1.0
       business_logic_risk_classification: true
   eventhubs:
     display_name: Azure Event Hubs
@@ -221,10 +234,10 @@ standards:
       - schema.registry.url
     standard:
       path: grounding/dependencies/springboot-confluent-kafka.md
-      version: 3.1.0
+      version: 3.2.0
     scenario_policy:
       path: grounding/governance/kafka-operating-scenario-policy.yml
-      version: 3.3.0
+      version: 3.4.0
     context_sources:
       preferred:
       - application-context/application-architecture-context.yml

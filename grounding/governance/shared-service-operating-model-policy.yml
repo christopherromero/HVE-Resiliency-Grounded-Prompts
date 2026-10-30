@@ -1,4 +1,4 @@
-schema_version: "1.2.0"
+schema_version: "1.3.0"
 document_type: shared_service_operating_model_policy
 policy_id: SHARED-SERVICE-OPERATING-MODEL
 lifecycle_status: active
@@ -51,6 +51,18 @@ assessment_scope_rules:
   - Preserve operating and connectivity reasoning for every scope value.
   - Evaluate controls and generate findings only for in_scope services.
   - Route scope conflicts to architecture governance without creating code findings.
+  - For MongoDB driver integrations, resolve scope and service contracts through provider_aware_scope_binding in the shared-service scope schema.
+
+atlas_kafka_active_active_pairing:
+  policy_path: grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml
+  required: {mongodb: active_active, confluent-kafka: active_active}
+  database_provider: atlas
+  database_deployment_model: global_cluster
+  kafka_scenario: independent_regional_active_active
+  regional_processing_model: multi_active
+  single_primary_per_shard: true
+  unrestricted_multi_primary_per_record: false
+  source_target_difference_is_not_a_finding: true
 
 
 # DSE Cassandra and Kafka Active-Active Pairing

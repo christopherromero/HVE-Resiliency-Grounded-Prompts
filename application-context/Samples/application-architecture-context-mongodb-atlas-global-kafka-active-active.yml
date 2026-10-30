@@ -1,0 +1,227 @@
+---
+schema_version: "3.1.0"
+document_type: application_architecture_context
+lifecycle_status: draft
+---
+architecture_context:
+  metadata:
+    application_name: Atlas and Kafka example
+    repository_name: replace_with_repository_name
+    business_role: replace_with_business_role
+    context_owner: requires_approval
+    lifecycle_status: draft
+    version: "1.0.0"
+    sample_only: true
+    source_state_is_illustrative: true
+    description: >-
+      Source and target are illustrative designs, not deployed facts or approvals.
+      Replace every requires_approval value and confirm the actual source baseline.
+      Obtain architecture approval before setting both lifecycle statuses and the
+      target contract status to approved. A draft cannot select Kafka Rule 006.
+
+  runtime_expectations:
+    contract_version: "1.0.0"
+    canonical_key_source: dependency_standard_registry
+    runtimes:
+      jvm-runtime:
+        expected_status: required
+        production_use_expected: true
+        assessment_scope: [build_configuration, application_lifecycle, runtime_tests]
+        source:
+          lifecycle_status: current
+          runtime_family: jvm
+          runtime_version: unknown
+          execution_platform: aks
+          containerized: true
+        target:
+          lifecycle_status: proposed_target
+          runtime_family: jvm
+          minimum_runtime_version: unknown
+          execution_platform: aks
+          containerized: true
+          required_capabilities:
+            container_awareness: required
+            bounded_heap_strategy: required
+            graceful_shutdown: required
+            readiness_withdrawal: required
+            runtime_observability: required
+        grounding:
+          standard_id: JVM-RUNTIME-RESILIENCY
+          registry_id: jvm-runtime
+          path: grounding/dependencies/jvm-runtime-resiliency.md
+          version: "1.0.0"
+
+  deployment_evolution:
+    source:
+      state_label: illustrative_current_baseline
+      lifecycle_status: current
+      operating_model: active_standby
+      traffic_model: single_active
+      regions:
+        - {region: westus, role: primary, processing_state: active}
+        - {region: eastus, role: disaster_recovery, processing_state: standby}
+      same_application_artifact_across_regions: true
+    target:
+      state_label: proposed_target_deployment
+      lifecycle_status: proposed_target
+      operating_model: active_active
+      traffic_model: multi_active
+      regions:
+        - {region: westus2, role: active, processing_state: active}
+        - {region: westus, role: active, processing_state: active}
+      same_application_artifact_across_regions: true
+    transition:
+      transition_type: source_to_target
+      source_to_target_assessment: true
+      assessment_focus: target_state_code_readiness
+      target_state_must_not_be_reported_as_current: true
+      source_and_target_regions_must_not_be_merged: true
+      source_target_difference_is_not_a_finding: true
+
+  authoritative_state:
+    dependency: mongodb
+    role: authoritative_business_state
+    source: {lifecycle_status: current, operating_model: active_standby}
+    target: {lifecycle_status: proposed_target, operating_model: active_active}
+    reporting_rule: Report application deployment, Atlas shard ownership, and Kafka processing separately.
+
+  dependency_variants:
+    mongodb:
+      source: {provider: atlas, deployment_model: replica_set}
+      target: {provider: atlas, deployment_model: global_cluster}
+
+  atlas_global_cluster_contract:
+    policy_path: grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml
+    source:
+      contract_status: illustrative_only
+      description: An illustrative replica-set baseline; replace with the actual current topology without copying target facts.
+    target:
+      contract_status: requires_approval
+      approval_reference: requires_approval
+      single_primary_per_shard: true
+      unrestricted_multi_primary_per_record: false
+      zones:
+        - zone_id: westus2-zone
+          highest_priority_region: westus2
+          electable_regions: [requires_approval]
+          data_ownership_reference: requires_approval
+        - zone_id: westus-zone
+          highest_priority_region: westus
+          electable_regions: [requires_approval]
+          data_ownership_reference: requires_approval
+      collection_shard_keys_reference: requires_approval
+      global_uniqueness_reference: requires_approval
+      write_concern_reference: requires_approval
+      read_semantics_reference: requires_approval
+      read_your_writes_reference: requires_approval
+      election_and_partition_reference: requires_approval
+      operation_identity_reference: requires_approval
+      event_identity_reference: requires_approval
+      deduplication_reference: requires_approval
+      database_kafka_completion_reference: requires_approval
+
+  kafka_operating_model:
+    scenario_policy_id: KAFKA-OPERATING-SCENARIO
+    expected_scenario_rule_id: KAFKA-SCENARIO-006
+    source:
+      lifecycle_status: current
+      scenario: active_standby
+      regional_processing_model: single_active
+      cluster_model: {type: independent_regional_clusters, stretched_cluster: false, cluster_per_region: true}
+    target:
+      lifecycle_status: proposed_target
+      scenario: independent_regional_active_active
+      regional_processing_model: multi_active
+      cluster_model: {type: independent_regional_clusters, stretched_cluster: false, cluster_per_region: true}
+    reporting_rule: Rule 006 applies to the target only after approval; source is migration context, not an additional supported Atlas target.
+
+  shared_service_operating_models:
+    contract_version: "1.1.0"
+    authoritative_for: shared_service_target_operating_model
+    default_assessment_state: target
+    services:
+      mongodb:
+        dependency_standard_id: mongodb
+        source: {operating_model: active_standby, lifecycle_status: current}
+        target: {operating_model: active_active, lifecycle_status: proposed_target}
+      confluent-kafka:
+        dependency_standard_id: confluent-kafka
+        source: {operating_model: active_standby, lifecycle_status: current}
+        target: {operating_model: active_active, lifecycle_status: proposed_target}
+        scenario_source: architecture_context.kafka_operating_model.source
+        scenario_target: architecture_context.kafka_operating_model.target
+
+  shared_service_connectivity_contracts:
+    services:
+      mongodb:
+        dependency_standard_id: mongodb
+        source: {connectivity_model: driver_topology_discovery, lifecycle_status: current}
+        target:
+          connectivity_model: atlas_global_cluster_driver_discovery
+          lifecycle_status: proposed_target
+          topology_discovery_required: true
+          zone_and_shard_routing_contract: architecture_context.atlas_global_cluster_contract.target
+          recover_without_process_restart: true
+          external_evidence_required: [deployed_zones_and_shards, electable_nodes_and_quorum, regional_failover_behavior]
+      confluent-kafka:
+        dependency_standard_id: confluent-kafka
+        source: {connectivity_model: independent_regional_clusters, lifecycle_status: current}
+        target:
+          connectivity_model: independent_regional_clusters
+          lifecycle_status: proposed_target
+          local_region_affinity_required: true
+          mirroring_contract:
+            topic_mirroring_required: true
+            mirror_scope: [business_topics, compacted_topics]
+            internal_topics_mirroring_required: false
+            topic_ownership_reference: requires_approval
+            replication_direction_reference: requires_approval
+            loop_prevention_reference: requires_approval
+            offset_recovery_reference: requires_approval
+
+  shared_service_assessment_scope:
+    contract_version: "1.0.0"
+    default_scope: in_scope
+    canonical_key_source: dependency_standard_registry
+    services:
+      mongodb:
+        assessment_scope: in_scope
+        rationale: Repository-owned Atlas integration and joint Atlas Global Cluster/Kafka behavior are included after target approval.
+        scope_owner: application_architecture
+      confluent-kafka:
+        assessment_scope: in_scope
+        rationale: Repository-owned Kafka integration and joint Atlas Global Cluster/Kafka behavior are included after target approval.
+        scope_owner: application_architecture
+    reporting:
+      render_scope_summary: true
+      non_in_scope_records_are_findings: false
+      non_in_scope_records_receive_priority: false
+
+  dependency_expectations:
+    mongodb: required
+    confluent-kafka: required
+  platform_capability_expectations:
+    jvm-runtime: required
+  external_side_effects:
+    present: unknown
+    types: []
+
+  assessment_guidance:
+    application_context_is_primary_architecture_authority: true
+    repository_evidence_must_validate_implementation: true
+    conflicts_route_to_architecture_review: true
+    shared_service_scope_interpretation:
+      schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+      downstream_recalculation_prohibited: true
+    deployment_state_interpretation:
+      assess_code_against: target
+      describe_current_deployment_from: source
+      describe_target_deployment_from: target
+      do_not_merge_source_and_target_regions: true
+      do_not_report_target_as_current: true
+  finding_boundary:
+    source_target_difference_is_not_a_finding: true
+    finding_requires_repository_evidence: true
+    missing_deployed_target_infrastructure_is_evidence_gap: true
+    architecture_context_conflict_is_not_a_code_finding: true
+    infrastructure_findings_allowed: false

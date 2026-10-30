@@ -796,6 +796,10 @@ Render the authoritative Step 1 scope summary within Assessment Overview. Show s
 
 
 
+## Atlas Global Cluster and Kafka Report Rendering
+
+Preserve authoritative `mongodb_scope_bindings` and `atlas_kafka_scenario`; presentation must not resolve or modify them. Render Atlas Global Cluster source/target design separately from application regions and Kafka processing/cluster ownership. Distinguish the MongoDB driver behavior standard from service scope: Atlas is mongodb; Cosmos Mongo is cosmosdb. Report shard/zone, consistency, mirroring, offset-recovery references and external evidence gaps without implying deployed validation or unrestricted local multi-primary writes. Excluded services receive no findings or priorities. Draft or unresolved target contracts remain visibly unapproved and affected controls not_assessed. Existing report filters change presentation only.
+
 ## DSE Cassandra and Kafka Active-Active Report Rendering
 
 Render the approved scenario in Assessment Overview and preserve DSE topology, Kafka topology, scope, and evidence gaps separately. Do not present missing deployed topology evidence as application noncompliance.
