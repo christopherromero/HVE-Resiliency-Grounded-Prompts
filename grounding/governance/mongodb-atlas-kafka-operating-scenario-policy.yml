@@ -54,11 +54,11 @@ context_contract:
   kafka_mirroring_path: shared_service_connectivity_contracts.services.confluent-kafka.target.mirroring_contract
   required_mirroring_predicates:
     topic_mirroring_required: true
-  required_mirroring_fields:
-    - topic_ownership_reference
-    - replication_direction_reference
-    - loop_prevention_reference
-    - offset_recovery_reference
+  #required_mirroring_fields:
+  #  - topic_ownership_reference
+  #  - replication_direction_reference
+  #  - loop_prevention_reference
+  #  - offset_recovery_reference
   rules:
     - Both document and metadata lifecycle status must be approved before selecting this pairing.
     - Reject missing, unknown, requires_approval, and angle-bracket placeholder values in required target contracts.

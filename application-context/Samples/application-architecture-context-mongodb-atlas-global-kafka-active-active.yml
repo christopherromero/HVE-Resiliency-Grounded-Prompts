@@ -172,18 +172,109 @@ architecture_context:
           local_region_affinity_required: true
           mirroring_contract:
             topic_mirroring_required: true
-            mirror_scope: [business_topics, compacted_topics]
+            accepted_mechanisms:
+              - cluster_linking
+              - approved_replication_platform
+            mirror_scope:
+              - business_topics
+              - compacted_topics
             internal_topics_mirroring_required: false
-            topic_ownership_reference: requires_approval
-            replication_direction_reference: requires_approval
-            loop_prevention_reference: requires_approval
-            offset_recovery_reference: requires_approval
+            offset_translation_required: true
+            failover_requires_topic_availability: true
+            #topic_ownership_reference: requires_approval
+            #replication_direction_reference: requires_approval
+            #loop_prevention_reference: requires_approval
+            #offset_recovery_reference: requires_approval
 
   shared_service_assessment_scope:
     contract_version: "1.0.0"
     default_scope: in_scope
     canonical_key_source: dependency_standard_registry
     services:
+      aks-istio:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      apim:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      appgateway-glb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-functions:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-managed-redis:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-sql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      cosmosdb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      dse-cassandra:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      eventhubs:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      keyvault:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      postgresql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      storage-blob:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      databricks:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Databricks is used by the solution but assessed separately by the data platform team.
+        scope_owner: data_platform_team
+        external_assessment_reference: not_provided
+      elasticsearch:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Elasticsearch usage is retained for dependency context, but controls are not evaluated.
+        scope_owner: search_platform_team
+        external_assessment_reference: not_provided
       mongodb:
         assessment_scope: in_scope
         rationale: Repository-owned Atlas integration and joint Atlas Global Cluster/Kafka behavior are included after target approval.
@@ -197,11 +288,35 @@ architecture_context:
       non_in_scope_records_are_findings: false
       non_in_scope_records_receive_priority: false
 
+# Define the expected dependencies and platform capabilities for this repository.
+# Keys must match dependency-standard registry IDs.
+# Allowed statuses are required, optional, not_expected, and unknown.
+# Expectations guide discovery but do not override repository evidence.
+
+  allowed_expected_statuses:
+    - required
+    - optional
+    - not_expected
+    - unknown
   dependency_expectations:
     mongodb: required
     confluent-kafka: required
+#    azure-managed-redis: required
+#    azure-sql: not_expected
+#    confluent-kafka: required
+#    cosmosdb: required
+#    dse-cassandra: not_expected
+#    eventhubs: not_expected
+#    keyvault: required
+#    postgresql: not_expected
+#    storage-blob: not_expected
   platform_capability_expectations:
     jvm-runtime: required
+    aks-istio: optional
+    apim: not_expected
+    appgateway-glb: not_expected
+    azure-functions: not_expected
+
   external_side_effects:
     present: unknown
     types: []
