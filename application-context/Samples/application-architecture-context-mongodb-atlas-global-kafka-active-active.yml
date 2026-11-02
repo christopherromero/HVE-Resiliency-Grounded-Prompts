@@ -109,16 +109,16 @@ architecture_context:
           highest_priority_region: westus
           electable_regions: [requires_approval]
           data_ownership_reference: requires_approval
-      collection_shard_keys_reference: requires_approval
-      global_uniqueness_reference: requires_approval
-      write_concern_reference: requires_approval
-      read_semantics_reference: requires_approval
-      read_your_writes_reference: requires_approval
-      election_and_partition_reference: requires_approval
-      operation_identity_reference: requires_approval
-      event_identity_reference: requires_approval
-      deduplication_reference: requires_approval
-      database_kafka_completion_reference: requires_approval
+      collection_shard_keys_reference: "application-context/designs/Atlas-design.md#contract"
+      global_uniqueness_reference: "application-context/designs/Atlas-design.md#contract"
+      write_concern_reference: "application-context/designs/Atlas-design.md#contract"
+      read_semantics_reference: "application-context/designs/Atlas-design.md#contract"
+      read_your_writes_reference: "application-context/designs/Atlas-design.md#contract"
+      election_and_partition_reference: "application-context/designs/Atlas-design.md#contract"
+      operation_identity_reference: "application-context/designs/Processing-design.md#contract"
+      event_identity_reference: "application-context/designs/Processing-design.md#contract"
+      deduplication_reference: "application-context/designs/Processing-design.md#contract"
+      database_kafka_completion_reference: "application-context/designs/Processing-design.md#contract"
 
   kafka_operating_model:
     scenario_policy_id: KAFKA-OPERATING-SCENARIO
@@ -181,10 +181,10 @@ architecture_context:
             internal_topics_mirroring_required: false
             offset_translation_required: true
             failover_requires_topic_availability: true
-            #topic_ownership_reference: requires_approval
-            #replication_direction_reference: requires_approval
-            #loop_prevention_reference: requires_approval
-            #offset_recovery_reference: requires_approval
+            topic_ownership_reference: "application-context/designs/kafka-design.md#contract"
+            replication_direction_reference: "application-context/designs/kafka-design.md#contract"
+            loop_prevention_reference: "application-context/designs/kafka-design.md#contract"
+            offset_recovery_reference: "application-context/designs/kafka-design.md#contract"
 
   shared_service_assessment_scope:
     contract_version: "1.0.0"
