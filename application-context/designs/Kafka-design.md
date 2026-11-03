@@ -1,13 +1,13 @@
 ---
-title: Sample Independent Regional Kafka Design
-description: Illustrative topic ownership, replication, and recovery contract
-decision_id: EXAMPLE-ADR-KAFKA-001
-status: draft
+title: Independent Regional Kafka Design
+description: Topic ownership, replication, and recovery contract
+decision_id: ADR-KAFKA-001
+status: approved
 ---
 
 ## Contract
 
-| Subject | Proposed Example Decision |
+| Subject | Decision |
 |---|---|
 | Clusters | West US 2 and West US use independent clusters. Applications normally connect only to their local cluster. |
 | Topic ownership | Region A writes `inventory.commands.origin-a`; region B writes `inventory.commands.origin-b`. Each topic has one writable owner. |
@@ -19,5 +19,5 @@ status: draft
 
 ## Approval
 
-Not approved. Kafka platform and application owners must approve topic/link
+Approved. Kafka platform and application owners must approve topic/link
 mapping, permissions, consumer behavior, promotion, and recovery procedures.

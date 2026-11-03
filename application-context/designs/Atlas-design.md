@@ -1,13 +1,13 @@
 ---
-title: Sample Atlas Global Cluster Design
-description: Illustrative inventory-state ownership and consistency contract
-decision_id: EXAMPLE-ADR-ATLAS-001
-status: draft
+title: Atlas Global Cluster Design
+description: Inventory-state ownership and consistency contract
+decision_id: ADR-ATLAS-001
+status: Approved
 ---
 
 ## Contract
 
-| Subject | Proposed Example Decision |
+| Subject | Decision |
 |---|---|
 | Zone ownership | West US 2 owns location group A; West US owns location group B. Geographic ownership routes records to the corresponding shards. |
 | Shard keys | Inventory records use `{location: 1, inventoryId: 1}`. Production data distribution and query routing must validate this choice. |
@@ -20,5 +20,5 @@ status: draft
 
 ## Approval
 
-Not approved. Architecture, database, and application owners must validate
+Approved. Architecture, database, and application owners must validate
 ownership, shard keys, uniqueness, consistency, node placement, and failure budgets.
