@@ -1,0 +1,116 @@
+schema_version: "1.0.0"
+document_type: mongodb_atlas_kafka_operating_scenario_policy
+policy_id: MONGODB-ATLAS-KAFKA-OPERATING-SCENARIO
+policy_version: "1.0.0"
+lifecycle_status: active
+owner: Cloud Architecture Team
+purpose: Govern the Atlas Global Cluster and independent regional active-active Kafka target without asserting deployed topology.
+registry_contract:
+  database_service_key: mongodb
+  kafka_service_key: confluent-kafka
+  mongodb_standard: grounding/dependencies/springboot-mongodb.md
+  kafka_standard: grounding/dependencies/springboot-confluent-kafka.md
+  scope_schema: grounding/governance/shared-service-assessment-scope-schema.yml
+  kafka_policy: grounding/governance/kafka-operating-scenario-policy.yml
+  kafka_rule_id: KAFKA-SCENARIO-006
+context_contract:
+  context_root: architecture_context
+  variant_path: dependency_variants.mongodb
+  contract_path: atlas_global_cluster_contract
+  required_target_predicates:
+    deployment_evolution.target.operating_model: active_active
+    deployment_evolution.target.traffic_model: multi_active
+    authoritative_state.dependency: mongodb
+    authoritative_state.role: authoritative_business_state
+    authoritative_state.target.operating_model: active_active
+    dependency_variants.mongodb.target.provider: atlas
+    dependency_variants.mongodb.target.deployment_model: global_cluster
+    shared_service_operating_models.services.mongodb.target.operating_model: active_active
+    shared_service_operating_models.services.confluent-kafka.target.operating_model: active_active
+    kafka_operating_model.target.scenario: independent_regional_active_active
+    kafka_operating_model.target.regional_processing_model: multi_active
+    kafka_operating_model.target.cluster_model.type: independent_regional_clusters
+    kafka_operating_model.target.cluster_model.stretched_cluster: false
+    kafka_operating_model.target.cluster_model.cluster_per_region: true
+    atlas_global_cluster_contract.target.contract_status: approved
+    atlas_global_cluster_contract.target.single_primary_per_shard: true
+    atlas_global_cluster_contract.target.unrestricted_multi_primary_per_record: false
+  required_contract_fields:
+    - approval_reference
+    - zones
+    - collection_shard_keys_reference
+    - global_uniqueness_reference
+    - write_concern_reference
+    - read_semantics_reference
+    - read_your_writes_reference
+    - election_and_partition_reference
+    - operation_identity_reference
+    - event_identity_reference
+    - deduplication_reference
+    - database_kafka_completion_reference
+  zone_required_fields: [zone_id, highest_priority_region, electable_regions, data_ownership_reference]
+  minimum_zones: 2
+  minimum_distinct_highest_priority_regions: 2
+  kafka_mirroring_path: shared_service_connectivity_contracts.services.confluent-kafka.target.mirroring_contract
+  required_mirroring_predicates:
+    topic_mirroring_required: true
+  required_mirroring_fields:
+    - topic_ownership_reference
+    - replication_direction_reference
+    - loop_prevention_reference
+    - offset_recovery_reference
+  rules:
+    - Both document and metadata lifecycle status must be approved before selecting this pairing.
+    - Reject missing, unknown, requires_approval, and angle-bracket placeholder values in required target contracts.
+    - Approval references identify supplied authority; this framework never invents or independently verifies approvals.
+    - Record source topology separately; a replica-set or active-standby source is a migration baseline, not another supported Atlas target.
+    - The source contract may remain unresolved; never fill it from the approved target.
+    - No Atlas replica-set target, Atlas active-standby Kafka target, or stretched Kafka target is supported by this policy.
+    - Atlas identity requires positive provider evidence or approved context; mongodb+srv alone is insufficient.
+    - Confirm repository production integration before evaluating controls; declared intent alone cannot produce a finding.
+    - An authoritative Azure SQL processing-chain dependency takes precedence; incompatible Atlas declarations route to architecture review.
+resolution:
+  output_record: atlas_kafka_scenario
+  output_fields:
+    - policy_id
+    - policy_version
+    - context_version
+    - source_provider
+    - source_deployment_model
+    - target_provider
+    - target_deployment_model
+    - target_contract
+    - kafka_scenario
+    - kafka_rule_id
+    - scope_bindings
+    - resolution_status
+    - unresolved_inputs
+    - architecture_confirmation_required
+    - deployed_topology_verified
+  consistent: {kafka_rule_id: KAFKA-SCENARIO-006, scenario: independent_regional_active_active, architecture_confirmation_required: false}
+  incomplete_or_conflicting: {scenario: unresolved, scenario_controls_status: not_assessed, route_to: architecture_governance_review}
+  repository_only_inference_allowed: false
+  deployed_topology_verified: false
+assessment:
+  required_in_scope_services: [mongodb, confluent-kafka]
+  partial_scope_behavior: architecture_reasoning_only
+  independent_common_controls: evaluate_for_in_scope_integrations_with_repository_evidence
+  common_mongodb_controls: [MONGO-001, MONGO-002, MONGO-003, MONGO-004, MONGO-005, MONGO-006, MONGO-008, MONGO-009, MONGO-010, MONGO-011, MONGO-013, MONGO-014, MONGO-015, MONGO-021]
+  common_kafka_controls: [KAFKA-001, KAFKA-002, KAFKA-003, KAFKA-004, KAFKA-005, KAFKA-006, KAFKA-007, KAFKA-008, KAFKA-009, KAFKA-010, KAFKA-011, KAFKA-012]
+  active_active_controls: [KAFKA-AA-001, KAFKA-AA-002, KAFKA-AA-003, KAFKA-AA-004, KAFKA-AA-006]
+  joint_controls: [KAFKA-ATLAS-001, KAFKA-ATLAS-002, KAFKA-ATLAS-003]
+  not_applicable: [MONGO-012, KAFKA-AA-005]
+  rules:
+    - Global Clusters distribute write ownership across shards and zones; each shard replica set has one writable primary.
+    - Do not require every record to be writable locally in every region or promise autonomy during every network partition.
+    - Evaluate shard-key routing and uniqueness against approved collection contracts, not invented business rules.
+    - Kafka exactly-once processing does not make Atlas writes and Kafka commits atomic.
+    - Do not prescribe an outbox, CDC product, new persistence store, or changed business semantics without approval.
+    - Deduplicate findings by root cause across common, active-active, and joint controls.
+evidence_boundary:
+  repository_verifiable: [client_configuration, shard_key_use, query_routing, retry_and_deadline_behavior, identity, concurrency, offset_completion, recovery_tests]
+  external_evidence: [deployed_zones_and_shards, electable_nodes_and_quorum, deployed_replication, regional_health, topic_mirroring_state, offset_translation_state, recovery_objectives]
+  missing_external_evidence: evidence_gap
+  infrastructure_findings_allowed: false
+  source_target_difference_is_finding: false
+  contract_changes_require_architecture_approval: true

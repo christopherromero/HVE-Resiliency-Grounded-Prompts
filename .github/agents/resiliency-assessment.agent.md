@@ -3,7 +3,7 @@ name: Resiliency Assessment
 description: 'Run Claude Opus 5.5 resiliency assessments through HVE agents with an explicit implementation approval gate.'
 model: 'Claude Opus 5.5 (copilot)'
 disable-model-invocation: true
-tools: [vscode, execute, read, agent, search]
+tools: [vscode, execute, read, edit, agent, search]
 agents:
   - Task Researcher
   - Task Reviewer

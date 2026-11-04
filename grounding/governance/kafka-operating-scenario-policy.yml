@@ -1,4 +1,4 @@
-schema_version: 3.3.0
+schema_version: 3.4.0
 document_type: kafka_operating_scenario_policy
 policy_id: KAFKA-OPERATING-SCENARIO
 lifecycle_status: active
@@ -324,6 +324,26 @@ consistency_rules:
         type: unknown
     assessment_status: not_assessed
     architecture_confirmation_required: true
+  precedence: 6
+- rule_id: KAFKA-SCENARIO-006
+  description: Approved Atlas Global Cluster authoritative state permits independent regional active-active Kafka processing.
+  when_all:
+  - authoritative_state.dependency: mongodb
+  - dependency_variants.mongodb.target.provider: atlas
+  - dependency_variants.mongodb.target.deployment_model: global_cluster
+  - shared_service_operating_models.services.mongodb.target.operating_model: active_active
+  - shared_service_operating_models.services.confluent-kafka.target.operating_model: active_active
+  - authoritative_azure-sql_present: false
+  contract_policy: grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml
+  required_contract_validation: consistent
+  expected_target:
+    scenario: independent_regional_active_active
+    regional_processing_model: multi_active
+    cluster_model: {type: independent_regional_clusters, stretched_cluster: false, cluster_per_region: true}
+    topic_mirroring_required: true
+  validation_status: consistent
+  architecture_confirmation_required: false
+  repository_only_inference_allowed: false
   precedence: 5
 application_context_example_validation:
   context_version: 3.0.0
@@ -353,6 +373,8 @@ quality_rules:
 - Application deployment topology and Kafka processing topology are separate concepts.
 - When context is absent, provisional inference does not assert deployed topology.
 - Azure SQL authoritative-state presence takes precedence over Cosmos DB.
+- Evaluate rules by precedence and apply the otherwise rule last, regardless of list position.
+- Atlas Rule 006 requires its approved Global Cluster contract; it never reuses the Cosmos RU default or DSE write model.
 - Cosmos DB used only as a failure queue, cache, or optional store does not select
   active-active.
 - Resolve Cosmos MongoDB variants through the shared variant policy before applying
@@ -383,4 +405,4 @@ completion_validation:
 finding_qualification_policy:
   policy_id: RESILIENCY-FINDING-QUALIFICATION
   version: 1.1.0
-policy_version: 3.3.0
+policy_version: 3.4.0

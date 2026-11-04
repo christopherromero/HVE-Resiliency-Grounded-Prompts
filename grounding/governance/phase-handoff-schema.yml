@@ -251,6 +251,18 @@ shared_service_assessment_scope_handoff:
     - suppress_service_from_architecture_inventory
 
 
+mongodb_provider_and_atlas_handoff:
+  source_of_truth: authoritative_step_1_inventory
+  preserve:
+    - mongodb_scope_bindings
+    - atlas_kafka_scenario
+  downstream_recalculation_prohibited: true
+  prohibited_behavior:
+    - apply_atlas_scope_to_cosmos_mongo
+    - upgrade_draft_target_to_approved
+    - infer_global_multi_primary_writes
+    - convert_missing_deployed_evidence_to_finding
+
 # DSE Cassandra and Kafka active-active handoff
 dse_kafka_active_active_handoff:
   preserve:

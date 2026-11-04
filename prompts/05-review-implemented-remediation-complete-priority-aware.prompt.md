@@ -564,6 +564,10 @@ For every implemented shared-service change, verify that Step 1 classified the s
 
 
 
+## Atlas Global Cluster and Kafka Review
+
+Validate the frozen `mongodb_scope_bindings` and `atlas_kafka_scenario` against Steps 2, 3A, and 4 without recalculation. Confirm native/Atlas and Cosmos Mongo scope isolation, approved shard/zone and consistency behavior, identity, offset/write completion safety, and plan-required election/replay/mirroring recovery tests. Do not close findings from a context declaration, a draft sample, a single-cluster fixture, or missing deployed-topology evidence. Scope changes, unsupported topology choices, and unapproved business-semantic changes block affected closure. Preserve unresolved evidence and exact validation results in the review and handoff.
+
 ## DSE Cassandra and Kafka Active-Active Review
 
 Validate local Cassandra datacenter affinity, local Kafka cluster affinity, stable identity, duplicate/replay safety, mirrored-topic assumptions, offset recovery, regional-loss recovery, and business-behavior preservation. Missing platform evidence remains an evidence gap and does not close application findings by itself.

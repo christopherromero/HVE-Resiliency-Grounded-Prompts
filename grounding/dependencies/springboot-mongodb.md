@@ -7,7 +7,7 @@ service_name: MongoDB and Azure Cosmos DB for MongoDB
 language: java
 framework: spring-boot
 runtime_platform: aks
-version: 1.0.0
+version: 1.1.0
 assessment_scope: application_code_and_repository_owned_configuration
 lifecycle_status: active
 repository_owned_only: true
@@ -65,6 +65,8 @@ api_variant_detection:
       MongoDB does not
 shared_service_assessment_scope:
   service_key: mongodb
+  service_key_resolution: per_integration_provider_aware_scope_binding
+  variant_service_keys: {native_mongodb: mongodb, cosmos_mongo_ru: cosmosdb, cosmos_mongo_vcore: cosmosdb}
   context_path: architecture_context.shared_service_assessment_scope.services
   schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
   evaluation_gate: required
@@ -398,17 +400,19 @@ controls:
 
 ### Shared-service assessment-scope contract
 
-Before evaluating controls in this standard, resolve `mongodb` from `architecture_context.shared_service_assessment_scope.services` using `grounding/governance/shared-service-assessment-scope-schema.yml`. Inventory and preserve architecture context for every scope value. Evaluate controls, emit findings, and contribute to score only when effective scope is `in_scope`. For `out_of_scope`, skip control evaluation and report the approved scope record. For `informational_only`, permit concise evidence-backed observations only, with no finding ID, severity, priority, or remediation. For `architecture_only`, use the service only for operating-model, connectivity, authoritative-state, processing-chain, or cross-service reasoning. Scope conflicts route to architecture governance and do not create code findings. This gate does not remove the service from dependency inventory or architecture relationships.
+Before evaluating controls, resolve each production integration through `provider_aware_scope_binding` in `grounding/governance/shared-service-assessment-scope-schema.yml`. Native MongoDB, including Atlas, uses `mongodb` scope; Cosmos Mongo RU and vCore use `cosmosdb` scope. The behavior standard remains `SPRINGBOOT-MONGODB` in both cases. Preserve `integration_id`, API variant, canonical service key, scope, and evidence provenance. Never let an Atlas exclusion suppress Cosmos Mongo coverage or an in-scope Cosmos integration enable Atlas findings. Unknown or conflicting providers remain `not_assessed` pending architecture review, rather than inheriting default scope. Evaluate controls and generate findings only for an effective `in_scope` integration. Preserve all non-in-scope integrations for inventory and architecture reasoning; scope conflicts are not code findings.
 
 ### Shared-service operating-model contract
 
 This standard does not select the application's shared-service topology. Resolve the operating model from:
 
 ```text
-architecture_context.shared_service_operating_models.services.mongodb
+architecture_context.shared_service_operating_models.services.<resolved-service-key>
 ```
 
 Use `source.operating_model` only to describe current state. Use `target.operating_model` for control applicability and target-state code-readiness assessment.
+
+Use the same resolved service key for connectivity contracts. Cosmos Mongo uses the Cosmos service's contracts but MongoDB driver controls, not Cosmos Java SDK settings. For Atlas Global Cluster with active-active Kafka, apply `grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml`. This is the only supported Atlas/Kafka target pairing; other source models may be retained as migration context. Apply MONGO-011 to approved zone/shard routing and uniqueness, MONGO-002 through MONGO-005 to the approved read/write contract, and MONGO-015 to primary elections. Do not equate geographically distributed shard primaries with unrestricted multi-primary writes to the same record.
 
 - Evaluate common data-access controls whenever production use is confirmed.
 - Evaluate model-specific controls only for the resolved target operating model.
