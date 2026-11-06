@@ -12,8 +12,14 @@ agent: agent
 RUN_DATE=${input:runDate:Assessment run date used by Steps 1 and 2}
 TASK_SLUG=${input:taskSlug:Task slug used by Steps 1 and 2}
 PLAN_SLUG=${input:planSlug:Remediation plan artifact slug}
+INVENTORY_OVERRIDE=${input:inventoryArtifact:}
+REVIEW_OVERRIDE=${input:reviewArtifact:}
+PLAN_OUTPUT_OVERRIDE=${input:planArtifact:}
+BASE_PLAN_ARTIFACT=${input:basePlanArtifact:}
+RESOLVED_FINDING_IDS=${input:resolvedFindingIds:}
 
 AUTHORITATIVE_PROMPT=prompts/03A-create-authoritative-remediation-plan.prompt.md
+CONDITIONAL_FINDING_POLICY=grounding/governance/conditional-finding-policy.yml
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/${RUN_DATE}/${TASK_SLUG}-research-review.md
 PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
@@ -25,9 +31,18 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 ## Execution
 
+Read `CONDITIONAL_FINDING_POLICY` together with `AUTHORITATIVE_PROMPT`.
+
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
 Use the Task Planner behavior defined by `AUTHORITATIVE_PROMPT`.
+
+Apply nonempty explicit artifact overrides before reading. For a targeted refresh,
+pass `BASE_PLAN_ARTIFACT`, `RESOLVED_FINDING_IDS`, the exact revised assessment,
+and a new versioned plan output through to the authoritative prompt. Preserve
+unaffected IDs and write only the binding resolved output path. Never overwrite
+the base plan or guess the latest assessment. Keep `conditional_proposals` separate
+from executable changes and give them full supported illustrative implementation.
 
 Read `INVENTORY_ARTIFACT`, `REVIEW_ARTIFACT`, and `PRIORITY_POLICY`. Do not re-inventory, reassess, add new findings, or modify source code. Assign priority only through governed policy and mark missing policy coverage governance-blocked.
 

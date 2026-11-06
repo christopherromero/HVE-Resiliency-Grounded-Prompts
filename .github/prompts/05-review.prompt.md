@@ -12,9 +12,13 @@ agent: agent
 RUN_DATE=${input:runDate:Assessment run date used by Steps 1 through 3A}
 TASK_SLUG=${input:taskSlug:Task slug used by Steps 1 and 2}
 PLAN_SLUG=${input:planSlug:Plan slug used by Step 3A}
+INVENTORY_OVERRIDE=${input:inventoryArtifact:}
+REVIEW_OVERRIDE=${input:reviewArtifact:}
+PLAN_OVERRIDE=${input:planArtifact:}
 IMPLEMENTATION_ARTIFACT=${input:implementationArtifact:Exact Step 4 implementation artifact path}
 
 AUTHORITATIVE_PROMPT=prompts/05-review-implemented-remediation-complete-priority-aware.prompt.md
+CONDITIONAL_FINDING_POLICY=grounding/governance/conditional-finding-policy.yml
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/${RUN_DATE}/${TASK_SLUG}-research-review.md
 PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
@@ -23,9 +27,16 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 ## Execution
 
+Read `CONDITIONAL_FINDING_POLICY` together with `AUTHORITATIVE_PROMPT`.
+
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
 Run the `/rpi-review` workflow and use the Task Reviewer behavior defined by `AUTHORITATIVE_PROMPT`.
+
+Apply nonempty explicit artifact overrides before reading. Validate them against
+the exact assessment/plan revisions in the frozen implementation artifact. Preserve
+conditional resolution history and require its evidence and approval traceability
+for closure; do not broaden scope or promote new conditionals in this phase.
 
 Read `IMPLEMENTATION_ARTIFACT` and use its frozen `resolved_change_ids`. Do not recompute selectors. Review only that frozen scope against Step 2 findings, Step 3A acceptance and validation requirements, Step 4 implementation evidence, and the current repository state.
 

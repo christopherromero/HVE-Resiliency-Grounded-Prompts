@@ -121,6 +121,13 @@ excluded_work:
   - infrastructure_deployment
   - pcf_modernization
   - pcf_migration
+
+conditional_proposal_exception:
+  policy_path: grounding/governance/conditional-finding-policy.yml
+  executable_priority_allowed: false
+  illustrative_planning_allowed: true
+  priority_if_confirmed: complete_governed_object_or_explicit_governance_gap
+  excluded_from: [confirmed_priority_counts, executable_waves, approval_selectors]
 ---
 
 # Active-Active Remediation Prioritization Policy
@@ -132,6 +139,12 @@ This policy defines how Task Planner assigns P0, P1, P2, and P3 remediation prio
 Priority represents the impact of the defect itself. Priority must not be increased solely because a change is a prerequisite, a release gate, a test dependency, difficult to implement, or required earlier in an implementation wave.
 
 Severity describes potential impact. Priority determines remediation order and release gating. Severity and priority are related inputs but are not interchangeable.
+
+Qualified pending conditional findings are an illustrative-planning exception to
+`not_assessed_controls` in `excluded_work`, not executable remediation. Step 3A may
+assign `priority_if_confirmed` using the same rules and stated condition, never a
+confidence-based priority. Keep these proposals and counts separate from verified
+changes. After verification, refresh priority and approval in a new plan revision.
 
 ## 2. Mandatory decision sequence
 

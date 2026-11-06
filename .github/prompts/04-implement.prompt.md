@@ -12,6 +12,9 @@ agent: agent
 RUN_DATE=${input:runDate:Assessment run date used by Steps 1 through 3A}
 TASK_SLUG=${input:taskSlug:Task slug used by Steps 1 and 2}
 PLAN_SLUG=${input:planSlug:Plan slug used by Step 3A}
+INVENTORY_OVERRIDE=${input:inventoryArtifact:}
+REVIEW_OVERRIDE=${input:reviewArtifact:}
+PLAN_OVERRIDE=${input:planArtifact:}
 APPROVED_PRIORITIES=${input:priorities:Comma-separated priorities, for example P0,P1}
 APPROVED_WAVES=${input:waves:Comma-separated implementation waves, for example 1,2; leave empty when unused}
 APPROVED_CHANGE_IDS=${input:changeIds:Comma-separated Step 3A change IDs; leave empty when unused}
@@ -20,6 +23,7 @@ PUSH_ALLOWED=false
 BRANCH_CREATION_ALLOWED=false
 PULL_REQUEST_CREATION_ALLOWED=false
 AUTHORITATIVE_PROMPT=prompts/04-implement-approved-remediation-complete-priority-aware.prompt.md
+CONDITIONAL_FINDING_POLICY=grounding/governance/conditional-finding-policy.yml
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/${RUN_DATE}/${TASK_SLUG}-research-review.md
 PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
@@ -28,9 +32,16 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 ## Execution
 
+Read `CONDITIONAL_FINDING_POLICY` together with `AUTHORITATIVE_PROMPT`.
+
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
 Run the `/rpi-implement` workflow and use the Task Implementor behavior defined by `AUTHORITATIVE_PROMPT`.
+
+Apply nonempty explicit artifact overrides before reading. Require the exact
+current assessment and matching refreshed plan after conditional resolution.
+Run the authoritative prompt's conditional-resolution preflight before scope
+freeze. Never select pending proposals or infer approval from the Step 3B report.
 
 Resolve implementation scope from `PLAN_ARTIFACT` using the supplied approved selectors, then freeze the exact change-ID set before editing. If all selectors are empty, stop and request an explicit approval selector. Do not derive implementation scope from the assessment report.
 

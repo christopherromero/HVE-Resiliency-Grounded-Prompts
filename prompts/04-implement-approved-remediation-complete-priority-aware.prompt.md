@@ -1,3 +1,7 @@
+---
+description: Implement frozen approved changes after verification and conditional-resolution gates
+---
+
 # Prompt 4: Implement Approved Multi-Region Remediation Changes
 
 ## Agent and phase
@@ -62,7 +66,8 @@ Do not combine selectors. Do not silently broaden or narrow the selected scope.
 
 Before modifying any file:
 
-1. Read all planned changes from the authoritative plan.
+1. Read verified `changes` from the authoritative plan. Never select from
+  `conditional_proposals`, `priority_if_confirmed`, or a report register.
 2. Validate that each planned change has a stable `change_id`.
 3. Validate that each planned change has a governed priority object containing:
    - `value`
@@ -78,6 +83,33 @@ Before modifying any file:
 10. Freeze the resolved change list before implementation begins.
 
 If no change ID resolves from the selected priorities, waves, or IDs, stop without changing source code and report the empty scope.
+
+### Conditional-resolution preflight
+
+Read `grounding/governance/conditional-finding-policy.yml`. Before freezing scope,
+compare the exact current Step 2 assessment path and revision with the plan's
+recorded assessment authority. A stale plan requires a separate Step 3A refresh;
+timestamps alone are not sufficient. Do not repair or reclassify findings here.
+
+For every selected previously conditional finding, require confirmed condition,
+`finding_status: verified`, mapped `non_compliant` controls, validated evidence,
+real reviewer/time/rationale/evidence references, and nonempty resolution history.
+The refreshed plan must explicitly permit implementation after required approvals.
+Confidence, a human disposition alone, or a proposed patch is insufficient.
+
+Build a temporary JSON validation index directly from Step 2 and Step 3A using
+`conditional-finding-policy.yml` `validation_record`; report-specific fields are
+not needed. Run this read-only preflight with one flag per resolved change:
+
+```text
+python tools/validate_assessment_report.py --resolution-record <temporary-index.json> --selected-change-id <approved-change-id>
+```
+
+Require exit code zero and preserve the preflight result and authoritative
+revision references in the implementation record. The index is non-authoritative;
+never construct it from Step 3B or use it to grant approval. If any selected item
+is pending, ruled out, blocked, or lacks resolution proof, stop before scope freeze.
+Do not silently remove it, narrow the selector, or substitute another change.
 
 ## Required frozen implementation scope
 

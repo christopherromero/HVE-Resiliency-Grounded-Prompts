@@ -163,6 +163,8 @@ evidence_rules:
   - Redact protected values using the same rules as repository evidence.
   - Mirror evidence proves configured intent only and never proves deployed runtime state.
   - Keys with provenance unresolved remain not_assessed and are reported as evidence gaps.
+    - Under grounding/governance/conditional-finding-policy.yml, an unresolved key may additionally support a qualified conditional consequence of evidenced application behavior; the key remains unresolved and the control is not confirmed non_compliant.
+    - Invalid mirror authority, stale bytes, binding contradictions, and unresolved architecture conflicts are evidence blocks, not conditional-finding workarounds. Changed evidence requires a separate Step 1 refresh before resolution.
   - Customer-declared mirrors may support compliant and non_compliant results without detected client code once declaration, binding, file, and fingerprint checks pass.
   - Prefer a dedicated mirror directory distinct from application-owned resources; copy authentic external configuration files, not invented equivalents or client-side defaults.
   - Preserve the selected application, ordered profiles, label, source origin, declaration reference, and per-file fingerprint manifest with every source resolution.

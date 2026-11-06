@@ -1,0 +1,207 @@
+schema_version: "1.0.0"
+document_type: conditional_finding_policy
+policy_id: CONDITIONAL-FINDING-RESOLUTION
+policy_version: "1.0.0"
+lifecycle_status: active
+owner: Cloud Architecture Team
+
+purpose: >-
+  Evaluate evidence-supported potential violations without declaring unknown
+  settings defective, and resolve them through human evidence review before
+  implementation. Existing scope, ownership, snapshot, and evidence rules apply.
+
+authority:
+  inventory: step_1
+  finding_and_verification: step_2
+  priority_and_change: step_3a
+  presentation: step_3b
+  human_review_is_evidence_input_not_automatic_promotion: true
+  historical_artifacts_require_explicit_versioned_refresh: true
+
+eligibility:
+  required:
+    - Applicable control and confirmed in-scope service or artifact.
+    - Exact repository or validated configuration evidence of relevant behavior.
+    - Explicit unresolved condition with a determinate violation if confirmed.
+    - Credible failure scenario, causal mechanism, and material impact.
+    - Concrete evidence that can confirm or rule out the condition.
+  exclusions:
+    - Architecture declaration alone with no implementation evidence.
+    - Missing deployed topology proof with no independent application behavior.
+    - Invalid evidence authority, conflicting scope, or stale source evidence.
+    - Speculation without a supported causal mechanism.
+  independent_evaluation: >-
+    Evaluate independent application-side criteria first. Approved target intent
+    establishes applicability without deployed-state proof. Limit uncertainty to
+    the affected criterion; never suppress a separately proven defect.
+
+control_results:
+  status_values: [compliant, non_compliant, not_assessed, not_applicable, accepted_risk]
+  pending_conditional:
+    status: not_assessed
+    assessment_mode: conditional
+    outcome_if_confirmed: non_compliant
+  verified_violation:
+    status: non_compliant
+    assessment_mode: verified
+  counts: >-
+    Preserve original control-status totals. Split not_assessed into controls
+    with qualified pending conditional findings and controls without them,
+    without overlap or double counting. Do not equate control and finding counts.
+
+finding_contract:
+  core_fields: >-
+    Retain the same applicable source-evidence, control mapping, classification,
+    severity, risk, and proposed-remediation fields as verified findings. Step 3A
+    owns illustrative implementation, tests, validation, dependencies, rollback,
+    and priority. Unknown fields have an explicit reason, never invented values.
+  required_additional_fields:
+    - condition
+    - finding_confidence
+    - verification
+    - resolution_history
+    - implementation_eligibility
+  condition:
+    description: required_exact_trigger
+    outcome_if_confirmed: required_control_violation
+    evidence_required: required_nonempty_list
+    evidence_that_rules_out: required_nonempty_list
+    evidence_owner: required_owner_or_explicit_unknown
+    verification_status_values: [unresolved, confirmed, ruled_out]
+  finding_confidence:
+    level_values: [high, medium, low]
+    rationale: required
+    high: Exact behavior and causal mechanism; the identified condition remains unresolved.
+    medium: Supported causal mechanism with an explicit execution-path or precedence question.
+    low: Insufficient causal support; retain as an investigation candidate or evidence gap.
+    qualified_conditional_levels: [high, medium]
+    changes_severity_priority_or_approval: false
+    numeric_probability_allowed: false
+  verification:
+    disposition_values: [pending, confirmed, ruled_out, deferred]
+    required_on_resolution: [reviewed_by, reviewed_at, rationale, evidence_refs]
+    evidence_validation_required: true
+  resolution_history: Preserve stable IDs, prior status, artifact versions, and evidence references.
+  implementation_eligibility:
+    pending: blocked
+    ruled_out: excluded
+    verified: requires_step_3a_approval
+
+planning:
+  pending_proposal_status: conditional_blocked
+  implementation_allowed: false
+  priority_if_confirmed: >-
+    Step 3A may record a complete governed priority object only when the stated
+    condition supports a policy rule; otherwise record the exact governance gap.
+    It is not an executable priority or part of confirmed-priority counts.
+  illustrative_implementation: >-
+    Provide concrete source-supported code, configuration, tests, validation,
+    acceptance criteria, dependencies, and rollback for supported targets.
+    Block only unsupported portions as targeted_discovery_required. Label each
+    snippet Illustrative proposal only. Never invent product or architecture choices.
+
+resolution:
+  phase_invocations_are_separate: true
+  step_1_refresh_when: >-
+    New or changed evidence affects inventory authority, configuration bindings,
+    mirror bytes or fingerprints, architecture, source snapshot, activation, or scope.
+  step_2: >-
+    In a targeted resolution invocation, validate customer evidence and reevaluate
+    selected controls and dependent criteria. Write a new complete assessment
+    revision, preserving unchanged records, IDs, original evidence, and history.
+    Confirmed conditions become verified only when the actual violation is proven.
+    Ruled-out conditions remain historical dispositions; never infer full compliance.
+  step_3a: Refresh the plan in a separate invocation before implementation eligibility.
+  step_3b: Regenerate presentation from the revised authoritative assessment and plan.
+  unresolved: Remain visible and blocked; human approval cannot replace missing evidence.
+
+reporting:
+  pending_section: Conditional Findings Pending Verification
+  parent_section: Repository and IaC Evidence Gap Analysis
+  detail: Summary table and full finding details with Step 3A illustrative proposals.
+  pending_excluded_from: [confirmed_counts, full_finding_matrix, executable_roadmap]
+  promoted: Move verified items to standard findings; preserve resolution history in traceability.
+  ruled_out: Keep disposition history without counting as a verified or pending finding.
+  not_assessed_register: >-
+    Account for every not_assessed control, including links to pending conditional
+    entries. Include control/service, failure scenario, impact, available evidence,
+    exact missing setting or decision, context authority, policy reason, owner,
+    verification request, resolution criteria, and related findings. Unknown stays unknown.
+  filtering: >-
+    Review-register coverage is independent of confirmed-priority filtering and
+    testing visibility. A report that hides evidence gaps must declare the omission
+    and cannot claim complete conditional-review coverage.
+
+implementation:
+  require: [verified_finding, non_compliant_control, validated_resolution_evidence, approved_step_3a_change]
+  priority_selection_cannot_bypass_resolution: true
+  unresolved_selected_change_behavior: stop_and_report_before_freezing_scope
+  closure: Validate the resolution evidence, approved change, and required behavioral tests.
+
+validation_record:
+  policy_id: CONDITIONAL-FINDING-RESOLUTION
+  policy_version: "1.0.0"
+  required_fields:
+    - review_artifact
+    - review_revision
+    - plan_artifact
+    - plan_review_artifact
+    - plan_review_revision
+    - findings
+    - controls
+    - changes
+    - conditional_proposals
+    - not_assessed_register
+  artifact_versions: Exact plan_review_artifact and plan_review_revision must match review_artifact and review_revision.
+  resolution_history_entries: >-
+    Preserve previous_finding_status conditional, parent_review_artifact, evidence_refs,
+    disposition rationale, and prior/current revision identifiers on resolution.
+  findings: >-
+    Include active and historically resolved finding records with finding_id,
+    finding_status (verified, conditional, ruled_out), control_ids, and evidence_refs.
+    Conditional and previously conditional records also retain condition,
+    finding_confidence, verification, resolution_history, and implementation_eligibility.
+    These index fields reference, and never replace, full authoritative core records.
+  controls: >-
+    Include control_id and status for every assessed control; pending controls also
+    retain assessment_mode conditional and outcome_if_confirmed non_compliant.
+  changes: >-
+    Include change_id, finding_ids, governed priority object, and implementation_allowed
+    for every verified plan change. Pending proposals never appear in changes.
+  conditional_proposals: >-
+    Include proposal_id, finding_ids, status conditional_blocked, implementation_allowed
+    false, and nonempty targets using the normal proposed_implementation fields:
+    repository_path, symbol, source_language, target_kind (application, configuration,
+    or test), illustrative_code_status, illustrative_code,
+    discovery_required_reason, and unresolved_inputs as applicable. A target with
+    status not_applicable requires a reason. No executable priority or change_id.
+  not_assessed_register: >-
+    One row per not_assessed control with control_id, service, failure_scenario,
+    potential_impact, available_evidence, missing_input, context_path, context_authority,
+    blocking_reason, policy_rule, evidence_owner, verification_request,
+    resolution_criteria, and conditional_finding_ids. Lists may be empty only for
+    available_evidence and conditional_finding_ids; unavailable facts are explicit.
+  report_fields:
+    - conditional_register_included
+    - evidence_gaps_included
+    - omission_reason
+    - confirmed_finding_ids
+    - pending_conditional_ids
+    - matrix_finding_ids
+    - roadmap_change_ids
+    - testing_output
+  testing_output: >-
+    Preserve mode and show_test_code from report preferences. Test code is rendered
+    only in full mode with show_test_code true; other modes retain authoritative
+    targets and obligations without requiring visible test snippets. Application
+    and configuration code cannot be hidden by testing preferences.
+  report_selection: >-
+    confirmed_finding_ids and matrix_finding_ids are identical sets of selected
+    verified findings. pending_conditional_ids identifies every active conditional,
+    regardless of visibility. roadmap_change_ids contains verified changes only.
+    Inclusion preferences are booleans; omitted registers require an omission reason.
+  implementation_preflight: >-
+    Build this record directly from current Step 2 and Step 3A artifacts, never the
+    report. Run validate_assessment_report.py --resolution-record TEMP_JSON_PATH
+    with repeated --selected-change-id values before scope freeze. Report fields
+    are not required for preflight. The temporary index cannot grant authority or approval.

@@ -23,6 +23,17 @@ required_classification_gate:
     If evidence supports the violation but one or more resiliency criteria are not met,
     retain it as `non_resiliency`; do not suppress or discard it.
 
+conditional_qualification:
+  policy_path: grounding/governance/conditional-finding-policy.yml
+  verified_gate_unchanged: true
+  rule: >-
+    A qualified conditional finding may establish the classification gate under its
+    explicit unresolved trigger, supported by exact implementation evidence and a
+    credible causal mechanism. Preserve finding_status conditional, condition,
+    confidence, and verification state; never call the actual violation proven or
+    manufacture deployed evidence. Low-confidence speculation remains an evidence gap.
+  qualification_rationale: State which facts are proven and which gate depends on the trigger.
+
 approved_resiliency_domains:
   - availability
   - recovery

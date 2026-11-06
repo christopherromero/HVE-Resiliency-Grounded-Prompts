@@ -69,7 +69,9 @@ Preserve the Step 1 `external_configuration_resolution` record. Do not recalcula
 
 - Evaluate configuration-dependent controls against the Step 1 effective configuration, not only repository-owned files.
 - Keys with provenance `config_server_local_equivalent` from a source with `authority: authoritative` are authoritative configuration evidence. They may produce `non_compliant` findings and support `compliant` results.
-- Keys with provenance `unresolved` remain `not_assessed` and are recorded as evidence gaps.
+- Keys with provenance `unresolved` remain unverified and affected controls remain
+  `not_assessed`. Evaluate qualified conditional consequences under the conditional
+  policy; never treat an unresolved value as authoritative or noncompliant.
 - Preserve Step 1 conflicts. Controls affected by ECR-CONFLICT-001 are `not_assessed` and route to architecture governance.
 - Opening mirror files cited by Step 1 is evidence validation, not re-inventory.
 - Accept either Step 1 activation mode: `detected_config_client` or `customer_declared_mirror`. Do not reject a validated customer-declared mirror merely because `config_client_detected` is false.
@@ -143,7 +145,7 @@ scenario_condition:
     - Kafka regional cluster model confirmation
 ```
 
-Use `not_assessed` when evaluation requires deployed topology and the repository contains no independent application behavior to evaluate. Examples include actual cluster count, Cluster Linking state, Cosmos account settings, topic or offset replication, regional endpoint injection, and deployed routing behavior. Do not convert missing platform facts into code findings.
+Use `not_assessed` when evaluation requires deployed topology and the repository contains no independent application behavior to evaluate. Examples include actual cluster count, Cluster Linking state, Cosmos account settings, topic or offset replication, regional endpoint injection, and deployed routing behavior. Do not convert missing platform facts into code findings. For qualified conditional findings, apply the shared contract below to this Kafka example as well; the condition never establishes a confirmed violation by itself.
 
 ### Inferred database-independent Kafka scenario
 
@@ -290,9 +292,105 @@ Do not use Task Researcher to copy or relocate files. If repository-owned output
 
 ## Evaluation rules
 
-For every applicable control, return one of `compliant`, `non_compliant`, `not_assessed`, `not_applicable`, or `accepted_risk`. Generate findings only for evidence-backed `non_compliant` controls. Missing evidence is `not_assessed`, not a finding. Deduplicate findings by root cause.
+For every applicable control, return one of `compliant`, `non_compliant`, `not_assessed`, `not_applicable`, or `accepted_risk`. Generate verified findings only for evidence-backed `non_compliant` controls. Qualified conditional findings may link `not_assessed` controls using `assessment_mode: conditional` and `outcome_if_confirmed: non_compliant`; they are not confirmed violations. Missing evidence alone is an evidence gap, not a finding. Deduplicate findings by root cause.
 
 A sustained critical dependency failure should normally make the application not ready when it cannot safely serve its critical capability. External dependency failure should not normally fail liveness. Recovery should restore readiness without a process restart.
+
+## Conditional evaluation and targeted resolution
+
+Read `grounding/governance/conditional-finding-policy.yml` as the shared authority.
+Apply conditional evaluation to every applicable control with an unresolved input,
+not only Kafka. First evaluate independent criteria from approved target intent,
+repository evidence, validated mirrors, and effective precedence. Do not defer a
+proven application defect because a separate platform fact is unavailable.
+
+A conditional finding requires evidence-backed behavior, an exact unresolved
+trigger, a determinate control violation if confirmed, a credible failure scenario,
+material impact, and evidence that can confirm or rule it out. Scope, evidence
+authority, stale-source, and architecture-conflict blocks remain evidence gaps;
+do not work around them with conditional findings. Low-confidence speculation is
+an investigation candidate, not a qualified finding.
+
+Keep the same applicable core finding fields as a verified finding, including
+exact original evidence and resiliency qualification conditional on the trigger.
+Add these fields to each qualified conditional record in `findings`:
+
+```yaml
+finding_status: conditional
+condition:
+  description: "Exact unresolved setting or fact and its triggering value"
+  outcome_if_confirmed: "Specific violation and failure impact"
+  evidence_required: ["Exact artifact, configuration key, or verification result"]
+  evidence_that_rules_out: ["Specific evidence that negates the trigger"]
+  evidence_owner: "Actual owner or unknown with an evidence-owner request"
+  verification_status: unresolved
+finding_confidence:
+  level: high
+  rationale: "Why observed behavior supports the violation if the trigger is true"
+verification:
+  disposition: pending
+  evidence_validated: false
+  evidence_refs: []
+resolution_history: []
+implementation_eligibility: blocked
+```
+
+Use `high` or `medium` with an evidence-based rationale; never numeric probability.
+Confidence does not change severity, priority, scope, or approval. Step 3A, not
+Step 2, supplies illustrative remediation and `priority_if_confirmed`.
+
+Create a `not_assessed_register` with one record per not-assessed control. Include
+`control_id`, service, regional failure scenario, potential impact, available
+evidence references, exact missing key/value/decision, context path and authority,
+blocking reason and policy rule, owner, verification request, resolution criteria,
+and `conditional_finding_ids`. Explicit unknowns are required instead of guesses.
+Preserve total control-status counts and separately count not-assessed controls
+with qualified conditionals and those without; the two subsets must sum to the
+original total. Findings are deduplicated separately from controls.
+
+### Targeted conditional-resolution invocation
+
+The normal invocation assesses all inventoried controls. To resolve reviewed
+conditionals, additionally supply:
+
+```text
+ASSESSMENT_MODE=resolve_conditionals
+BASE_REVIEW_ARTIFACT=<exact prior complete Step 2 artifact>
+RESOLUTION_INPUT_ARTIFACT=<human-provided review decisions and evidence references>
+SELECTED_FINDING_IDS=<explicit stable IDs>
+REVIEW_OUTPUT_PATH=<new versioned complete Step 2 artifact path>
+```
+
+Every new assessment artifact records an immutable `assessment_revision` unique
+within its assessment run, its exact authoritative inventory path, and its parent
+assessment path when revised. Step 3A copies that exact revision and artifact path.
+
+The resolution input has a `decisions` list with one record per selected finding: `finding_id`,
+`disposition` (`confirmed`, `ruled_out`, or `deferred`), `reviewed_by`, `reviewed_at`,
+`rationale`, and `evidence_refs`. Nonempty reviewer identity and real evidence are
+required for resolution; approval alone is not evidence. Do not invent this input.
+
+1. Read the base assessment, authoritative inventory, and supplied review records.
+2. Stop and request a separate Step 1 refresh if new authority, changed mirror
+  bytes, bindings, architecture, source snapshot, scope, or activation is involved.
+  Do not silently refresh inventory authority during Step 2.
+3. Validate evidence relevance, authority, exact source locators, and effective
+  values. Reevaluate selected controls and explicitly identified dependent criteria
+  only; do not broaden discovery or reassess unrelated services.
+4. Promote to `finding_status: verified` and `status: non_compliant` only when
+  validated evidence plus observed behavior establishes the actual violation.
+  Set `condition.verification_status: confirmed`, `verification.disposition:
+  confirmed`, `verification.evidence_validated: true`, reviewer/time/rationale/
+  evidence references, and `implementation_eligibility: requires_step_3a_approval`.
+5. Move ruled-out items to `resolved_conditionals` with their full original record
+  and disposition history. Never delete or reuse IDs, and never infer full control
+  compliance merely because one trigger was ruled out. Deferred items stay pending.
+6. Write one new complete assessment revision at the supplied path, preserving
+  unchanged records and original excerpts. Record parent artifact, assessment
+  revision ID, resolution history, affected controls, and reconciled counts and
+  registers. Never overwrite historical assessments or perform Step 3A in this phase.
+7. Handoff the exact revised path and required Step 3A refresh. Human verification
+  does not itself approve implementation.
 
 ## Required execution metadata
 
@@ -412,7 +510,7 @@ evidence_summary:
 
 ## Completion validation
 
-Verify that the inventory run ID is carried into the outputs, no new dependencies were added, only listed standards were loaded, every finding maps to a noncompliant control, missing evidence became `not_assessed`, no infrastructure or PCF findings were created, and `re_inventory_performed` remains false. Report output paths, standards loaded, findings by severity, not-assessed count, inventory exceptions, and confirmation that no re-inventory occurred.
+Verify that the inventory run ID is carried into the outputs, no new dependencies were added, only listed standards were loaded, every verified finding maps to a noncompliant control, every qualified conditional maps to an applicable control with its uncertainty preserved, and missing evidence remains unverified. Verify no infrastructure or PCF findings were created and `re_inventory_performed` remains false. Report output paths, standards loaded, verified and conditional findings separately, not-assessed subsets, inventory exceptions, and confirmation that no re-inventory occurred.
 
 ## Repository-Agnostic Assessment Snapshot and Source Locator Contract
 
@@ -496,8 +594,12 @@ Before completing:
 - Verify Step 1 assessment scope, snapshot, architecture relationships, Kafka scenario, and conflict records were preserved without recalculation.
 - Verify architecture conflicts made affected architecture-dependent controls `not_assessed` and did not create code findings by themselves.
 - Verify every applicable control has exactly one valid status.
-- Verify every finding maps to an evidence-backed `non_compliant` control.
-- Verify missing or stale evidence became `not_assessed`, not a finding.
+- Verify every verified finding maps to an evidence-backed `non_compliant` control.
+- Verify qualified conditional findings satisfy the shared contract and do not
+  convert uncertain values to confirmed noncompliance.
+- Verify stale or invalid evidence remains an evidence gap, not a conditional workaround.
+- Verify every not-assessed control is in the blocker register and its subsets reconcile.
+- Verify resolved conditionals preserve IDs/history and pending items remain blocked.
 - Verify the repository evidence contract appears only once and uses the snapshot-aware structure.
 - Verify every applicable evidence item has path, symbol/element, exact excerpt or explicit unavailability, fingerprint when computable, snapshot classification, and advisory line-range status.
 - Verify line numbers were never estimated or used as authoritative locators.

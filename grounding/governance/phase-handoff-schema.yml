@@ -1,4 +1,4 @@
-schema_version: "1.4.0"
+schema_version: "1.5.0"
 document_type: phase_handoff_schema
 schema_id: ASSESSMENT-PHASE-HANDOFF
 lifecycle_status: active
@@ -116,6 +116,9 @@ phase_requirements:
       - finding_summary
       - scenario_summary
       - evidence_summary
+      - conditional_finding_summary
+      - not_assessed_summary
+      - resolution_summary
   remediation_planning:
     file_name: 03A-planning-summary.yml
     required_sections:
@@ -124,6 +127,8 @@ phase_requirements:
       - wave_distribution
       - illustrative_code_summary
       - targeted_discovery_summary
+      - conditional_proposal_summary
+      - assessment_revision_reference
   assessment_report:
     file_name: 03B-report-summary.yml
     required_sections:
@@ -131,6 +136,7 @@ phase_requirements:
       - finding_rendering_summary
       - illustrative_code_summary
       - schema_conformance_summary
+      - conditional_review_coverage_summary
   implementation:
     file_name: 04-implementation-summary.yml
     required_sections:
@@ -138,6 +144,7 @@ phase_requirements:
       - implementation_result_summary
       - file_change_summary
       - validation_summary
+      - conditional_resolution_gate_summary
   post_implementation_review:
     file_name: 05-review-summary.yml
     required_sections:
@@ -145,6 +152,7 @@ phase_requirements:
       - change_review_summary
       - finding_disposition_summary
       - follow_up_summary
+      - conditional_resolution_traceability_summary
 
 validation:
   required_checks:
@@ -160,6 +168,27 @@ validation:
     - passed
     - failed
     - partial
+
+conditional_finding_resolution_handoff:
+  policy_path: grounding/governance/conditional-finding-policy.yml
+  preserve:
+    - assessment_revision_and_parent_artifact
+    - verified_pending_ruled_out_and_deferred_counts
+    - stable_finding_and_proposal_ids
+    - condition_confidence_and_verification_records
+    - resolution_history_and_evidence_references
+    - not_assessed_total_and_nonoverlapping_conditional_subsets
+    - exact_inventory_assessment_and_plan_versions
+    - pending_proposals_excluded_from_executable_scope
+    - report_register_preferences_and_omissions
+  required_next_phase_inputs:
+    - authoritative_resolution_input_when_resolving
+    - refreshed_inventory_when_authority_changed
+    - refreshed_assessment_and_plan_before_implementation
+  prohibited_behavior:
+    - promote_a_finding_in_a_handoff
+    - treat_human_approval_as_evidence
+    - authorize_implementation_of_pending_conditionals
 
 priority_filtered_reporting:
   preserve_across_report_handoff:

@@ -347,6 +347,30 @@ Do not duplicate findings when multiple controls identify the same root cause.
 
 Preserve verified, conditional, not-assessed, not-applicable, accepted-risk, and non-finding states separately.
 
+### Conditional findings and human evidence review
+
+Use `grounding/governance/conditional-finding-policy.yml` for qualified conditional
+findings, confidence, targeted resolution, and implementation gates. Evidence-backed
+behavior with an exact unresolved trigger may support a conditional finding, never
+confirmed noncompliance. Preserve control-status totals and a complete not-assessed
+blocker register. Scope conflicts, invalid evidence authority, and missing deployed
+proof without independent application behavior remain gaps, not conditional defects.
+
+Step 2 owns verification and versioned resolution history. Step 3A supplies full
+illustrative proposals in `conditional_proposals`, separate from executable
+`changes`; unresolved proposals remain blocked and have only `priority_if_confirmed`.
+Step 3B renders pending conditionals with the same applicable detail and illustrative
+code as verified findings in a separate Evidence Gap Analysis subsection, outside
+confirmed counts, the Full Finding Matrix, and the executable roadmap. Existing
+testing preferences affect presentation only.
+
+Human review supplies evidence and dispositions; it cannot directly promote or
+authorize a finding. Refresh Step 1 when authority changes, resolve affected findings
+in a separate targeted Step 2 invocation, refresh Step 3A, then regenerate Step 3B.
+Preserve IDs, original evidence, prior artifacts, and ruled-out history. Step 4
+requires verified noncompliance, validated resolution evidence, and an approved
+current Step 3A change. Do not silently cross phase boundaries.
+
 ## Priority governance
 
 Assign remediation priority only through:

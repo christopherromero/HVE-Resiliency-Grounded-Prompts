@@ -1,3 +1,7 @@
+---
+description: Render verified findings and a separate full-detail conditional-review section
+---
+
 # Prompt 3B: Create the Schema-Governed Code-Level Resiliency Assessment Report
 
 ## Agent and phase
@@ -223,6 +227,38 @@ Use these report classifications:
 - **Verified control:** Evidence establishes acceptable behavior and no code change is required.
 - **Non-finding observation:** Informational only and excluded from counts and implementation scope.
 
+### Separate conditional-review rendering
+
+Read `grounding/governance/conditional-finding-policy.yml`. Render pending
+conditionals only in the schema's `Conditional Findings Pending Verification`
+subsection under Evidence Gap Analysis. Include a summary table and the same
+applicable detailed finding fields, exact source evidence, target paths, and
+Step 3A illustrative code/configuration as verified findings. Use
+`priority_if_confirmed`, not executable priority. Preserve all supported target
+snippets, discovery reasons, tests and validation obligations under existing
+testing-output visibility rules. Include confidence, trigger, confirmation and
+rule-out evidence, owner, disposition, and blocked implementation eligibility.
+
+Pending items do not enter standard recommendation sections, confirmed counts,
+the Full Finding Matrix, or executable roadmap. Pending display IDs use the
+schema's stable C-series, with internal IDs and proposal mappings in Appendix A.
+Apply conditional/evidence inclusion preferences independently of verified-priority
+filters and declare any omission. Render the complete not-assessed register when
+enabled, including linked conditionals and disjoint count reconciliation.
+
+After authoritative Step 2 resolution and Step 3A refresh, regenerate this report:
+promoted findings appear only in the verified sections and matrix, leave the
+pending table, and retain disposition history in Appendix A. Ruled-out items are
+historical only; deferred items remain pending. Step 3B cannot itself verify a
+condition, approve a change, or edit the assessment or plan.
+
+Include the schema's JSON `conditional-review-manifest` index from the exact
+authoritative artifacts and revisions. Use distinct conditional, matrix, and
+roadmap markers; run the report validator with `--require-conditional-review`.
+Missing proposal details, invalid confidence or resolution evidence, leaked
+pending items, and incomplete blocker coverage fail conformance. The index never
+replaces source evidence and the report never authorizes implementation.
+
 PCF references must be informational only and excluded from findings, priorities, counts, score, recommendations, matrices, and implementation work.
 
 ## Required output behavior
@@ -269,7 +305,7 @@ report_governance:
 
 Use `REPORT_TEMPLATE` as the fixed starting skeleton. Do not reconstruct the report layout from memory. Validate the seven required section headings, their order, all fixed section markers, and every authorized insertion-region marker before writing.
 
-Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed finding, exactly once per selected finding.
+Write content only between the template's matching `:start` and `:end` markers. Preserve fixed headings, table-of-contents links, section markers, and back-to-top links unchanged. Insert `<!-- finding:{STEP_2_FINDING_ID} -->` immediately before each detailed verified finding, exactly once per selected verified finding. Pending entries use only `<!-- conditional-finding:{STEP_2_FINDING_ID} -->` in their separate review subsection.
 
 When `REFERENCE_ARCHITECTURE_REGISTRY` is supplied, render only applicable approved entries. When absent, render the schema-required no-registry statement. Never source customer-specific references from hardcoded prompt or schema content.
 
@@ -496,7 +532,8 @@ Before completing:
 8. Verify no narrative-only text is rendered as a code fix.
 9. Verify every targeted-discovery record includes its specific reason and unresolved inputs.
 10. Verify invalid Step 3A proposals cause report conformance failure and planning-revision routing.
-11. Verify conditional findings identify conditions and evidence required.
+11. Verify pending conditional entries identify conditions, confidence, confirm/rule-out
+  evidence, owner, full Step 3A illustrative proposals, and blocked eligibility.
 12. Verify no `not_assessed` item is presented as noncompliant.
 13. Verify summary counts match the Full Finding Matrix.
 14. Verify the roadmap matches Step 3A priority and wave indexes.
@@ -515,6 +552,12 @@ Before completing:
   generated target-level proposals.
 26. Verify blocked implementation adapters are distinguished from
   generated application abstractions and tests.
+27. Verify pending items are excluded from confirmed counts, the main matrix, and
+  executable roadmap; every not-assessed control is accounted for or omission declared.
+28. Verify assessment/plan revisions agree, promoted items leave the pending table,
+  and ruled-out history remains traceable without changing authoritative status.
+29. Run `python tools/validate_assessment_report.py <report-path> --require-conditional-review`
+  and require exit code zero in addition to the existing schema checks.
 
 ### Kafka scenario reporting
 

@@ -1,3 +1,7 @@
+---
+description: Workstation setup and governed resiliency assessment workflow
+---
+
 README - 09/13/2026
 
 # Here is the process for setting up your workstation
@@ -182,6 +186,84 @@ Note that each Step uses a HVE Agent that is different
 10) When step 3B is done, the assessment report should be created. Assessment report will be created under .copilot-tracking/plans/reports and have the name code-level-resiliency-assessment.md
 
 Summary of each step work will also be created and stored in the handoffs subfolder of each agent folder, but full details are in the normal locations
+
+## Conditional findings and human evidence review
+
+The [conditional-finding policy](grounding/governance/conditional-finding-policy.yml)
+defines supported potential violations without declaring unknown settings defective.
+Step 2 records the exact trigger, source evidence, regional impact, high/medium
+confidence and rationale, confirmation/rule-out evidence, owner, and review state.
+Low-confidence speculation remains an investigation candidate or evidence gap.
+Control-status totals still include unverified controls as not assessed, with
+separate counts for controls with qualified conditionals and those without.
+
+Step 3A writes full source-supported illustrative code, configuration, tests,
+acceptance criteria, validation commands, dependencies, and rollback in blocked
+`conditional_proposals`, not executable `changes`. Only unsupported targets need
+targeted discovery. `priority_if_confirmed` is governed but cannot authorize work.
+
+Step 3B renders `Conditional Findings Pending Verification` under Evidence Gap
+Analysis, with a summary table and full detailed entries. Pending items are outside
+confirmed counts, the main matrix, and the executable roadmap. The complete
+Not-Assessed Control Register explains each exact blocker and verification request.
+Existing `include_conditional_findings` and `include_evidence_gaps` preferences
+control visibility independently of verified-priority filters. Hidden registers
+require a coverage-limitation notice. Testing preferences never remove obligations
+and do not hide application/configuration snippets.
+
+### Resolving a conditional finding
+
+1. The actual evidence owner supplies configuration, an approved contract, or other
+  relevant evidence. A human reviewer records a `decisions` list containing
+  `finding_id`, `disposition` (`confirmed`, `ruled_out`, or `deferred`), `reviewed_by`,
+  `reviewed_at`, `rationale`, and `evidence_refs`. Never invent reviewer identity or
+  confirmation evidence. Approval alone is not verification.
+2. If authority changed, run Step 1 in a separate chat using `baseInventoryArtifact`
+  and a new `inventoryOutputPath`. Changed mirror bytes/fingerprints, bindings,
+  architecture, scope, activation, or source snapshots require this refresh.
+3. Run targeted Step 2 resolution in a new chat. Supply the actual paths and IDs:
+
+```text
+/02-findings runDate=2026-11-05 taskSlug=cart-service-inventory assessmentMode=resolve_conditionals inventoryArtifact=<exact-inventory> baseReviewArtifact=<base-review> resolutionInputArtifact=<human-review-input> selectedFindingIds=F-001 reviewOutputPath=<new-review-v2-path>
+```
+
+4. Task Reviewer validates evidence and reevaluates selected controls and dependent
+  criteria. Proven violations become verified; ruled-out candidates retain history
+  without automatically making the whole control compliant; deferred items stay
+  blocked. The new complete assessment preserves unchanged records and stable IDs.
+5. In a separate Step 3A chat, pass `inventoryArtifact`, `reviewArtifact`,
+  `basePlanArtifact`, `resolvedFindingIds`, and a new `planArtifact`. Refresh affected
+  priorities, targets, dependencies, approvals, and proposal-to-change mappings.
+6. Regenerate Step 3B using exact `inventoryArtifact`, `reviewArtifact`, and
+  `planArtifact` overrides. Verified items move into standard findings and leave
+  the pending table. Appendix A preserves promotion and ruled-out history.
+7. Approve the actual Step 3A change scope before Step 4. Steps 4 and 5 accept the
+  same exact artifact overrides. Human review, confidence, or the report alone
+  cannot approve implementation or close a finding.
+
+### Validating conditional review
+
+Reports under schema 1.14.0 include a JSON `conditional-review-manifest` validation
+index copied from the authoritative assessment and plan. It is not a new source
+of truth. Older completed reports remain historical and are not rewritten.
+
+```powershell
+python tools/validate_assessment_report.py <report-path> --require-conditional-review
+python -m unittest discover -s tools -p test_validate_assessment_report.py -v
+```
+
+Before Step 4 freezes scope, build the policy's temporary validation index directly
+from Step 2 and Step 3A, never from the report. Require matching artifact paths and
+revisions, verified noncompliant findings, validated resolution evidence, and plan
+eligibility. Supply one selector flag per approved change:
+
+```powershell
+python tools/validate_assessment_report.py --resolution-record <temporary-index.json> --selected-change-id <approved-change-id>
+```
+
+The validator rejects pending/ruled-out selection, stale plans, incomplete blocker
+coverage, omitted illustrative targets, and count/marker mismatches. It validates
+supplied records; it does not query live systems or prove external facts.
 
 Run `py tools/validate_assessment_report.py <generated-report-path>` after Step 3B to validate the report matches the template, should get a PASSED
 

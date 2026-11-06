@@ -12,8 +12,12 @@ agent: agent
 RUN_DATE=${input:runDate:Assessment run date used by Steps 1 through 3A}
 TASK_SLUG=${input:taskSlug:Task slug used by Steps 1 and 2}
 PLAN_SLUG=${input:planSlug:Plan slug used by Step 3A}
+INVENTORY_OVERRIDE=${input:inventoryArtifact:}
+REVIEW_OVERRIDE=${input:reviewArtifact:}
+PLAN_OVERRIDE=${input:planArtifact:}
 
 AUTHORITATIVE_PROMPT=prompts/03B-create-code-level-resiliency-assessment-report-schema-governed.prompt.md
+CONDITIONAL_FINDING_POLICY=grounding/governance/conditional-finding-policy.yml
 INVENTORY_ARTIFACT=.copilot-tracking/research/${RUN_DATE}/${TASK_SLUG}-research.md
 REVIEW_ARTIFACT=.copilot-tracking/reviews/${RUN_DATE}/${TASK_SLUG}-research-review.md
 PLAN_ARTIFACT=.copilot-tracking/plans/${RUN_DATE}/${PLAN_SLUG}.instructions.md
@@ -30,9 +34,18 @@ PHASE_HANDOFF_SCHEMA=grounding/governance/phase-handoff-schema.yml
 
 ## Execution
 
+Read `CONDITIONAL_FINDING_POLICY` together with `AUTHORITATIVE_PROMPT`.
+
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
 Use the Task Planner reporting behavior defined by `AUTHORITATIVE_PROMPT`.
+
+Apply nonempty explicit artifact overrides before reading; use the exact revised
+assessment and matching plan after conditional resolution, never the newest file
+by assumption. Render the separate conditional-review subsection, complete
+not-assessed register, full supported illustrative proposals, and semantic
+validation index defined by the schema. Pending items never enter confirmed counts
+or the main finding matrix. Run the report validator with `--require-conditional-review`.
 
 Read and validate `REPORT_SCHEMA` and `ASSESSMENT_SCOPE_CONTEXT`. Read the three authoritative phase artifacts before rendering. Apply `report_preferences.finding_selection` and `report_preferences.testing_output` exactly.
 

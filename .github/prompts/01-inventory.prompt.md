@@ -12,8 +12,11 @@ agent: agent
 RUN_DATE=${input:runDate:Assessment run date in YYYY-MM-DD format}
 SOURCE_ROOT=${input:sourceRoot:Repository-relative application source root}
 TASK_SLUG=${input:taskSlug:Task slug without the -research suffix}
+BASE_INVENTORY_ARTIFACT=${input:baseInventoryArtifact:}
+INVENTORY_OUTPUT_PATH=${input:inventoryOutputPath:}
 
 AUTHORITATIVE_PROMPT=prompts/01-create-inventory-hve-task-researcher.prompt.md
+CONDITIONAL_FINDING_POLICY=grounding/governance/conditional-finding-policy.yml
 ASSESSMENT_SCOPE_CONTEXT=application-context/assessment-scope-context.yml
 ASSESSMENT_SCOPE_SCHEMA=grounding/governance/assessment-scope-schema.yml
 SHARED_SERVICE_SCOPE_SCHEMA=grounding/governance/shared-service-assessment-scope-schema.yml
@@ -26,9 +29,16 @@ EXPECTED_HANDOFF_ARTIFACT=.copilot-tracking/research/handoffs/01-inventory-summa
 
 ## Execution
 
+Read `CONDITIONAL_FINDING_POLICY` together with `AUTHORITATIVE_PROMPT`.
+
 All paths are workspace-relative. Do not guess alternate artifact paths. If a required artifact does not exist, stop and report the exact missing path. Read the authoritative governed prompt before acting. A handoff summary is non-authoritative and does not replace required artifacts.
 
 Use the Task Researcher agent behavior defined by `AUTHORITATIVE_PROMPT`.
+
+For an evidence refresh, pass the exact base inventory and new versioned output
+path through to the authoritative prompt. Use a nonempty `INVENTORY_OUTPUT_PATH`
+as `EXPECTED_INVENTORY_ARTIFACT`; stop if it would overwrite the base. Preserve
+unaffected evidence IDs while revalidating all affected authority and bindings.
 
 Assess only `SOURCE_ROOT` and the repository artifact domains enabled by `ASSESSMENT_SCOPE_CONTEXT`. Validate the scope context against `ASSESSMENT_SCOPE_SCHEMA`. Load optional application and solution architecture context only when the files exist. Treat application context as the primary architecture authority for this single-microservice repository.
 

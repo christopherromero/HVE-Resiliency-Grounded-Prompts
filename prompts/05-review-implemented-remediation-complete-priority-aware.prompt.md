@@ -1,3 +1,7 @@
+---
+description: Review frozen remediation scope and evidence-backed conditional-resolution history
+---
+
 # Prompt 5: Review Implemented Multi-Region Remediation Changes
 
 ## Agent and phase
@@ -244,6 +248,15 @@ When `commit_mode: per_change`, verify:
 Do not require commits when `commit_mode: none`. Do not require Git metadata for a non-Git workspace. A missing or incorrect commit record affects commit traceability, but finding closure is blocked only when it also prevents reliable validation of the implemented change or violates an explicit approval requirement.
 
 ## Review objectives
+
+Read `grounding/governance/conditional-finding-policy.yml`. For previously
+conditional findings, verify preserved IDs and original evidence, validated
+confirmation evidence and reviewer disposition, the authoritative Step 2 revision,
+the matching refreshed Step 3A approval, and the Step 4 preflight result. Reject
+closure if pending or ruled-out records entered implementation scope, if a report
+or confidence rating substituted for evidence, or if the plan referenced an older
+assessment. Respect the frozen scope; do not promote new conditionals in Step 5.
+Human verification is not proof that the remediation was implemented or tested.
 
 For every resolved change ID:
 

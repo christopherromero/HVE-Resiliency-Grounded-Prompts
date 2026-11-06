@@ -1,3 +1,7 @@
+---
+description: Create the authoritative remediation plan and blocked conditional proposals
+---
+
 # Prompt 3A: Create the Authoritative Multi-Region Remediation Plan
 
 ## Agent and phase
@@ -52,7 +56,8 @@ Do not:
 - Create new findings
 - Change finding severity or compliance status
 - Add remediation scope not tied to an approved finding
-- Plan implementation for `not_assessed`, `not_applicable`, `compliant`, or `accepted_risk` controls
+- Authorize implementation for `not_assessed`, `not_applicable`, `compliant`, or
+  `accepted_risk` controls; qualified conditional proposals are illustrative only
 - Modify source code
 - Apply patches
 - Run formatters that change files
@@ -61,6 +66,48 @@ Do not:
 - Invoke Task Researcher or researcher subagents
 
 You may inspect only files and symbols cited by Step 1 or Step 2. A small surrounding context window is allowed. If implementation context is insufficient, mark the proposal `targeted_implementation_discovery_required: true`. Do not perform broad discovery.
+
+## Blocked conditional proposals and targeted plan refresh
+
+Read `grounding/governance/conditional-finding-policy.yml`. Preserve the exact
+Step 2 assessment path and revision/fingerprint as plan authority. Keep verified
+remediation in `changes` and pending illustrative work in `conditional_proposals`.
+Record `review_artifact` and `review_revision` on the plan. Every verified change
+has a boolean `implementation_allowed` reflecting unresolved conditions and required
+business/architecture approvals; eligibility never replaces the later explicit
+Step 4 scope approval selector. The validation index copies these values and names
+the plan's authority `plan_review_artifact` and `plan_review_revision`.
+Never mix these collections or put a conditional proposal in executable priority,
+wave, dependency-selector, or approval indexes. A verified change must not depend
+on a pending proposal as though that proposal were executable.
+
+For each qualified pending conditional, use the same applicable target/proposal
+schema as verified work: exact Step 2 source evidence, target paths and symbols,
+concrete illustrative code/configuration, tests, acceptance criteria, validation
+commands, dependencies, compatibility, rollback, and targeted-discovery reasons.
+Generate all independently supported targets; block only unsupported portions.
+Apply existing code-generation and approved-library rules, and label all code
+`Illustrative proposal only`. Do not replace supported code with narrative solely
+because a condition awaits confirmation.
+
+Add `proposal_id`, stable `finding_ids`, `status: conditional_blocked`,
+`implementation_allowed: false`, the condition/confidence/verification records,
+and `resolution_required_before_implementation: true`. Record `priority_if_confirmed`
+as a complete governed priority object only when its rule applies under the stated
+condition; otherwise record the exact governance gap. Do not populate executable
+`priority` or `change_id` fields for pending proposals. Unknown fields require an
+explicit reason. Deduplicate proposals by root cause without merging their gates.
+
+After targeted Step 2 resolution, run Step 3A in a separate invocation with
+`BASE_PLAN_ARTIFACT`, the exact revised `REVIEW_ARTIFACT`, explicit resolved finding
+IDs, and a new versioned `PLAN_ARTIFACT`. Preserve unaffected changes and IDs. For
+newly verified findings, recalculate governed priority from confirmed evidence,
+create or update the root-cause change, and map the original proposal ID to the
+change ID. Preserve prior verification/disposition history and remove the item
+from pending proposals. Ruled-out proposals remain historical, not executable.
+Revalidate affected dependencies, waves, approvals, and counts; do not silently
+carry old approval across changed targets or scope. Report the exact refreshed
+plan path for Step 3B and later approval; do not invoke Step 4 automatically.
 
 ## Root-cause planning rule
 
@@ -87,7 +134,8 @@ Do not reuse an ID for a different root cause.
 
 `grounding/governance/remediation-prioritization.md` is the only definition of P0, P1, P2, and P3.
 
-For every root-cause change:
+For every verified root-cause change (pending proposals use `priority_if_confirmed`
+under the separate conditional contract):
 
 1. Select the highest applicable governance rule.
 2. Cite `policy_id`, `policy_version`, and `rule_id`.

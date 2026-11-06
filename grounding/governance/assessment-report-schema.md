@@ -2,7 +2,7 @@
 document_type: assessment_report_schema
 schema:
   schema_id: CODE-LEVEL-RESILIENCY-ASSESSMENT-REPORT
-  schema_version: "1.13.0"
+  schema_version: "1.14.0"
   lifecycle_status: active
 owner: Cloud Architecture Team
 applies_to:
@@ -143,7 +143,7 @@ Wording may be polished, but state, region, and lifecycle meaning must not chang
 - Confirmed count
 - Description
 
-Exclude verified controls, non-findings, not-assessed controls, not-applicable controls, accepted risks, and PCF references.
+Exclude pending conditional findings, verified controls, non-findings, not-assessed controls, not-applicable controls, accepted risks, and PCF references. Only verified findings contribute to confirmed counts.
 
 ## Required detailed finding fields
 
@@ -390,11 +390,78 @@ Label every individual illustrative code proposal:
 - Verified control
 - Non-finding observation
 
-Only approved verified and conditional findings appear in finding counts and the Full Finding Matrix.
+Only verified findings appear in confirmed finding counts, the standard detailed
+recommendation sections, and the Full Finding Matrix. Pending conditional findings
+are presented separately under Evidence Gap Analysis; they remain authoritative
+Step 2 records, not confirmed defects. Read
+`grounding/governance/conditional-finding-policy.yml` for eligibility and resolution.
 
 ## Repository and IaC Evidence Gap Analysis
 
 Required subsections:
+
+### Conditional Findings Pending Verification
+
+When `include_conditional_findings` is true, render a summary table and full detailed
+entries for every qualified pending conditional, independent of confirmed-priority
+selection. If none exist, state that explicitly. When disabled, state the omitted
+count, the governing preference, and the authoritative artifact path; do not claim
+complete conditional-review coverage.
+
+Summary columns:
+
+- Conditional display ID and title
+- Affected service and regional failure impact
+- Exact triggering condition
+- Finding confidence and rationale
+- Evidence required to confirm or rule out
+- Evidence owner and review disposition
+- Priority if confirmed, or explicit governance gap
+- Implementation eligibility, always blocked while pending
+
+Use stable `C-001`-style display IDs based on the complete historical conditional
+set, including promoted and ruled-out records. Preserve prior mappings and never
+reuse a resolved item's display ID or renumber remaining items after promotion or
+priority filtering. Preserve internal finding/proposal/control IDs in
+Appendix A and invisible markers. Prefix each detailed pending entry with
+`<!-- conditional-finding:{STEP_2_FINDING_ID} -->`, not a verified finding marker.
+
+Each entry must retain every applicable required detailed finding field, including
+exact original evidence, target paths and symbols, severity, conditional resiliency
+qualification, issue, causal impact, fix, standards, dependencies, and notes. Label
+priority as `Priority if confirmed`, not executable priority. Render all Step 3A
+`conditional_proposals` illustrative code/configuration and validation content
+using the same target-level rules as verified work: concrete generated blocks,
+specific discovery reasons only for blocked targets, and `Illustrative proposal only`.
+Testing-output preferences still control visible testing details, never authoritative
+requirements. Do not invent missing fields, snippets, values, evidence, or approvals.
+
+Add condition verification status, confidence rationale, evidence that would rule
+out the concern, review disposition, and a concise resolution-history reference.
+Confirmed conditions are removed from the pending table only after authoritative
+Step 2 promotion and Step 3A refresh; the regenerated report presents them with
+verified findings. Ruled-out records stay in Appendix A disposition history, not
+pending or confirmed counts. Pending records never enter the executable roadmap.
+
+### Not-Assessed Control Register
+
+When `include_evidence_gaps` is true, account for every Step 2 not-assessed control,
+including those linked to pending conditionals. Use one row per control with these
+fields, grouping related columns for readability without dropping content:
+
+- Control display reference and affected service
+- Regional failure scenario and potential impact, or explicit unknown
+- Available evidence and exact missing setting, value, artifact, or decision
+- Context path, authority, blocking reason, and governing rule
+- Evidence owner, verification request, and resolution criteria
+- Related conditional or verified findings and approval dependencies
+
+Preserve the total not-assessed control count and split it into disjoint controls
+with qualified pending conditionals and controls without them. Never subtract
+unknowns from totals because a potential consequence has been described. Excluded
+standards and non-in-scope services remain separately visible with reasons, not
+counted as compliant. If the register is hidden, declare the omission and source
+artifact and do not claim full evidence-review coverage.
 
 ### Available to review
 
@@ -537,6 +604,8 @@ these if identifier suppression is withdrawn.
 Render Appendix A as the final section, after the Implementation Roadmap. It is the single location where internal workflow identifiers appear in readable content, so that sections 1 through 7 stay free of them while traceability is fully preserved.
 
 Render one row per finding included in the report scope, ordered by display ID.
+Also preserve pending conditional display-ID/proposal mappings and ruled-out or
+promoted disposition history here. A pending proposal ID is not a change ID.
 
 Columns:
 
@@ -624,6 +693,31 @@ schema_conformance:
   dependency_topology_used_as_application_topology: false
   migration_delta_reported_as_finding: false
 ```
+
+### Conditional-review validation record
+
+Include one JSON object inside an HTML comment beginning
+`<!-- conditional-review-manifest` and ending on its own `-->` line in the final
+schema-conformance insertion region. This is a validation index copied from
+authoritative artifacts, not an independent authority or evidence-resolution step.
+Use the exact contract in `conditional-finding-policy.yml` under `validation_record`.
+Always include the index, including when both registers are empty or hidden.
+
+Render the selected confirmed total and authoritative pending total in Overview as
+`Confirmed findings in this report: N` and `Pending conditional findings: N`.
+Place `<!-- matrix-finding:{STEP_2_FINDING_ID} -->` before each main matrix row and
+`<!-- roadmap-change:{STEP_3A_CHANGE_ID} -->` before each executable roadmap row.
+Place `<!-- not-assessed-control:{CONTROL_ID} -->` before each rendered blocker row.
+Do not use these markers for pending proposals. Markers and index sets must reconcile.
+Copy report testing preferences into the index. Classify proposal targets as
+application, configuration, or test; retain hidden test obligations without forcing
+test snippets into a hidden, summary, or roadmap-only view. Never hide application
+or configuration proposals under the testing preference.
+
+Run `python tools/validate_assessment_report.py <report-path> --require-conditional-review`.
+Invalid eligibility, promotion evidence, counts, markers, incomplete blocker coverage,
+stale assessment/plan revisions, or missing conditional proposal targets fail report
+conformance. The validator checks supplied records, not the truth of external facts.
 
 ### Kafka scenario reporting
 
