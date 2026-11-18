@@ -146,6 +146,21 @@ For the application-architecture-context, You take the sample template that woul
 
 NOTE: There are simple form templates and then detailed form templates, use the simple for now.
 
+#### Preview: progressive-disclosure layout
+
+A reorganized sample in `application-context/Samples-v2/` groups settings by how often you need to edit them. It holds the same values as its original in `application-context/Samples/`, and only the order and comments differ. The layout is still being A/B tested, so keep using the existing samples for assessments.
+
+| Tag    | Level         | What to do                                 | Where                       |
+|--------|---------------|--------------------------------------------|-----------------------------|
+| `[L1]` | Required      | Edit for every assessment                  | Top of file                 |
+| `[L2]` | If applicable | Edit only for services the repo uses       | Middle of file              |
+| `[L3]` | Advanced      | Architects only, shipped values are safe   | Bottom of each section      |
+| `[L4]` | Framework     | Never edit                                 | Bottom of sections and file |
+
+Most users edit only `[L1]` and `[L2]`. Each level is wrapped in `# region` markers, so you can fold the file in VS Code with `Ctrl+K Ctrl+0`. Inline `# options:` comments list the allowed values next to each field.
+
+Available sample: [application-architecture-context-mongodb-atlas-global-kafka-active-active.yml](application-context/Samples-v2/application-architecture-context-mongodb-atlas-global-kafka-active-active.yml)
+
 ## Approved Libraies for use in the refactoring
 
 There is a new file grounding\governance\approved-libraries.yml

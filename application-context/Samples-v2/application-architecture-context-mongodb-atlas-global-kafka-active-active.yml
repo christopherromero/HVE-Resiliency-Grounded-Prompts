@@ -1,0 +1,428 @@
+---
+schema_version: "3.1.0"
+document_type: application_architecture_context
+lifecycle_status: approved  # [L1] draft | approved — must match metadata.lifecycle_status
+---
+# =============================================================================
+# HOW TO USE THIS FILE
+#   Sections are ordered from most required (L1) to framework rules (L4).
+#   Most users: edit L1 and L2 only. Skip any line tagged [L3] or [L4].
+#   Fold sections in VS Code with the "# region" markers (Ctrl+K Ctrl+0 folds all).
+#
+#   [L1] REQUIRED        Edit for every assessment.                Top of file.
+#   [L2] IF APPLICABLE   Edit only if the repo uses it.            Middle of file.
+#   [L3] ADVANCED        Architects only. Shipped values are safe. Bottom of each section.
+#   [L4] FRAMEWORK       Never edit. Framework rules.              Bottom of sections and file.
+#
+# =============================================================================
+architecture_context:
+
+  # region ===== LEVEL 1 · REQUIRED — edit for every assessment ===============
+
+  # [L1] Who owns this context and who approved it.
+  metadata:
+    application_name: Atlas and Kafka Application  # update
+    repository_name: Atlas-and-Kafka-Application  # update
+    business_role: application_owner  # update
+    context_owner: application_owner  # update
+    lifecycle_status: approved  # update: draft | approved
+    approval_reference: "application-context/designs/Atlas-design.md#contract"  # update
+    approved_by: application_owner  # update
+    approved_at: "2024-06-06"  # update: YYYY-MM-DD
+    version: "1.0.0"
+    sample_only: false
+    source_state_is_illustrative: false
+    description: >-
+      Source and target are illustrative designs, not deployed facts or approvals.
+      Replace every requires_approval value and confirm the actual source baseline.
+      Obtain architecture approval before setting both lifecycle statuses and the
+      target contract status to approved. A draft cannot select Kafka Rule 006.
+
+  # [L1] Where the app is deployed today (source) and where it is going to be deployed (target).
+  # Code is assessed against the target. Source is background only.
+  deployment_evolution:
+    source:
+      state_label: current_baseline
+      lifecycle_status: current
+      operating_model: active_standby
+      traffic_model: single_active
+      regions:
+        - {region: westus, role: primary, processing_state: active}
+        - {region: eastus, role: disaster_recovery, processing_state: standby}
+      same_application_artifact_across_regions: true
+    target:
+      state_label: approved_target_deployment
+      lifecycle_status: approved_target
+      operating_model: active_active
+      traffic_model: multi_active
+      regions:
+        - {region: westus2, role: active, processing_state: active}
+        - {region: westus, role: active, processing_state: active}
+      same_application_artifact_across_regions: true
+    # [L4] Framework: how source and target are compared. Do not edit.
+    transition:
+      transition_type: source_to_target
+      source_to_target_assessment: true
+      assessment_focus: target_state_code_readiness
+      target_state_must_not_be_reported_as_current: true
+      source_and_target_regions_must_not_be_merged: true
+      source_target_difference_is_not_a_finding: true
+
+  # [L1] System of record: the database that holds the official business data, or none.
+  #      This choice drives the Kafka scenario (see kafka-operating-scenario-policy.yml).
+  #      One value only. If both SQL and Cosmos DB are used, SQL wins.
+  authoritative_state:
+    # dependency (Kafka rule it selects):
+    #   azure-sql      -> 001  Kafka active-standby
+    #   cosmosdb       -> 002  Kafka active-active
+    #   none           -> 003  database-independent Kafka
+    #   dse-cassandra  -> 004  Kafka active-active
+    #   (no match)     -> 005  FALLBACK: unresolved, Kafka controls not_assessed. Avoid this.
+    #   mongodb        -> 006  Kafka active-active (Atlas Global Cluster only)
+    # "No match" = unsupported value (e.g. postgresql), missing data, or a context/code conflict.
+    dependency: mongodb
+    # role: authoritative_business_state | no_application_database (use with dependency: none)
+    role: authoritative_business_state
+    source: {lifecycle_status: current, operating_model: active_standby}
+    target: {lifecycle_status: approved_target, operating_model: active_active}
+    # [L3] Reporting guidance. Leave as shipped.
+    reporting_rule: Report application deployment, Atlas shard ownership, and Kafka processing separately.
+
+  # [L1] Shared services this repo is expected to use.
+  # Keys must match dependency-standard registry IDs.
+  # Allowed statuses are required, optional, not_expected, and unknown.
+  # Expectations guide discovery but do not override repository evidence.
+  dependency_expectations:
+    mongodb: required
+    confluent-kafka: required
+#    azure-managed-redis: required
+#    azure-sql: not_expected
+#    cosmosdb: required
+#    dse-cassandra: not_expected
+#    eventhubs: not_expected
+#    keyvault: required
+#    postgresql: not_expected
+#    storage-blob: not_expected
+
+  # [L1] Platform pieces. Under review: partly duplicates runtime_expectations.
+  # options: required | optional | not_expected | unknown
+  platform_capability_expectations:
+    jvm-runtime: required
+    aks-istio: optional
+    apim: not_expected
+    appgateway-glb: not_expected
+    azure-functions: not_expected
+
+  # [L1] Changes the app makes outside itself (orders, email, payments...).
+  # present: true | false | unknown
+  # types: free text, one per effect. Common examples:
+  #   email_delivery      sms_delivery        payment_processing
+  #   partner_api_call    inventory_update    order_creation
+  # Declaring these triggers checks for idempotency, duplicates, and replay safety.
+  external_side_effects:
+    present: unknown
+    types: []
+
+  # endregion
+
+  # region ===== LEVEL 2 · IF APPLICABLE — edit only if the repo uses it =======
+
+  # [L2] Include if: the repo uses any shared service. Every used service needs a source and target.
+  # operating_model options: active_active | active_standby | single_region | externally_managed | not_applicable | unresolved
+  shared_service_operating_models:
+    services:
+      mongodb:
+        dependency_standard_id: mongodb
+        source: {operating_model: active_standby, lifecycle_status: current}
+        target: {operating_model: active_active, lifecycle_status: approved_target}
+      confluent-kafka:
+        dependency_standard_id: confluent-kafka
+        source: {operating_model: active_standby, lifecycle_status: current}
+        target: {operating_model: active_active, lifecycle_status: approved_target}
+        scenario_source: architecture_context.kafka_operating_model.source
+        scenario_target: architecture_context.kafka_operating_model.target
+    # [L4] Framework. Do not edit.
+    contract_version: "1.1.0"
+    authoritative_for: shared_service_target_operating_model
+    default_assessment_state: target
+
+  # [L2] Include if: a service needs a non-default scope or a specific rationale (default_scope: in_scope).
+  # Every entry has the same parts: (1) key  (2) assessment_scope  (3) rationale
+  # (4) scope_owner  (5) optional external reference. Scope values and meanings: see guide.
+  shared_service_assessment_scope:
+    default_scope: in_scope
+    services:
+      # --- Services this repo uses ---
+      mongodb:
+        assessment_scope: in_scope
+        rationale: Repository-owned Atlas integration and joint Atlas Global Cluster/Kafka behavior are included after target approval.
+        scope_owner: application_architecture
+      confluent-kafka:
+        assessment_scope: in_scope
+        rationale: Repository-owned Kafka integration and joint Atlas Global Cluster/Kafka behavior are included after target approval.
+        scope_owner: application_architecture
+      # --- Exceptions: excluded from findings ---
+      databricks:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Databricks is used by the solution but assessed separately by the data platform team.
+        scope_owner: data_platform_team
+        external_assessment_reference: not_provided
+      elasticsearch:
+        assessment_scope: out_of_scope
+        rationale: >-
+          Elasticsearch usage is retained for dependency context, but controls are not evaluated.
+        scope_owner: search_platform_team
+        external_assessment_reference: not_provided
+      # region --- Same as default_scope (Phase 2: candidate for removal) ---
+      aks-istio:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      apim:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      appgateway-glb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-functions:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-managed-redis:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      azure-sql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      cosmosdb:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      dse-cassandra:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      eventhubs:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      keyvault:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      postgresql:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      storage-blob:
+        assessment_scope: in_scope
+        rationale: >-
+          Included in the application code-level resiliency assessment when
+          production use is confirmed.
+        scope_owner: application_architecture
+      # endregion
+    # How scope appears in reports.
+    reporting:
+      render_scope_summary: true  # [L3] Advanced
+      non_in_scope_records_are_findings: false  # [L4] Framework. Do not edit.
+      non_in_scope_records_receive_priority: false  # [L4] Framework. Do not edit.
+    # [L4] Framework. Do not edit.
+    contract_version: "1.0.0"
+    canonical_key_source: dependency_standard_registry
+
+  # [L2] Include if: a service needs a specific endpoint or failover behavior.
+  # Every entry has the same parts: (1) key  (2) source  (3) target  (4) app must-do flags
+  # (5) optional service contract  (6) external evidence. Per-service values: see guide.
+  shared_service_connectivity_contracts:
+    services:
+      mongodb:
+        dependency_standard_id: mongodb
+        source: {connectivity_model: driver_topology_discovery, lifecycle_status: current}
+        target:
+          connectivity_model: atlas_global_cluster_driver_discovery
+          lifecycle_status: approved_target
+          topology_discovery_required: true
+          zone_and_shard_routing_contract: architecture_context.atlas_global_cluster_contract.target
+          recover_without_process_restart: true
+          external_evidence_required: [deployed_zones_and_shards, electable_nodes_and_quorum, regional_failover_behavior]
+      confluent-kafka:
+        dependency_standard_id: confluent-kafka
+        source: {connectivity_model: independent_regional_clusters, lifecycle_status: current}
+        target:
+          connectivity_model: independent_regional_clusters
+          lifecycle_status: approved_target
+          local_region_affinity_required: true
+          mirroring_contract:
+            topic_mirroring_required: true
+            accepted_mechanisms:
+              - cluster_linking
+              - approved_replication_platform
+            mirror_scope:
+              - business_topics
+              - compacted_topics
+            internal_topics_mirroring_required: false
+            offset_translation_required: true
+            failover_requires_topic_availability: true
+            topic_ownership_reference: "application-context/designs/Kafka-design.md#contract"
+            replication_direction_reference: "application-context/designs/Kafka-design.md#contract"
+            loop_prevention_reference: "application-context/designs/Kafka-design.md#contract"
+            offset_recovery_reference: "application-context/designs/Kafka-design.md#contract"
+
+  # [L2] Include if: the repo uses Kafka. Scenario must match
+  # grounding/governance/kafka-operating-scenario-policy.yml.
+  kafka_operating_model:
+    scenario_policy_id: KAFKA-OPERATING-SCENARIO
+    expected_scenario_rule_id: KAFKA-SCENARIO-006  # set from the authoritative_state table above (005 is never chosen)
+    source:
+      lifecycle_status: current
+      scenario: active_standby
+      regional_processing_model: single_active
+      cluster_model: {type: independent_regional_clusters, stretched_cluster: false, cluster_per_region: true}
+    target:
+      lifecycle_status: approved_target
+      scenario: independent_regional_active_active  # options: independent_regional_active_active | active_standby | database_independent_kafka | unresolved
+      regional_processing_model: multi_active  # options: multi_active | single_active | unresolved
+      cluster_model: {type: independent_regional_clusters, stretched_cluster: false, cluster_per_region: true}
+    # [L3] Reporting guidance. Leave as shipped.
+    reporting_rule: Rule 006 applies to the target only after approval; source is migration context, not an additional supported Atlas target.
+
+  # [L2] Include if: the database has a provider/deployment variant (MongoDB, Cosmos DB).
+  dependency_variants:
+    # options: provider: atlas; deployment_model: replica_set | global_cluster
+    mongodb:
+      source: {provider: atlas, deployment_model: replica_set}
+      target: {provider: atlas, deployment_model: global_cluster}
+
+  # [L2] Include if: MongoDB Atlas Global Cluster is the target.
+  # Every *_reference must point to an approved design document.
+  atlas_global_cluster_contract:
+    policy_path: grounding/governance/mongodb-atlas-kafka-operating-scenario-policy.yml
+    source:
+      contract_status: current_baseline  # options: current_baseline | illustrative_only
+      description: An actual replica-set baseline; replace with the actual current topology without copying target facts.
+    target:
+      contract_status: approved
+      approval_reference: "application-context/designs/Atlas-design.md#contract"
+      single_primary_per_shard: true
+      unrestricted_multi_primary_per_record: false
+      zones:
+        - zone_id: westus2-zone
+          highest_priority_region: westus2
+          electable_regions:
+            - westus
+            - eastus
+          data_ownership_reference: "application-context/designs/Atlas-design.md#contract"
+        - zone_id: westus-zone
+          highest_priority_region: westus
+          electable_regions:
+            - westus2
+            - eastus
+          data_ownership_reference: "application-context/designs/Atlas-design.md#contract"
+      collection_shard_keys_reference: "application-context/designs/Atlas-design.md#contract"
+      global_uniqueness_reference: "application-context/designs/Atlas-design.md#contract"
+      write_concern_reference: "application-context/designs/Atlas-design.md#contract"
+      read_semantics_reference: "application-context/designs/Atlas-design.md#contract"
+      read_your_writes_reference: "application-context/designs/Atlas-design.md#contract"
+      election_and_partition_reference: "application-context/designs/Atlas-design.md#contract"
+      operation_identity_reference: "application-context/designs/Processing-design.md#contract"
+      event_identity_reference: "application-context/designs/Processing-design.md#contract"
+      deduplication_reference: "application-context/designs/Processing-design.md#contract"
+      database_kafka_completion_reference: "application-context/designs/Processing-design.md#contract"
+
+  # [L2] Include if: the app runs on the JVM. Edit source/target versions and platform.
+  runtime_expectations:
+    runtimes:
+      jvm-runtime:
+        expected_status: required
+        production_use_expected: true
+        source:
+          lifecycle_status: current
+          runtime_family: jvm
+          runtime_version: unknown  # options: "17" | "21" | unknown
+          execution_platform: aks  # options: aks | azure-functions | unknown
+          containerized: true
+        target:
+          lifecycle_status: approved_target
+          runtime_family: jvm
+          minimum_runtime_version: unknown  # options: "17" | "21" | unknown
+          execution_platform: aks  # options: aks | azure-functions | unknown
+          containerized: true
+          # [L3] Advanced: required JVM capabilities. Leave as shipped.
+          required_capabilities:
+            container_awareness: required
+            bounded_heap_strategy: required
+            graceful_shutdown: required
+            readiness_withdrawal: required
+            runtime_observability: required
+        # [L3] Advanced: what the JVM review covers. Leave as shipped.
+        assessment_scope: [build_configuration, application_lifecycle, runtime_tests]
+        # [L4] Framework: grounding standard reference. Do not edit.
+        grounding:
+          standard_id: JVM-RUNTIME-RESILIENCY
+          registry_id: jvm-runtime
+          path: grounding/dependencies/jvm-runtime-resiliency.md
+          version: "1.0.0"
+    # [L4] Framework. Do not edit.
+    contract_version: "1.0.0"
+    canonical_key_source: dependency_standard_registry
+
+  # endregion
+
+  # region ===== LEVEL 4 · FRAMEWORK — do not edit ============================
+  # (Level 3 items live at the bottom of each section above, tagged [L3].)
+
+  allowed_expected_statuses:
+    - required
+    - optional
+    - not_expected
+    - unknown
+
+  assessment_guidance:
+    application_context_is_primary_architecture_authority: true
+    repository_evidence_must_validate_implementation: true
+    conflicts_route_to_architecture_review: true
+    shared_service_scope_interpretation:
+      schema_path: grounding/governance/shared-service-assessment-scope-schema.yml
+      downstream_recalculation_prohibited: true
+    deployment_state_interpretation:
+      assess_code_against: target
+      describe_current_deployment_from: source
+      describe_target_deployment_from: target
+      do_not_merge_source_and_target_regions: true
+      do_not_report_target_as_current: true
+
+  finding_boundary:
+    source_target_difference_is_not_a_finding: true
+    finding_requires_repository_evidence: true
+    missing_deployed_target_infrastructure_is_evidence_gap: true
+    architecture_context_conflict_is_not_a_code_finding: true
+    infrastructure_findings_allowed: false
+
+  # endregion
